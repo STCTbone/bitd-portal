@@ -1,4 +1,4 @@
-# Blades ’68 Portal: Design Interview
+# Blades ’68 Portal: Design Agreement
 
 ## Confirmed decisions
 
@@ -65,13 +65,13 @@ The backend comparison recommends keeping Supabase because this existing app alr
 - A working local preview and deployment instructions are supplied; paid or live services are connected after review.
 - Build, relevant lint checks, meaningful behavior tests, direct authorization tests, and browser review validate the changed application.
 
-## Current validation and remaining confirmation
+## Current validation and published spec
 
 The untouched upstream application passes its production build. Its lint baseline contains 12 errors and one warning, predominantly React hook/compiler rules and Fast Refresh exports. These are baseline findings, not completed adaptation checks.
 
-The design choices have been individually approved. This consolidated agreement and backend recommendation are ready for the grilling skill's final shared-understanding confirmation before application implementation.
+The user requested synthesis and publication through to-spec. The canonical implementation scope is [spec #1](https://github.com/STCTbone/bitd-portal/issues/1), labelled `ready-for-agent`. It captures the approved design choices and the explicitly confirmed testing seam: complete browser-to-Supabase campaign flows supplemented by direct API authorization checks. The issue is ready for implementation; this document provides design context.
 
-No glossary, ADR directory, AGENTS.md, CLAUDE.md, tests, or license file was found in the inspected upstream tree. GitHub reports the public repository allows forks. CLI access succeeded with the network sandbox exception; the fork and approved documentation setup are complete. Application adaptation remains in the design interview.
+No glossary, ADR directory, AGENTS.md, CLAUDE.md, tests, or license file was found in the inspected upstream tree. GitHub reports the public repository allows forks. CLI access succeeded with the network sandbox exception; the fork and approved documentation setup are complete. Application implementation has not started; the published spec defines its scope.
 
 ## Sources
 
