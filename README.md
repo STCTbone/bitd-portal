@@ -1,14 +1,12 @@
-# Doskvol Portal — a Blades in the Dark campaign tracker
+# Blades ’68 campaign portal
 
-A real-time web app for running a [Blades in the Dark](https://bladesinthedark.com/) campaign at the table. The whole crew joins one campaign with a 4-digit code, claims a seat, and shares a live view of characters, the crew, factions, clocks, scores, and the map of Doskvol — every change syncs to everyone instantly.
+A dedicated adaptation of the [Doskvol Portal](https://github.com/bsxp/bitd-portal) for our group's fresh Blades ’68 campaigns. Campaign creation, no-email identity, separate player/secret-GM invitations, and backend-enforced membership are implemented. The remaining character, crew, cycle, faction, clock, map, notes, and media modules are retained for the feature migrations described by [spec #1](https://github.com/STCTbone/bitd-portal/issues/1).
 
-Built for my own group's campaign, so it leans toward "fast to use during a session" over "exhaustive character builder."
-
-> The actual application lives in [`app/`](app/). The PDFs in the repo root are the reference rulebook sheets the data is modeled from.
+The application lives in [`app/`](app/). Follow [`app/README.md`](app/README.md) for reproducible local startup, tests, and the current backend contract.
 
 ---
 
-## Features
+## Retained upstream features awaiting adaptation
 
 - **Characters** — full scoundrel sheets: the 12 action ratings, stress & trauma, harm & healing clock, armor, load & gear, coin/stash, the four XP tracks, special abilities (per playbook), contacts, and notes. Tracks who's playing each character ("Played by").
 - **Crew** — crew type, tier & hold, rep, heat, wanted level, treasury, special abilities, upgrades, and claims (the per-crew-type claims map).
@@ -20,7 +18,7 @@ Built for my own group's campaign, so it leans toward "fast to use during a sess
 
 ### Roles
 
-You join either the single **GM** seat or a **player** seat (one per character). The GM gets campaign-wide controls — Setup Mode, reset, managing clocks/factions/crew, and sees hidden clocks; players edit their own character and see only what the GM has shared.
+Campaign creation grants the creator GM membership on the server. A player invitation grants player membership; a separate secret invitation grants GM membership. Browser seat selection is a UI choice and cannot grant authority. Unconverted feature modules are not mounted and their backend access is denied until they receive explicit authorization contracts.
 
 ---
 
@@ -33,7 +31,7 @@ You join either the single **GM** seat or a **player** seat (one per character).
 
 State is held in a React context (`GameProvider`); there's no page router — the top-level views are tabs.
 
-### How sync works
+### Retained upstream sync design
 
 Each campaign uses one Supabase Realtime channel with three layers:
 
@@ -43,44 +41,13 @@ Each campaign uses one Supabase Realtime channel with three layers:
 
 Every entity (`characters`, `crews`, `factions`, `clocks`, `scores`, `map_tokens`) is one row in the Supabase `bitd` schema with a JSONB `data` column holding the full typed object. Field-level edits go through a `merge_entity` RPC that does a server-side shallow JSONB merge, so two people editing different fields of the same record don't clobber each other.
 
-A brand-new, empty campaign auto-seeds with demo data (sample crew, characters, factions, clocks) on first open.
+Fresh Blades ’68 campaigns never seed automatically. The upstream sync description above describes retained source modules; those modules stay inactive until their backend authorization and ’68 adaptations are complete.
 
 ---
 
 ## Running locally
 
-```bash
-cd app
-npm install
-
-# configure Supabase credentials
-cp .env.example .env
-# then edit .env with your project's values
-
-npm run dev
-```
-
-The app needs a Supabase project with the `bitd` schema and `merge_entity` RPC (see `app/supabase/`).
-
-### Environment variables
-
-| Variable                 | Description                  |
-| ------------------------ | ---------------------------- |
-| `VITE_SUPABASE_URL`      | Supabase project API URL     |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anon (public) key   |
-
-These are inlined at build time by Vite, so they must be present when you build.
-
-### Scripts
-
-| Command           | What it does                          |
-| ----------------- | ------------------------------------- |
-| `npm run dev`     | Start the Vite dev server with HMR    |
-| `npm run build`   | Type-check (`tsc -b`) and build to `dist/` |
-| `npm run preview` | Serve the production build locally     |
-| `npm run lint`    | Run ESLint                            |
-
----
+Use the reproducible local Supabase setup and verification commands in [`app/README.md`](app/README.md). The fork's campaign-access flow uses no-email identities and separate player/secret-GM invitations. Fresh campaigns remain empty. Legacy feature editors are being migrated ticket by ticket behind backend authorization; the current entry point does not mount those editors.
 
 ## Deployment
 

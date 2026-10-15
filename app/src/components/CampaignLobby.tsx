@@ -1,0 +1,40 @@
+import { useEffect, useState } from 'react'
+import { useSession } from '@/lib/session'
+import { supabase } from '@/lib/supabase'
+
+/** Empty campaign landing. Features enter here only after their backend contract is migrated. */
+export function CampaignLobby() {
+  const { session, leaveCampaign } = useSession()
+  const [invitations, setInvitations] = useState<{ player: string; gm: string } | null>(null)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    let active = true
+    if (session?.role === 'gm') {
+      supabase.rpc('get_campaign_invitations', { p_campaign: session.campaignId }).then(({ data, error }) => {
+        if (!active) return
+        if (error) setError('Could not load invitations. Reload to retry.')
+        else setInvitations(data)
+      })
+    }
+    return () => { active = false }
+  }, [session?.campaignId, session?.role])
+  if (!session) return null
+  return <main className="access-page">
+    <div className="access-brand"><span>BLADES ’68 / CAMPAIGN DOSSIER</span><h1>{session.campaignName}</h1><p data-testid="campaign-role">{session.role === 'gm' ? 'Game Master' : 'Player'}</p></div>
+    <section className="access-panel" aria-label="Campaign overview">
+      <p className="access-kicker">FRESH CAMPAIGN</p><h2>Your campaign is empty.</h2>
+      <p>No sample characters, crew, factions, or clocks have been added.</p>
+      {session.role === 'gm' && invitations && <div className="invitation-list">
+        <label htmlFor="player-invite">Player invitation</label>
+        <input id="player-invite" readOnly value={invitations.player} onFocus={event => event.target.select()} />
+        <small>Share this with your players.</small>
+        <label htmlFor="gm-invite">Secret GM invitation</label>
+        <input id="gm-invite" readOnly value={invitations.gm} onFocus={event => event.target.select()} />
+        <small>Grants full GM authority. Share only with another GM.</small>
+      </div>}
+      {error && <p role="alert" className="access-error">{error}</p>}
+      <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
+    </section>
+    <footer>Access is remembered in this browser. Keep your invitation to rejoin from another browser.</footer>
+  </main>
+}
