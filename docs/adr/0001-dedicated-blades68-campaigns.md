@@ -1,0 +1,3 @@
+# Target dedicated, fresh Blades ’68 campaigns
+
+This fork serves one gaming group's new Blades ’68 campaigns, using the published supplement as the rules baseline and explicitly identifying any house rules. We will adapt the full campaign portal for ’68 rather than maintain both original-Blades and ’68 rulesets or convert existing original-Blades campaign records: the games differ in character, crew, economy, and campaign-cycle concepts, and compatibility would spread variant handling and ambiguous conversions throughout the model. Supporting another ruleset or importing an older campaign later will require a separate design decision.

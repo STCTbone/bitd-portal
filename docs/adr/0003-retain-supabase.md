@@ -1,0 +1,3 @@
+# Retain Supabase for the ’68 adaptation
+
+We retain Supabase for persistence, no-email identity, realtime collaboration, and uploaded assets rather than migrate this existing portal to PocketBase or Convex. PocketBase simplifies a local server and Convex offers a different reactive model, but both require replacing working data, map transport, and media integrations while still implementing campaign authorization; repairing Supabase's bootstrap and confidentiality boundaries is the smaller change. Local reproducibility is part of the first handoff, and hosted-plan selection remains deferred because Supabase Free currently pauses after one inactive week; see [the backend comparison](../research/backend-options.md).
