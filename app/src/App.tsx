@@ -27,7 +27,8 @@ import { CharacterAvatar } from '@/components/CharacterAvatar'
 import { GameMap } from '@/components/GameMap'
 import { ScorePanel } from '@/components/ScorePanel'
 import { LoginGate } from '@/components/LoginGate'
-import { GameProvider, useGame } from '@/lib/store'
+import { CampaignLobby } from '@/components/CampaignLobby'
+import { useGame } from '@/lib/store'
 import { SessionProvider, useSession } from '@/lib/session'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn, displayName } from '@/lib/utils'
@@ -73,7 +74,7 @@ function OnlinePlayers({ players, characters }: { players: OnlinePlayer[]; chara
   )
 }
 
-function AppContent() {
+export function AppContent() {
   const {
     loading, loadError, onlinePlayers,
     campaignId,
@@ -556,15 +557,10 @@ function AppContent() {
 }
 
 function Root() {
-  const { session, sessionId } = useSession()
-  if (!session || !session.seat) {
-    return <LoginGate />
-  }
-  return (
-    <GameProvider campaignId={session.campaignId} seat={session.seat} sessionId={sessionId}>
-      <AppContent />
-    </GameProvider>
-  )
+  const { session, loading } = useSession()
+  if (loading) return <main className="access-page" role="status">Restoring campaign access…</main>
+  if (!session) return <LoginGate />
+  return <CampaignLobby key={`${session.campaignId}:${session.role}`} />
 }
 
 export default function App() {
