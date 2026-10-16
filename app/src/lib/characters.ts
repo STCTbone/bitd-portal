@@ -14,7 +14,17 @@ export interface HoundPet {
   name: string; kind: string; edges: string; flaws: string; abilities: string; notes: string
   weak: boolean; impaired: boolean; broken: boolean; armor: boolean
 }
-export interface CharacterDossier {
+export interface CharacterKey { name: string; hits: number }
+export interface CharacterDeadlock { name: string; formerKey: string; notes: string }
+export interface CharacterHarm { passing: string[]; major: string[]; critical: string[]; mortal: string[] }
+export interface CharacterHealing { progress: number; permanent: number }
+export interface CharacterCondition {
+  stress: number; stressCapacity: number; keyCapacity: number; keyCapacityReason: string
+  keys: CharacterKey[]; deadlocks: CharacterDeadlock[]; harm: CharacterHarm; healing: CharacterHealing
+  recoveryNotes: string; conditionNotes: string
+}
+export type ConditionPatch = Partial<Pick<CharacterCondition, 'stress' | 'keys' | 'deadlocks' | 'recoveryNotes' | 'conditionNotes'>> & { harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> }
+export interface CharacterDossier extends CharacterCondition {
   name: string; playbook: string; alias: string; playerName: string; look: string; wearing: string
   heritage: string; heritageDetails: string; background: string; backgroundDetails: string
   vice: string; viceHookup: string; notes: string; abilityNotes: string
@@ -24,7 +34,7 @@ export interface CharacterDossier {
 export interface CharacterRecord {
   id: string; campaign_id: string; owner_id: string | null; data: CharacterDossier; updated_at: string
 }
-export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'pet'>> & { pet?: Partial<HoundPet> }
+export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'pet' | 'harm' | 'healing' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> }
 
 /** Only accepted server snapshots enter this boundary. Polling never trusts peer state. */
 export function useCharacters(campaignId: string) {

@@ -75,6 +75,14 @@ Identity, action ratings, abilities, pet records, relationships and notes persis
 
 Character browser/API tests cover GM plus two player identities, ownership and cross-campaign denial, explicit claims, nested concurrent updates, source-specific Hound choices, live followers, rejected/offline saves, retry/discard, reload, deletion and a390px responsive viewport.
 
+### Character condition records
+
+Character dossiers track Keys (up to three hits each), separate Deadlocks with former-Key notes, Stress, four Harm levels, and a four-segment healing clock with recovery notes. Owners and GMs draft these edits, review the saved/proposed values, then explicitly confirm. Saturated tracks never silently clear Stress, award XP, remove Harm, retire a character, or alter action ratings. Recovery, crisis, survival, resistance and retirement remain deliberate table decisions. Sources: baseline playbooks v6 and the user-supplied Blades ’68 v1.0.1, pp.152–157,169–170; Get Back In There p.84.
+
+Ordinary sheets have nine Stress, four combined Key/Deadlock slots and Harm slots L1×2/L2×2/L3×1/L4×1. A GM can confirm a fifth Key slot for a published crew upgrade, recording its source; capacity cannot be reduced below occupied slots. Get Back In There supports one permanent healing segment, recorded distinctly from ordinary progress. On the Hound sheet, record its name in a Versatile ability before marking that segment. All these writes retain character-owner/GM authorization; capacity metadata cannot be changed through arbitrary dossier patches.
+
+For future character slices, the condition migration composes validation with the existing identity validator and merges Harm levels/healing subfields at the locked current row. Extend that chain and the playbook-specific defaults deliberately; do not replace a validator with a stale full copy. Keys and Deadlocks are each atomic list fields; competing saves to the same list use the last accepted write. Different Harm levels and healing subfields merge independently. Rejected drafts remain visible for retry or discard while other participants continue seeing saved state.
+
 ## Common crew dossier
 
 Campaign members can read the single shared crew. Current GM membership is required to create it or change it; direct table writes remain denied even to a GM. Creation explicitly chooses one of the six Blades ’68 types and starts at Tier 0, strong Hold, 0 Rep, and 2 stacks (book v1.0.1, p. 88). The form records changes deliberately; it does not infer advancement, tithe payments, faction changes, or resource resets.
