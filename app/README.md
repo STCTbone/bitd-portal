@@ -53,3 +53,11 @@ Then run `npm run backend:start` in that worktree; the configurator derives Dock
 - Realtime and storage access policies are separate from table RLS. The `maps` bucket is private and has no upload/read grants until its feature migration.
 
 Local configuration follows [Supabase CLI configuration](https://supabase.com/docs/guides/local-development/cli/config) and [anonymous identities](https://supabase.com/docs/guides/auth/auth-anonymous). The private-only tenant cache operation is pinned to the [Realtime source shipped by this CLI](https://github.com/supabase/realtime/blob/v2.143.4/lib/realtime/tenants/cache.ex).
+
+## Common crew dossier
+
+Campaign members can read the single shared crew. Current GM membership is required to create it or change it; direct table writes remain denied even to a GM. Creation explicitly chooses one of the six Blades ’68 types and starts at Tier 0, strong Hold, 0 Rep, and 2 stacks (book v1.0.1, p. 88). The form records changes deliberately; it does not infer advancement, tithe payments, faction changes, or resource resets.
+
+`create_crew(p_campaign, p_name, p_type)` returns the saved crew. `update_crew(p_campaign, p_patch, p_expected)` accepts only common dossier fields and requires exactly the edited keys in `p_expected`, containing their values when editing began. Under a row lock, disjoint edits merge; a stale edit to the same field returns a conflict. Read rows include a server `revision`. The browser shows only accepted snapshots while retaining unsaved field drafts, displays failed/conflicting saves, and offers an explicit reload that discards drafts. Permitted snapshots refresh every 1.8 seconds and immediately on focus/online; private peer broadcasts never supply durable data. Read requests begun before an accepted mutation cannot replace it.
+
+Crew abilities, upgrades, claims, cohorts, and crew-specific records are separate subsequent slices. Their migrations must extend the crew field validator rather than restore arbitrary JSON writes.
