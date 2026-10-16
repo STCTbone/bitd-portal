@@ -22,6 +22,10 @@ test('condition records use published capacities and preserve deliberate owner/G
   expect(saved.actions.consort).toBe(2)
   for (const c of [other, outsider]) expect((await c.rpc('patch_character', { p_character: id, p_patch: { stress: 0 } })).error).not.toBeNull()
   for (const patch of [{ keys: Array.from({ length: 5 }, () => ({ name: 'Fifth Key', hits: 0 })), deadlocks: [] }, { stress: 10 }, { stress: -1 }, { stress: 1.5 }, { stressCapacity: 100 }, { keyCapacity: 20 }, { keys: [{ name: 'Too marked', hits: 4 }] }, { deadlocks: [{ name: 'Fake', role: 'gm' }] }, { harm: { major: ['One', 'Two', 'Three'] } }, { harm: { hidden: 'secret' } }, { healing: { progress: 5 } }, { healing: { admin: true } }, { owner_id: 'forged' }, { playbook: 'Hull' }]) expect((await player.rpc('patch_character', { p_character: id, p_patch: patch })).error, JSON.stringify(patch)).not.toBeNull()
+  for (const patch of [
+    { healing: { progress: 0, permanent: 1 }, versatile: [{ name: 'Get Back In There', source: 'Veteran', notes: '' }] },
+    { abilities: ['Versatile'], healing: { progress: 0, permanent: 1 }, versatile: [{ name: 'Get Back In There', source: '', notes: '' }] },
+  ]) expect((await player.rpc('patch_character', { p_character: id, p_patch: patch })).error).not.toBeNull()
   expect((await player.rpc('set_character_key_capacity', { p_character: id, p_capacity: 5, p_reason: 'Crew upgrade' })).error).not.toBeNull()
   expect((await outsider.rpc('set_character_key_capacity', { p_character: id, p_capacity: 5, p_reason: 'Crew upgrade' })).error).not.toBeNull()
   expect((await gm.rpc('set_character_key_capacity', { p_character: id, p_capacity: 5, p_reason: 'Verified crew upgrade: one additional Key/Deadlock' })).error).toBeNull()

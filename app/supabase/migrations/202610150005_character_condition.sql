@@ -60,7 +60,9 @@ begin
  if jsonb_array_length(p_data->'keys') + jsonb_array_length(p_data->'deadlocks') > (p_data->>'keyCapacity')::integer then raise exception 'Keys and Deadlocks share this sheet’s capacity'; end if;
  if (p_data->'healing'->>'progress')::integer + (p_data->'healing'->>'permanent')::integer > 4 then raise exception 'Healing clock has four segments including permanent marks'; end if;
  if (p_data->'healing'->>'permanent')::integer > 0 and not (
-  (p_data->'abilities') ? 'Get Back In There' or exists(select 1 from jsonb_array_elements(p_data->'versatile') v where v->>'name' = 'Get Back In There')
+  (p_data->'abilities') ? 'Get Back In There' or (
+   (p_data->'abilities') ? 'Versatile' and exists(select 1 from jsonb_array_elements(p_data->'versatile') v where v->>'name' = 'Get Back In There' and length(trim(coalesce(v->>'source',''))) > 0)
+  )
  ) then raise exception 'Permanent segment requires Get Back In There; record its ability source'; end if;
 end $$;
 create function bitd.check_character_condition() returns trigger

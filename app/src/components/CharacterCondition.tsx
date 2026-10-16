@@ -36,7 +36,7 @@ export function CharacterCondition({ data, editable, patch, isGM, setKeyCapacity
   const text = (label: string, value: string, save: (value: string) => void, multiline = false) => <label key={label}>{label}{multiline ? <textarea aria-label={label} rows={3} value={value} maxLength={12000} onChange={e => save(e.target.value)} /> : <input aria-label={label} value={value} maxLength={12000} onChange={e => save(e.target.value)} />}</label>
   return <section aria-label="Condition records" className="condition-records">
     <h4>06 / Keys, Stress & Harm</h4>
-    <p className="dossier-source">Published baseline: Blades ’68 v1.0.1, pp. 152–157, 169–170; playbooks v6. Changes below stay in your draft until reviewed and confirmed.</p>
+    <p className="dossier-source">Published baseline: Blades ’68 v1.0.1, pp. 84, 152–157, 169–170; playbooks v6. Changes below stay in your draft until reviewed and confirmed.</p>
     <p>Keys share four slots with Deadlocks, unless a crew upgrade adds one. Across all Keys combined, earn at most 1 XP per session; three hit marks saturate a Key but do not stop its XP. Record XP separately. Turning a fully marked Key is declared before rolling; record the agreed Deadlock and Stress change together.</p>
     <p>At the last Stress box, resolve the crisis with your table. Four ordinary Deadlocks mean retirement; exceptions apply. These records do not clear Stress, replace Keys, retire a character, or award XP automatically.</p>
     <p className="condition-saved" aria-live="polite">Saved: {data.stress} / {data.stressCapacity} Stress · {data.keys.length} Keys · {data.deadlocks.length} Deadlocks · healing {data.healing.progress} + {data.healing.permanent} permanent / 4.</p>
