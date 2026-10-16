@@ -67,3 +67,11 @@ Identity, action ratings, abilities, pet records, relationships and notes persis
 - The character boundary fetches authorized snapshots every second and on focus/reconnect. It never accepts durable peer broadcasts. Failed text drafts stay visible with saved-value comparison, retry and discard; selection failures show the last accepted state. Other feature editors remain unmounted until converted.
 
 Character browser/API tests cover GM plus two player identities, ownership and cross-campaign denial, explicit claims, nested concurrent updates, source-specific Hound choices, live followers, rejected/offline saves, retry/discard, reload, deletion and a390px responsive viewport.
+
+## Common crew dossier
+
+Campaign members can read the single shared crew. Current GM membership is required to create it or change it; direct table writes remain denied even to a GM. Creation explicitly chooses one of the six Blades ’68 types and starts at Tier 0, strong Hold, 0 Rep, and 2 stacks (book v1.0.1, p. 88). The form records changes deliberately; it does not infer advancement, tithe payments, faction changes, or resource resets.
+
+`create_crew(p_campaign, p_name, p_type)` returns the saved crew. `update_crew(p_campaign, p_patch, p_expected)` accepts only common dossier fields and requires exactly the edited keys in `p_expected`, containing their values when editing began. Under a row lock, disjoint edits merge; a stale edit to the same field returns a conflict. Read rows include a server `revision`. The browser shows only accepted snapshots while retaining unsaved field drafts, displays failed/conflicting saves, and offers an explicit reload that discards drafts. Permitted snapshots refresh every 1.8 seconds and immediately on focus/online; private peer broadcasts never supply durable data. Read requests begun before an accepted mutation cannot replace it.
+
+Crew abilities, upgrades, claims, cohorts, and crew-specific records are separate subsequent slices. Their migrations must extend the crew field validator rather than restore arbitrary JSON writes.
