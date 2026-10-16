@@ -1,0 +1,22 @@
+.factions { margin-top: 1.5rem; width: min(1120px, 100%); }
+.faction-layout { display: grid; grid-template-columns: minmax(140px, 230px) minmax(0, 1fr); gap: 1.5rem; margin-top: 1rem; }
+.faction-layout nav { display: flex; flex-direction: column; gap: .4rem; max-height: 38rem; overflow-y: auto; }
+.faction-layout nav button { text-align: left; font-size: .9rem; padding: .65rem; }
+.faction-layout nav button[aria-pressed=true] { background: #a6edcb; color: #102c2a; }
+.faction-editor { min-width: 0; border-top: 4px solid #ef9e6d; padding-top: 1rem; }
+.faction-editor h3 { font-size: 1.55rem; margin-bottom: .5rem; }
+.faction-editor label,.factions > label { display: flex; flex-direction: column; gap: .35rem; margin: .7rem 0; }
+.faction-editor textarea { min-height: 5rem; resize: vertical; }
+.faction-editor input,.faction-editor select,.faction-editor textarea { width: 100%; padding: .65rem; border: 1px solid #aab3a0; border-radius: .25rem; background: #f8f5e8; color: #1f3435; font: inherit; }
+.faction-editor :disabled { opacity: .85; }
+.faction-columns { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .7rem; }
+.faction-source { font-size: .8rem; }
+@media(max-width: 650px) { .faction-layout { grid-template-columns: 1fr; }.faction-layout nav { max-height: 10rem; }.faction-columns { gap: .35rem; } }
+.faction-create { border-top: 1px solid #aab3a0; margin-top: 1.25rem; padding-top: 1rem; display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+.faction-create label { display: flex; flex-direction: column; gap: .4rem; flex: 1 1 180px; }
+.faction-delete { border-top: 1px solid #aab3a0; margin-top: 1.5rem; padding-top: .5rem; }
+.faction-delete label { display: flex; flex-direction: row; align-items: start; }
+.faction-delete input { width: auto; margin-top: .3rem; }
+.access-panel.factions { max-width: 70rem; }
+.factions .faction-delete input { width: auto; }
+.factions textarea:focus-visible,.factions select:focus-visible { outline: 3px solid #c33b2b; outline-offset: 3px; }
