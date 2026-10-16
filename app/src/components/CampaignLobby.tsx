@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useSession } from '@/lib/session'
 import { supabase } from '@/lib/supabase'
+import { CrewDossier } from './CrewDossier'
+import { FactionDossier } from './FactionDossier'
 import { CharacterDossiers } from './CharacterDossiers'
 
-/** Empty campaign landing. Features enter here only after their backend contract is migrated. */
+/** Authenticated campaign landing. Features enter here only after their backend contract is migrated. */
 export function CampaignLobby() {
   const { session, leaveCampaign } = useSession()
   const [invitations, setInvitations] = useState<{ player: string; gm: string } | null>(null)
@@ -36,7 +38,9 @@ export function CampaignLobby() {
       {error && <p role="alert" className="access-error">{error}</p>}
       <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
     </section>
+    <FactionDossier key={`${session.campaignId}:${session.role}`} />
     <CharacterDossiers />
+    <CrewDossier />
     <footer>Access is remembered in this browser. Keep your invitation to rejoin from another browser.</footer>
   </main>
 }
