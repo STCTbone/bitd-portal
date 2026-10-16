@@ -53,3 +53,11 @@ Then run `npm run backend:start` in that worktree; the configurator derives Dock
 - Realtime and storage access policies are separate from table RLS. The `maps` bucket is private and has no upload/read grants until its feature migration.
 
 Local configuration follows [Supabase CLI configuration](https://supabase.com/docs/guides/local-development/cli/config) and [anonymous identities](https://supabase.com/docs/guides/auth/auth-anonymous). The private-only tenant cache operation is pinned to the [Realtime source shipped by this CLI](https://github.com/supabase/realtime/blob/v2.143.4/lib/realtime/tenants/cache.ex).
+
+## Faction dossiers
+
+Campaign creation still adds no factions. A GM can deliberately initialize the 56-faction **Blades ’68 Player Gazette v4 (June 2026)** roster once the faction list is empty. Defaults preserve that source's Tier/Hold, provide brief original reference summaries, and start crew status at neutral. The Gazette and full-book faction lists differ in places; this roster explicitly uses the current player reference. Campaign edits are records of table decisions, with no automatic change to character backing relationships.
+
+GMs manage public descriptions, Tier, Hold, crew status, known information and the roster. Every campaign participant can edit shared notes. GM-private notes live separately from all player-readable faction data. A GM must explicitly enter the selected text and publish it to Known information. Editing Known information withdraws it from current views, but cannot make a participant forget already-read content.
+
+Faction updates use version-checked, field-limited RPCs. Concurrent stale edits are rejected instead of silently replacing newer notes. The interface retains the draft and offers a reload; a rejected save is visibly marked. Table writes cannot bypass these contracts. Snapshot replacement polls authorized reads every two seconds and refetches on focus/reconnect. This removes deleted or newly forbidden records and clears a GM notebook when authorization fails; previously authorized in-flight responses may take a poll interval to reconcile. Neither public nor private faction tables enter raw realtime publications, and no durable faction state is sent through peer broadcasts. No faction snapshots are stored in browser persistence.
