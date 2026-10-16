@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useSession } from '@/lib/session'
 import { ACTION_GROUPS, ECHO_PET_CHOICES, HOUND_ABILITIES, useCharacters, type CharacterPatch, type CharacterRecord } from '@/lib/characters'
 import { DossierField } from './DossierField'
+import { CharacterCondition } from './CharacterCondition'
 import './dossier.css'
 
 const HERITAGES = ['Akoros', 'The Dagger Isles', 'Iruvia', 'Severos', 'Tycheros', 'USC']
@@ -48,7 +49,7 @@ export function CharacterDossiers() {
       <button disabled={busy || !name.trim()}>Create Hound</button>
     </form>
     {character && <>
-      <Dossier key={character.id} character={character} editable={session!.role === 'gm' || character.owner_id === session!.userId} patch={changes => patch(character.id, changes)} />
+      <Dossier key={character.id} character={character} editable={session!.role === 'gm' || character.owner_id === session!.userId} patch={changes => patch(character.id, changes)} isGM={session!.role === 'gm'} setKeyCapacity={async (capacity, reason) => { await mutate('set_character_key_capacity', { p_character: character.id, p_capacity: capacity, p_reason: reason }) }} />
       {(session!.role === 'gm' || character.owner_id === session!.userId) && <div className="dossier-danger">
         {!confirmDelete ? <button onClick={() => setConfirmDelete(true)}>Delete character</button> : <><p>Delete {character.data.name} permanently? This cannot be undone.</p><button disabled={busy} onClick={() => void action('delete_character', character.id)}>Confirm delete {character.data.name}</button><button onClick={() => setConfirmDelete(false)}>Keep character</button></>}
       </div>}
@@ -56,7 +57,7 @@ export function CharacterDossiers() {
   </section>
 }
 
-function Dossier({ character, editable, patch }: { character: CharacterRecord; editable: boolean; patch: (changes: CharacterPatch) => Promise<void> }) {
+function Dossier({ character, editable, patch, isGM, setKeyCapacity }: { character: CharacterRecord; editable: boolean; patch: (changes: CharacterPatch) => Promise<void>; isGM: boolean; setKeyCapacity: (capacity: number, reason: string) => Promise<void> }) {
   const d = character.data
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
@@ -80,6 +81,7 @@ function Dossier({ character, editable, patch }: { character: CharacterRecord; e
     </section>
     <section aria-label="Loyal clever pet"><h4>04 / Loyal, clever pet</h4><p>Expert cohort · Hunter. Quality is crew Tier +1 when Hunter applies. Record edges, flaws, conditions and abilities; a playbook cohort cannot take secondary scores.</p><div className="dossier-grid">{(['name', 'kind', 'edges', 'flaws', 'abilities', 'notes'] as const).map(field => <DossierField key={field} label={`Pet ${field}`} value={d.pet[field]} disabled={!editable} save={value => patch({ pet: { [field]: value } })} />)}</div><div className="dossier-options">{(['weak', 'impaired', 'broken', 'armor'] as const).map(field => <label key={field} className="dossier-check"><input type="checkbox" checked={d.pet[field]} disabled={!editable || pending} onChange={e => void change({ pet: { [field]: e.target.checked } })} />Pet {field}</label>)}</div></section>
     <section aria-label="Relationships"><h4>05 / Shady friends & other relationships</h4><p>Use any friend, rival or contact, including your own. The current Hound v6 sheet suggests two close friends and one rival; the older creation v3 reference suggests one close friend. No fixed count is imposed.</p><p>Suggestions: Vanden · Mira · Hendrik · Chatterley · Zam.</p>{d.relationships.map((relationship, index) => <div className="dossier-grid dossier-row" key={index}>{(['name', 'relationship', 'notes'] as const).map(field => <DossierField key={field} label={`Relationship ${index + 1} ${field === 'relationship' ? 'kind' : field}`} value={relationship[field]} disabled={!editable} suggestions={field === 'relationship' ? ['Close friend', 'Rival', 'Contact', 'Intimate bond'] : undefined} save={value => patch({ relationships: d.relationships.map((r, i) => i === index ? { ...r, [field]: value } : r) })} />)}{editable && <button disabled={pending} onClick={() => void change({ relationships: d.relationships.filter((_, i) => i !== index) })}>Remove relationship {index + 1}</button>}</div>)}{editable && <button disabled={pending} onClick={() => void change({ relationships: [...d.relationships, { name: '', relationship: '', notes: '' }] })}>Add relationship</button>}</section>
-    <section aria-label="General notes"><h4>06 / Case notes</h4>{text('General notes', 'notes', undefined, true)}</section>
+    <CharacterCondition data={d} editable={editable} patch={patch} isGM={isGM} setKeyCapacity={setKeyCapacity} />
+    <section aria-label="General notes"><h4>07 / Case notes</h4>{text('General notes', 'notes', undefined, true)}</section>
   </article>
 }
