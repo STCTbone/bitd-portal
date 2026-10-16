@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSession } from '@/lib/session'
 import { supabase } from '@/lib/supabase'
+import { CampaignClocks } from './CampaignClocks'
 import { CrewDossier } from './CrewDossier'
 import { FactionDossier } from './FactionDossier'
 import { CharacterDossiers } from './CharacterDossiers'
@@ -41,6 +42,7 @@ export function CampaignLobby() {
     <FactionDossier key={`${session.campaignId}:${session.role}`} />
     <CharacterDossiers />
     <CrewDossier />
+    <CampaignClocks />
     <footer>Access is remembered in this browser. Keep your invitation to rejoin from another browser.</footer>
   </main>
 }
