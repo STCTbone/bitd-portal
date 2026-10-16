@@ -77,3 +77,11 @@ app/
       demo-data.ts     # starter campaign seed
   supabase/            # schema / RPC reference
 ```
+
+### Personal Business and Planning Meeting
+
+The campaign-cycle workspace keeps editable individual Personal Business activities, opportunity sketches, and selected score plans. Activities follow current character owner/GM authority. Members can propose and edit their own opportunities; GMs set target Tier, difficulty and potential payout and select the agreed primary score. A sketch needs only a client, target or operation; target Tier is required at final selection. Opportunity edits never overwrite an already-selected score snapshot. Selecting a retained opportunity again corrects the current primary selection without creating a duplicate score.
+
+`campaign_cycles` keeps `phase`, `selected_score_id` and server `revision`. `set_campaign_phase` is GM-only and revision checked; every phase is correctable and changing phase has no other effects. `select_opportunity` creates an independent `scores` row (unique `opportunity_id`) and updates the current selection atomically. Retries return the same score. Previously unconverted score rows without an opportunity remain unreadable. Member `update_score_plan` allows only approach, opening gambit, Quiet/Loud, engagement details/result and shared planning notes. Score lifecycle and consequential outcomes use their own authorized operations.
+
+`personal_business` child rows, `opportunities` and `scores` use narrow authenticated RPCs; direct table writes remain denied. Updates compare the expected values of exactly the edited fields under a row lock, so disjoint edits merge while stale same-field edits reject. Inputs retain failed/conflicting drafts with visible errors, retry by saving again and explicit reload/discard. Authorized full snapshots refresh every 1.4 seconds and on focus/online; mutations invalidate earlier reads. No durable peer messages are accepted. Rewards, Heat, spending, recovery and load/Armor resets are never applied by these planning controls. Guidance identifies Blades ’68 v1.0.1 pp.164–171 and180–189, excluding Deep Cuts.
