@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { makeDemoData, type CampaignData } from './demo-data'
+import { type CampaignData } from './demo-data'
 import type { Character, Crew, Clock, Faction, Score, MapToken, Media, CodexEntry } from './types'
 
 // The Supabase client is configured with the `bitd` schema. Each entity table
@@ -8,26 +8,15 @@ import type { Character, Crew, Clock, Faction, Score, MapToken, Media, CodexEntr
 export interface CampaignRow {
   id: string
   name: string
-  join_code: string
   map_image_url: string | null
 }
 
 type EntityTable = 'characters' | 'crews' | 'clocks' | 'factions' | 'scores' | 'map_tokens' | 'media' | 'codex'
 
-export async function findCampaignByCode(code: string): Promise<CampaignRow | null> {
-  const { data, error } = await supabase
-    .from('campaigns')
-    .select('id,name,join_code,map_image_url')
-    .eq('join_code', code)
-    .maybeSingle()
-  if (error) throw error
-  return (data as CampaignRow) ?? null
-}
-
 export async function getCampaign(id: string): Promise<CampaignRow | null> {
   const { data, error } = await supabase
     .from('campaigns')
-    .select('id,name,join_code,map_image_url')
+    .select('id,name,map_image_url')
     .eq('id', id)
     .maybeSingle()
   if (error) throw error
@@ -153,31 +142,5 @@ export async function uploadMediaFile(campaignId: string, file: File): Promise<s
   return supabase.storage.from('maps').getPublicUrl(path).data.publicUrl
 }
 
-// Push a fresh demo dataset into a campaign. Used the first time a campaign
-// is opened and has no characters yet.
-async function seedCampaign(campaignId: string): Promise<CampaignData> {
-  const d = makeDemoData(campaignId)
-  await Promise.all([
-    saveEntities('characters', campaignId, d.characters),
-    d.crew ? saveEntities('crews', campaignId, [d.crew]) : Promise.resolve(),
-    saveEntities('clocks', campaignId, d.clocks),
-    saveEntities('factions', campaignId, d.factions),
-    saveEntities('scores', campaignId, [
-      ...(d.currentScore ? [d.currentScore] : []),
-      ...d.scoreHistory,
-    ]),
-    saveEntities('map_tokens', campaignId, d.mapTokens),
-  ])
-  return d
-}
-
-export async function loadOrSeedCampaign(campaignId: string): Promise<CampaignData> {
-  const data = await loadCampaignData(campaignId)
-  // Only seed a genuinely empty campaign. Gating on the crew as well means a
-  // campaign that has a crew but no characters yet (e.g. PCs not entered yet)
-  // won't get clobbered with demo data.
-  if (data.characters.length === 0 && data.crew === null) {
-    return seedCampaign(campaignId)
-  }
-  return data
-}
+// Compatibility entry point; fresh campaigns must never seed implicitly.
+export const loadOrSeedCampaign = loadCampaignData
