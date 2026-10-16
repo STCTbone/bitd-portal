@@ -1,0 +1,151 @@
+import { test, expect } from '@playwright/test'
+import { createClient } from '@supabase/supabase-js'
+
+const url = process.env.VITE_SUPABASE_URL!
+const key = process.env.VITE_SUPABASE_ANON_KEY!
+if (!url || !['127.0.0.1', 'localhost'].includes(new URL(url).hostname)) throw new Error('Behavior tests require local Supabase')
+const client = () => createClient(url, key, { db: { schema: 'bitd' }, auth: { persistSession: false, autoRefreshToken: false } })
+
+test('an owned Hound dossier persists and accepts only authorized field changes', async () => {
+  const gm = client(), player = client(), second = client(), outsider = client()
+  for (const c of [gm, player, second, outsider]) await c.auth.signInAnonymously()
+  const campaign = (await gm.rpc('create_campaign', { p_name: 'Hound records' })).data.id
+  const invite = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data.player
+  for (const c of [player, second]) await c.rpc('join_campaign', { p_invitation: invite })
+  const created = await player.rpc('create_character', { p_campaign: campaign, p_name: 'Reed' })
+  expect(created.error).toBeNull()
+  const character = created.data
+  expect(character.owner_id).toBe((await player.auth.getUser()).data.user!.id)
+  expect(character.data.playbook).toBe('Hound')
+  expect(character.data.actions).toMatchObject({ survey: 1, consort: 2, hunt: 0 })
+  expect((await second.from('characters').select('*').eq('id', character.id)).data).toHaveLength(1)
+  expect((await outsider.from('characters').select('*').eq('id', character.id)).data).toEqual([])
+  for (const c of [second, outsider]) {
+    expect((await c.rpc('patch_character', { p_character: character.id, p_patch: { alias: 'Forged' } })).error).not.toBeNull()
+    expect((await c.rpc('claim_character', { p_character: character.id })).error).not.toBeNull()
+    expect((await c.rpc('delete_character', { p_character: character.id })).error).not.toBeNull()
+  }
+  for (const patch of [{ owner_id: crypto.randomUUID() }, { campaign_id: campaign }, { role: 'gm' }, { playbook: 'Vampire' }, { actions: { hunt: 6 } }, { actions: { forged: 2 } }, { abilities: ['Original Hound ability'] }, { pet: { forged: true } }]) {
+    expect((await player.rpc('patch_character', { p_character: character.id, p_patch: patch })).error).not.toBeNull()
+  }
+  expect((await player.from('characters').update({ owner_id: (await second.auth.getUser()).data.user!.id }).eq('id', character.id)).error).not.toBeNull()
+  expect((await player.from('characters').insert({ campaign_id: campaign, data: {} })).error).not.toBeNull()
+  const edits = await Promise.all([
+    player.rpc('patch_character', { p_character: character.id, p_patch: { alias: 'Sundog', actions: { hunt: 2 }, pet: { name: 'Comet' } } }),
+    gm.rpc('patch_character', { p_character: character.id, p_patch: { wearing: 'Orange coat', actions: { study: 1 }, pet: { edges: 'Keen' } } }),
+  ])
+  for (const edit of edits) expect(edit.error).toBeNull()
+  const saved = (await player.from('characters').select('*').eq('id', character.id).single()).data!
+  expect(saved.data).toMatchObject({ alias: 'Sundog', wearing: 'Orange coat', actions: { hunt: 2, study: 1, survey: 1, consort: 2 }, pet: { name: 'Comet', edges: 'Keen' } })
+  expect((await player.rpc('delete_character', { p_character: character.id })).error).toBeNull()
+  expect((await gm.from('characters').select('*').eq('id', character.id)).data).toEqual([])
+  const unclaimed = await gm.rpc('create_character', { p_campaign: campaign, p_name: 'Available Hound', p_unclaimed: true })
+  expect(unclaimed.error).toBeNull()
+  expect(unclaimed.data.owner_id).toBeNull()
+  expect((await outsider.rpc('claim_character', { p_character: unclaimed.data.id })).error).not.toBeNull()
+  const claims = await Promise.all([player, second].map(c => c.rpc('claim_character', { p_character: unclaimed.data.id })))
+  expect(claims.filter(c => !c.error)).toHaveLength(1)
+  expect((await player.rpc('create_character', { p_campaign: campaign, p_name: 'Unclaimed forgery', p_unclaimed: true })).error).not.toBeNull()
+  expect((await outsider.rpc('create_character', { p_campaign: campaign, p_name: 'Forged' })).error).not.toBeNull()
+})
+
+test('GM and two players follow saved dossiers live, retain distinct edits, and recover after a failed save', async ({ browser }) => {
+  const contexts = await Promise.all([browser.newContext(), browser.newContext(), browser.newContext()])
+  const [gm, player, observer] = await Promise.all(contexts.map(c => c.newPage()))
+  await gm.goto('/')
+  await gm.getByLabel('Campaign name').fill('Electric dossiers')
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  const invitation = await gm.getByLabel('Player invitation').inputValue()
+  for (const page of [player, observer]) {
+    await page.goto('/')
+    await page.getByLabel('Invitation', { exact: true }).fill(invitation)
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await expect(page.getByTestId('campaign-role')).toHaveText('Player')
+  }
+  await player.getByLabel('New character name').fill('Reed')
+  await player.getByRole('button', { name: 'Create Hound', exact: true }).click()
+  for (const page of [gm, observer]) {
+    await page.getByRole('button', { name: 'Open Reed', exact: true }).click()
+    await expect(page.getByLabel('Character name', { exact: true })).toHaveValue('Reed')
+  }
+  await expect(observer.getByLabel('Alias', { exact: true })).toBeDisabled()
+  await expect(observer.getByRole('button', { name: 'Delete character', exact: true })).toHaveCount(0)
+  await Promise.all([player.getByLabel('Alias', { exact: true }).fill('Sundog'), gm.getByLabel('Wearing', { exact: true }).fill('Orange coat')])
+  await Promise.all([player.getByLabel('Alias', { exact: true }).blur(), gm.getByLabel('Wearing', { exact: true }).blur()])
+  await expect(observer.getByLabel('Alias', { exact: true })).toHaveValue('Sundog')
+  await expect(observer.getByLabel('Wearing', { exact: true })).toHaveValue('Orange coat')
+  await player.getByLabel('Hunt rating').selectOption('2')
+  await player.getByLabel('Echo Pet', { exact: true }).click()
+  await expect(player.getByLabel('Echo Pet', { exact: true })).toBeChecked()
+  await player.getByLabel('time-glitching', { exact: true }).click()
+  await expect(player.getByLabel('time-glitching', { exact: true })).toBeChecked()
+  await player.getByLabel('mind-link', { exact: true }).click()
+  await expect(player.getByLabel('mind-link', { exact: true })).toBeChecked()
+  await player.getByLabel('Pet name', { exact: true }).fill('Comet')
+  await player.getByLabel('Pet name', { exact: true }).blur()
+  await player.getByRole('button', { name: 'Add relationship', exact: true }).click()
+  await player.getByLabel('Relationship 1 name').fill('Mira')
+  await player.getByLabel('Relationship 1 name').blur()
+  await player.getByLabel('Relationship 1 kind').fill('Close friend')
+  await player.getByLabel('Relationship 1 kind').blur()
+  await expect(observer.getByLabel('Pet name', { exact: true })).toHaveValue('Comet')
+  await expect(observer.getByLabel('Relationship 1 kind')).toHaveValue('Close friend')
+  await expect(observer.getByLabel('mind-link', { exact: true })).toBeChecked()
+  await player.getByLabel('Character name', { exact: true }).fill('')
+  await player.getByLabel('Character name', { exact: true }).blur()
+  await expect(player.getByRole('alert').filter({ hasText: 'Character name was not saved' })).toBeVisible()
+  await expect(observer.getByLabel('Character name', { exact: true })).toHaveValue('Reed')
+  await player.getByRole('button', { name: 'Discard Character name edit', exact: true }).click()
+  await expect(player.getByLabel('Character name', { exact: true })).toHaveValue('Reed')
+  await contexts[1].setOffline(true)
+  await player.getByLabel('Alias', { exact: true }).fill('Lost signal')
+  await player.getByLabel('Alias', { exact: true }).blur()
+  await expect(player.getByRole('alert').filter({ hasText: 'Alias was not saved' })).toBeVisible()
+  await expect(observer.getByLabel('Alias', { exact: true })).toHaveValue('Sundog')
+  await contexts[1].setOffline(false)
+  await player.getByRole('button', { name: 'Retry Alias', exact: true }).click()
+  await expect(observer.getByLabel('Alias', { exact: true })).toHaveValue('Lost signal')
+  await player.reload()
+  await player.getByRole('button', { name: 'Open Reed', exact: true }).click()
+  await expect(player.getByLabel('Alias', { exact: true })).toHaveValue('Lost signal')
+  await expect(player.getByLabel('Wearing', { exact: true })).toHaveValue('Orange coat')
+  await expect(player.getByLabel('Hunt rating')).toHaveValue('2')
+  await expect(player.getByLabel('time-glitching', { exact: true })).toBeChecked()
+  await expect(player.getByLabel('mind-link', { exact: true })).toBeChecked()
+  await player.screenshot({ path: 'test-results/dossier-desktop.png', fullPage: true })
+  await player.setViewportSize({ width: 390, height: 844 })
+  await expect(player.getByLabel('Character name', { exact: true })).toBeVisible()
+  expect(await player.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await player.screenshot({ path: 'test-results/dossier-mobile.png', fullPage: true })
+  await player.getByRole('button', { name: 'Delete character', exact: true }).click()
+  await player.getByRole('button', { name: 'Confirm delete Reed', exact: true }).click()
+  await expect(observer.getByRole('button', { name: 'Open Reed', exact: true })).toHaveCount(0)
+  for (const context of contexts) await context.close()
+})
+
+test('a player claims only a deliberately available Hound and the GM retains edit authority', async ({ browser }) => {
+  const gm = client()
+  await gm.auth.signInAnonymously()
+  const campaign = (await gm.rpc('create_campaign', { p_name: 'Available dossiers' })).data.id
+  const invitation = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data.player
+  const available = (await gm.rpc('create_character', { p_campaign: campaign, p_name: 'Available', p_unclaimed: true })).data
+  const page = await browser.newPage()
+  await page.goto('/')
+  await page.getByLabel('Invitation', { exact: true }).fill(invitation)
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Open Available', exact: true }).click()
+  await expect(page.getByLabel('Alias', { exact: true })).toBeDisabled()
+  await page.getByRole('button', { name: 'Claim Available', exact: true }).click()
+  await expect(page.getByLabel('Alias', { exact: true })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Claim Available', exact: true })).toHaveCount(0)
+  await page.getByLabel('Alias', { exact: true }).fill('Mine now')
+  await page.getByLabel('Alias', { exact: true }).blur()
+  await expect.poll(async () => (await gm.from('characters').select('data').eq('id', available.id).single()).data?.data.alias).toBe('Mine now')
+  expect((await gm.rpc('patch_character', { p_character: available.id, p_patch: { wearing: 'Silver boots' } })).error).toBeNull()
+  await expect(page.getByLabel('Wearing', { exact: true })).toHaveValue('Silver boots')
+  await page.reload()
+  await page.getByRole('button', { name: 'Open Available', exact: true }).click()
+  await expect(page.getByLabel('Alias', { exact: true })).toBeEnabled()
+  await expect(page.getByLabel('Alias', { exact: true })).toHaveValue('Mine now')
+  await page.close()
+})

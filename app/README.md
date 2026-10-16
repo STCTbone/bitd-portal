@@ -54,6 +54,20 @@ Then run `npm run backend:start` in that worktree; the configurator derives Dock
 
 Local configuration follows [Supabase CLI configuration](https://supabase.com/docs/guides/local-development/cli/config) and [anonymous identities](https://supabase.com/docs/guides/auth/auth-anonymous). The private-only tenant cache operation is pinned to the [Realtime source shipped by this CLI](https://github.com/supabase/realtime/blob/v2.143.4/lib/realtime/tenants/cache.ex).
 
+## Character dossiers
+
+The authenticated campaign workspace now supports Hound dossiers. Campaign members may read shared dossiers; their owner and the GM may edit or delete them. A GM may explicitly leave a new character unclaimed; a campaign member can claim it once. Claiming an already-owned character does not transfer ownership. Recovery/reassignment belongs to its separate feature.
+
+Identity, action ratings, abilities, pet records, relationships and notes persist through protected RPCs. The Hound baseline is the official playbooks v6 and the supplied Blades ’68 v1.0.1 book, pp.22–28. Creation guidance is visible, while action and ability adjustments remain deliberate records. Hound starts with Survey1/Consort2; no original Hound defaults or original-game ability descriptions are used. The current sheet's two-close-friend suggestion and the older creation reference's one-close-friend suggestion are identified without enforcing a count.
+
+- `create_character(p_campaign,p_name,p_unclaimed=false)` derives campaign membership and ownership on the server.
+- `claim_character(p_character)` atomically claims an unowned campaign character; `delete_character(p_character)` requires owner or GM.
+- `patch_character(p_character,p_patch)` accepts only explicit dossier keys. It rejects arbitrary metadata, campaign/owner/role/playbook changes, invalid action names/ratings, and unknown ability/pet fields. Future character tickets extend the validator deliberately rather than reopening generic writes.
+- Reads return `{id,campaign_id,owner_id,data,updated_at}` under membership RLS. Column metadata is immutable to ordinary table writes. Each patch locks the current row, merges only submitted fields, and merges individual `actions` and `pet` keys so distinct concurrent edits survive. Relationship and Versatile lists are each a single edited field; competing edits to the same list use the last accepted save.
+- The character boundary fetches authorized snapshots every second and on focus/reconnect. It never accepts durable peer broadcasts. Failed text drafts stay visible with saved-value comparison, retry and discard; selection failures show the last accepted state. Other feature editors remain unmounted until converted.
+
+Character browser/API tests cover GM plus two player identities, ownership and cross-campaign denial, explicit claims, nested concurrent updates, source-specific Hound choices, live followers, rejected/offline saves, retry/discard, reload, deletion and a390px responsive viewport.
+
 ## Common crew dossier
 
 Campaign members can read the single shared crew. Current GM membership is required to create it or change it; direct table writes remain denied even to a GM. Creation explicitly chooses one of the six Blades ’68 types and starts at Tier 0, strong Hold, 0 Rep, and 2 stacks (book v1.0.1, p. 88). The form records changes deliberately; it does not infer advancement, tithe payments, faction changes, or resource resets.
