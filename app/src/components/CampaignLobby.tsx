@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from '@/lib/session'
 import { supabase } from '@/lib/supabase'
 import { FactionDossier } from './FactionDossier'
+import { CharacterDossiers } from './CharacterDossiers'
 
 /** Empty campaign landing. Features enter here only after their backend contract is migrated. */
 export function CampaignLobby() {
@@ -23,8 +24,8 @@ export function CampaignLobby() {
   return <main className="access-page">
     <div className="access-brand"><span>BLADES ’68 / CAMPAIGN DOSSIER</span><h1>{session.campaignName}</h1><p data-testid="campaign-role">{session.role === 'gm' ? 'Game Master' : 'Player'}</p></div>
     <section className="access-panel" aria-label="Campaign overview">
-      <p className="access-kicker">FRESH CAMPAIGN</p><h2>Your campaign is empty.</h2>
-      <p>No sample characters, crew, factions, or clocks have been added.</p>
+      <p className="access-kicker">CAMPAIGN ACCESS</p><h2>Your campaign workspace</h2>
+      <p>Fresh campaigns start without sample characters, crew, factions, or clocks.</p>
       {session.role === 'gm' && invitations && <div className="invitation-list">
         <label htmlFor="player-invite">Player invitation</label>
         <input id="player-invite" readOnly value={invitations.player} onFocus={event => event.target.select()} />
@@ -37,6 +38,7 @@ export function CampaignLobby() {
       <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
     </section>
     <FactionDossier key={`${session.campaignId}:${session.role}`} />
+    <CharacterDossiers />
     <footer>Access is remembered in this browser. Keep your invitation to rejoin from another browser.</footer>
   </main>
 }
