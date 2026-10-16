@@ -22,3 +22,13 @@
 .crew-dossier .crew-save-status { color:#164b47; font-weight:700; margin:1rem 0; }
 .crew-dossier footer { color:#3b5b62; font-size:.8rem; line-height:1.5; border-top:1px solid #a6aea0; margin:1.5rem 0 0; padding-top:1rem; }
 .crew-create { display:grid; gap:1rem; max-width:38rem; margin-top:1rem; }
+.crew-tools { margin-top:2rem; border-top:3px solid #db684f; padding-top:1rem; }
+.crew-tool-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr)); gap:.8rem; padding:1rem 0; align-items:end; border-bottom:1px solid #a6aea0; margin-bottom:1rem; }
+.crew-tools h3 { font-size:1.35rem; margin:1.5rem 0 1rem; }
+.crew-tools h4 { font-size:1.1rem; margin:1.5rem 0 .75rem; }
+.crew-claims { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr)); gap:1rem; }
+.crew-dossier .crew-checkbox { display:flex; flex-direction:row; align-items:center; gap:.7rem; min-height:46px; }
+.crew-dossier .crew-checkbox input { width:24px; min-height:24px; flex-shrink:0; }
+.crew-dossier .crew-cohort { margin:1.5rem 0; border:2px solid #38636b; padding:1rem; }
+.crew-cohort > small { overflow-wrap:anywhere; }
+.crew-cohort button { margin-top:1rem; }
