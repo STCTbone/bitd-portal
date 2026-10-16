@@ -40,3 +40,12 @@
 .dossier-danger { color:#fff4de; border-top:2px solid #e27254; margin-top:1.5rem; padding-top:1rem; }
 .dossier-danger button { background:#9c382c; border-color:#ffc7a8; margin-right:.7rem; }
 @media(max-width:700px) { .dossier-grid,.dossier-actions { grid-template-columns:1fr; } .dossier-create { align-items:stretch; flex-direction:column; } .dossier-create>label:first-child { flex-basis:auto; } .dossier-title { padding:1rem; } }
+.condition-records h5 { font-weight:800; font-size:1.1rem; margin:1.5rem 0 .5rem; }
+.condition-records label { font-weight:700; display:block; }
+.condition-records fieldset:disabled { opacity:1; }
+.condition-records button { margin:.5rem .5rem .5rem 0; }
+.condition-saved { border-left:5px solid #17646b; padding:.7rem 1rem; background:#d6e8db; }
+.condition-review { background:#e4eee2; padding:1rem; margin:1rem 0; border:3px solid #17646b; }
+.condition-review dl>div { margin:.7rem 0; border-bottom:1px solid #8aaba1; padding-bottom:.6rem; }
+.condition-review dt { font-weight:800; }
+.condition-review dd { margin:.3rem 0; white-space:pre-wrap; }
