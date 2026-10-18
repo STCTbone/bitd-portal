@@ -77,6 +77,13 @@ test('flexible planning preserves distinct opportunities and selected score with
   const selection = await gm.rpc('select_opportunity', { p_opportunity: ids[0], p_revision: 2, p_cycle_revision: 6 })
   expect(selection.error).toBeNull()
   const score = selection.data
+  const privateClock = await gm.rpc('create_clock', { p_campaign: campaign, p_data: { name: 'SECRET score mandate', scope: 'score', scoreId: score.id } })
+  const publicClock = await gm.rpc('create_clock', { p_campaign: campaign, p_data: { name: 'Loading bay guards', scope: 'score', scoreId: score.id, visible_to_players: true } })
+  expect(privateClock.error).toBeNull(); expect(publicClock.error).toBeNull()
+  const permittedClocks = await player.from('clocks').select('*').eq('campaign_id', campaign)
+  expect(permittedClocks.data).toHaveLength(1)
+  expect(permittedClocks.data![0]).toMatchObject({ id: publicClock.data.id, data: { scoreId: score.id, visible_to_players: true } })
+  expect(JSON.stringify(permittedClocks)).not.toContain('SECRET')
   expect(score.id).not.toBe(ids[0]); expect(score.opportunity_id).toBe(ids[0]); expect(score.data).toMatchObject({ status: 'planned', approach: '', loadout: '', engagementDetails: '', opportunity: { client: 'SCORPION', targetTier: 2, payout: 6 } })
   // Retry returns the same selected record, never an extra score or consequence.
   expect((await gm.rpc('select_opportunity', { p_opportunity: ids[0], p_revision: 2, p_cycle_revision: 6 })).data.id).toBe(score.id)
@@ -149,6 +156,8 @@ test('table records Personal Business, compares opportunities and reloads a shar
   await opportunity.getByRole('button', { name: 'Select as primary score', exact: true }).click()
   const plan = own.getByRole('article', { name: 'Score plan · SCORPION', exact: true })
   await expect(plan).toBeVisible()
+  await expect(plan.getByLabel('Approach', { exact: true }).locator('option')).toHaveText(['Choose when ready', 'Assault', 'Deception', 'Paranormal', 'Social', 'Speed', 'Stealth'])
+  await expect(plan.getByLabel('Score loadout', { exact: true }).locator('option')).toHaveText(['Choose when ready', 'Quiet', 'Loud'])
   await plan.getByLabel('Approach', { exact: true }).selectOption('Speed')
   await plan.getByLabel('Opening gambit', { exact: true }).fill('Hit the loading bay at shift change')
   await plan.getByLabel('Score loadout', { exact: true }).selectOption('Quiet')
@@ -222,7 +231,11 @@ test('a GM can correct the primary selection without duplicating selected score 
   const { gm, campaign } = await table()
   const first = (await gm.rpc('create_opportunity', { p_campaign: campaign, p_data: { client: 'First client', targetTier: 1 } })).data
   const second = (await gm.rpc('create_opportunity', { p_campaign: campaign, p_data: { target: 'Second target', targetTier: 2 } })).data
-  const selected = await gm.rpc('select_opportunity', { p_opportunity: first.id, p_revision: 1, p_cycle_revision: 1 })
+  const [selected, retry] = await Promise.all([
+    gm.rpc('select_opportunity', { p_opportunity: first.id, p_revision: 1, p_cycle_revision: 1 }),
+    gm.rpc('select_opportunity', { p_opportunity: first.id, p_revision: 1, p_cycle_revision: 1 }),
+  ])
+  expect(retry.error).toBeNull(); expect(retry.data.id).toBe(selected.data.id)
   const replacement = await gm.rpc('select_opportunity', { p_opportunity: second.id, p_revision: 1, p_cycle_revision: 2 })
   expect(selected.error).toBeNull(); expect(replacement.error).toBeNull()
   const correction = await gm.rpc('select_opportunity', { p_opportunity: first.id, p_revision: 1, p_cycle_revision: 3 })
