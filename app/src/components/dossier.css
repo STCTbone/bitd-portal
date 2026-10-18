@@ -49,3 +49,7 @@
 .condition-review dl>div { margin:.7rem 0; border-bottom:1px solid #8aaba1; padding-bottom:.6rem; }
 .condition-review dt { font-weight:800; }
 .condition-review dd { margin:.3rem 0; white-space:pre-wrap; }
+.equipment-item { border:1px solid #8aaba1; padding:.6rem; margin:.5rem 0; }
+.equipment-item summary { cursor:pointer; font-weight:700; min-height:32px; }
+.condition-records .dossier-check { display:flex; }
+.condition-records .dossier-row>button { align-self:start; justify-self:start; }

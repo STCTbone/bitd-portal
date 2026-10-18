@@ -24,7 +24,20 @@ export interface CharacterCondition {
   recoveryNotes: string; conditionNotes: string
 }
 export type ConditionPatch = Partial<Pick<CharacterCondition, 'stress' | 'keys' | 'deadlocks' | 'recoveryNotes' | 'conditionNotes'>> & { harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> }
-export interface CharacterDossier extends CharacterCondition {
+export interface CharacterItem { name: string; load: number; quantity: number; uses: number; carried: boolean; source: string; notes: string }
+export interface CharacterResource { name: string; used: number; capacity: number; source: string; notes: string }
+export interface CharacterLoadout { mode: 'Quiet' | 'Loud'; carriedStacks: number }
+export interface CharacterArmor { kind: 'none' | 'armor' | 'light' | 'built-in'; worn: boolean; totaled: boolean; source: string; notes: string }
+export interface CharacterWealth { stacks: number; bank: number }
+export interface CharacterXP { playbook: number; insight: number; prowess: number; resolve: number }
+export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; actionMax: number; harmSlots: Record<keyof CharacterHarm, number>; source: string }
+export interface CharacterEquipment {
+  equipment: CharacterItem[]; resources: CharacterResource[]; loadout: CharacterLoadout; armor: CharacterArmor
+  wealth: CharacterWealth; xp: CharacterXP; advancementNotes: string; equipmentNotes: string
+}
+export type EquipmentPatch = Partial<Pick<CharacterEquipment, 'equipment' | 'resources' | 'advancementNotes' | 'equipmentNotes'>> & { loadout?: Partial<CharacterLoadout>; armor?: Partial<CharacterArmor>; wealth?: Partial<CharacterWealth>; xp?: Partial<CharacterXP> }
+export interface CharacterDossier extends CharacterCondition, CharacterEquipment {
+  sheet: CharacterSheetRules
   name: string; playbook: string; alias: string; playerName: string; look: string; wearing: string
   heritage: string; heritageDetails: string; background: string; backgroundDetails: string
   vice: string; viceHookup: string; notes: string; abilityNotes: string
@@ -34,7 +47,7 @@ export interface CharacterDossier extends CharacterCondition {
 export interface CharacterRecord {
   id: string; campaign_id: string; owner_id: string | null; data: CharacterDossier; updated_at: string
 }
-export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'pet' | 'harm' | 'healing' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> }
+export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch
 
 /** Only accepted server snapshots enter this boundary. Polling never trusts peer state. */
 export function useCharacters(campaignId: string) {
