@@ -30,7 +30,7 @@ export interface CharacterLoadout { mode: 'Quiet' | 'Loud'; carriedStacks: numbe
 export interface CharacterArmor { kind: 'none' | 'armor' | 'light' | 'built-in'; worn: boolean; totaled: boolean; source: string; notes: string }
 export interface CharacterWealth { stacks: number; bank: number }
 export interface CharacterXP { playbook: number; insight: number; prowess: number; resolve: number }
-export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; source: string }
+export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; actionMax: number; harmSlots: Record<keyof CharacterHarm, number>; source: string }
 export interface CharacterEquipment {
   equipment: CharacterItem[]; resources: CharacterResource[]; loadout: CharacterLoadout; armor: CharacterArmor
   wealth: CharacterWealth; xp: CharacterXP; advancementNotes: string; equipmentNotes: string

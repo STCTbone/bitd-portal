@@ -12,6 +12,7 @@ test('a new Hound has current load, protection, wealth and advancement records',
   expect(made.error).toBeNull()
   expect(made.data.data).toMatchObject({ loadout: { mode: 'Quiet', carriedStacks: 0 }, armor: { kind: 'none', worn: false, totaled: false, source: '', notes: '' }, wealth: { stacks: 0, bank: 0 }, xp: { playbook: 0, insight: 0, prowess: 0, resolve: 0 }, resources: [{ name: 'Tenacity', used: 0, capacity: 2, source: 'Dogged Persistence · book v1.0.1 p.28', notes: '' }], advancementNotes: '', equipmentNotes: '' })
   expect(made.data.data.equipment.find((i: { name: string }) => i.name === 'Electro-Blade')).toMatchObject({ load: 2, carried: false })
+  expect(made.data.data.equipment.find((i: { name: string }) => i.name === 'RF radio handset')).toMatchObject({ load: 1, notes: 'Source discrepancy: v6 nonitalic item costs 1 load; book v1.0.1 p.25 lists 0. Record the table’s agreed value manually.' })
 })
 
 test('owners and GMs explicitly record gear and advances while malformed and protected edits fail', async () => {
@@ -36,11 +37,12 @@ test('owners and GMs explicitly record gear and advances while malformed and pro
   for (const r of results) expect(r.error).toBeNull()
   expect(await read()).toMatchObject({ xp: { playbook: 8, insight: 6, prowess: 4, resolve: 5 }, wealth: { stacks: 3, bank: 38 }, armor: { kind: 'armor', totaled: true, notes: 'Totaled at the docks', source: 'Riot armor' }, harm: { passing: ['Bruised', ''], major: ['Broken arm', ''] }, pet: { name: 'Comet' }, actions: { hunt: 3, consort: 2 }, healing: { progress: 1, permanent: 0 } })
   for (const c of [observer, outsider]) expect((await c.rpc('patch_character', { p_character: id, p_patch: { wealth: { stacks: 0 } } })).error).not.toBeNull()
-  for (const patch of [{ sheet: { wallet: 999 } }, { wealth: { stacks: 5 } }, { wealth: { bank: 41 } }, { wealth: { bank: null } }, { wealth: { stacks: -1 } }, { xp: { insight: 7 } }, { xp: { playbook: 9 } }, { xp: { forged: 1 } }, { loadout: { mode: 'Heavy' } }, { loadout: { carriedStacks: 5 } }, { armor: { kind: 'built-in' } }, { armor: { kind: 'light', source: '' } }, { armor: { light: true } }, { equipment: [{ name: 'Gun', load: -1 }] }, { resources: [{ name: 'Tenacity', used: 3, capacity: 3, source: 'Forged', notes: '' }] }, { abilities: ['Hull Automaton'] }, { playbook: 'Hull' }]) {
+  for (const patch of [{ sheet: { wallet: 999 } }, { wealth: { stacks: 5 } }, { wealth: { bank: 41 } }, { wealth: { bank: null } }, { wealth: { stacks: -1 } }, { xp: { insight: 7 } }, { xp: { playbook: 9 } }, { xp: { forged: 1 } }, { loadout: { mode: 'Heavy' } }, { loadout: { carriedStacks: 5 } }, { armor: { kind: 'built-in' } }, { armor: { kind: 'light', source: '' } }, { armor: { light: true } }, { equipment: [{ name: 'Gun', load: -1 }] }, { resources: [{ name: 'Tenacity', used: 3, capacity: 3, source: 'Forged', notes: '' }] }, { abilities: ['Hull Automaton'] }, { actions: null }, { actions: { hunt: -1 } }, { actions: { hunt: 1.5 } }, { actions: { hunt: 5 } }, { actions: { unknown: 1 } }, { harm: null }, { harm: { passing: [] } }, { harm: { major: ['Only one'] } }, { harm: { mortal: ['One', 'Two'] } }, { harm: { critical: [null] } }, { harm: { unknown: ['Forged'] } }, { playbook: 'Hull' }]) {
     expect((await owner.rpc('patch_character', { p_character: id, p_patch: patch })).error, JSON.stringify(patch)).not.toBeNull()
   }
   expect((await owner.rpc('patch_character', { p_character: id, p_patch: { abilities: [] } })).error).not.toBeNull()
-  expect((await owner.rpc('patch_character', { p_character: id, p_patch: { armor: { kind: 'light', source: 'Acquire Asset · GM approved stab-proof vest', totaled: false }, xp: { playbook: 0 }, advancementNotes: 'Advance reviewed; Hunt dot recorded separately' } })).error).toBeNull()
+  expect((await owner.rpc('patch_character', { p_character: id, p_patch: { armor: { kind: 'light', source: 'Acquire Asset · GM approved stab-proof vest', totaled: false }, actions: { hunt: 4 }, xp: { playbook: 0 }, advancementNotes: 'Advance reviewed; Hunt dot recorded separately' } })).error).toBeNull()
+  expect((await read()).actions.hunt).toBe(4)
   expect((await owner.from('character_playbooks').update({ rules: { wallet: 999 } }).eq('name', 'Hound')).error).not.toBeNull()
   expect((await owner.from('character_playbooks').insert({ name: 'Forged', defaults: {}, rules: {} })).error).not.toBeNull()
   expect((await owner.from('characters').update({ data: { wealth: { stacks: 999 } } }).eq('id', id)).error).not.toBeNull()

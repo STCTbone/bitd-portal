@@ -22,7 +22,7 @@ test('create an empty campaign, join as player and GM, reject invalid invitation
   await page.getByRole('button', { name: 'Create campaign', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Neon frontier' })).toBeVisible()
   await expect(page.getByTestId('campaign-role')).toHaveText('Game Master')
-  await expect(page.getByText('No characters yet. Create your first Hound.')).toBeVisible()
+  await expect(page.getByText('No characters yet. Create your first character.')).toBeVisible()
   await expect(page.getByText('No crew has been created.')).toBeVisible()
   const playerInvite = await page.getByLabel('Player invitation').inputValue()
   const gmInvite = await page.getByLabel('Secret GM invitation').inputValue()

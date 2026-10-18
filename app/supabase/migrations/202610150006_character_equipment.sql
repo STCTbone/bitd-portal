@@ -11,8 +11,8 @@ insert into bitd.character_playbooks(name, defaults, rules) values ('Hound',
 jsonb_build_object( 'alias', '', 'playerName', '', 'look', '', 'wearing', '', 'heritage', '', 'heritageDetails', '', 'background', '', 'backgroundDetails', '', 'vice', '', 'viceHookup', '', 'notes', '', 'abilityNotes', '',
       'actions', '{"hunt":0,"study":0,"survey":1,"tinker":0,"finesse":0,"prowl":0,"skirmish":0,"wreck":0,"attune":0,"command":0,"consort":2,"sway":0}'::jsonb,
       'abilities', '[]'::jsonb, 'echoPet', '[]'::jsonb, 'versatile', '[]'::jsonb, 'relationships', '[]'::jsonb,
-      'pet', '{"name":"","kind":"","edges":"","flaws":"","abilities":"","notes":"","weak":false,"impaired":false,"broken":false,"armor":false}'::jsonb) || '{"loadout": {"mode": "Quiet", "carriedStacks": 0}, "armor": {"kind": "none", "worn": false, "totaled": false, "source": "", "notes": ""}, "wealth": {"stacks": 0, "bank": 0}, "xp": {"playbook": 0, "insight": 0, "prowess": 0, "resolve": 0}, "resources": [{"name": "Tenacity", "used": 0, "capacity": 2, "source": "Dogged Persistence · book v1.0.1 p.28", "notes": ""}], "equipment": [{"name": "Fine snub-nosed handcannon", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "A loyal, clever pet", "load": 0, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "Binoculars", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "Hipflask of the good stuff", "load": 0, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "Pocketful of focus pills", "load": 0, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "RF radio handset", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "A Blade or Two", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Silenced Shooter", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Handcannon", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Electro-Blade", "load": 2, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Pump-Action Scattergun", "load": 2, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Burglary Gear", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Climbing Gear", "load": 2, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Paranormal Implements", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Documents", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Subterfuge Supplies", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Demolition Tools", "load": 2, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Tinkering Tools", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Arclighter", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}], "advancementNotes": "", "equipmentNotes": ""}'::jsonb,
-'{"abilities": ["Hound’s Instincts", "Learn the Hard Way", "Just a Scratch", "Fixer", "In Too Deep", "Echo Pet", "Dogged Persistence", "Versatile"], "quiet": 3, "loud": 6, "wallet": 4, "bank": 40, "playbookXp": 8, "attributeXp": 6, "builtInArmor": false, "source": "Blades ’68 playbooks v6; book v1.0.1 pp. 26–28, 153, 158–160"}'::jsonb);
+      'pet', '{"name":"","kind":"","edges":"","flaws":"","abilities":"","notes":"","weak":false,"impaired":false,"broken":false,"armor":false}'::jsonb) || '{"loadout": {"mode": "Quiet", "carriedStacks": 0}, "armor": {"kind": "none", "worn": false, "totaled": false, "source": "", "notes": ""}, "wealth": {"stacks": 0, "bank": 0}, "xp": {"playbook": 0, "insight": 0, "prowess": 0, "resolve": 0}, "resources": [{"name": "Tenacity", "used": 0, "capacity": 2, "source": "Dogged Persistence · book v1.0.1 p.28", "notes": ""}], "equipment": [{"name": "Fine snub-nosed handcannon", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "A loyal, clever pet", "load": 0, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "Binoculars", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "Hipflask of the good stuff", "load": 0, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "Pocketful of focus pills", "load": 0, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6", "notes": ""}, {"name": "RF radio handset", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Hound playbook v6; book v1.0.1 p.25 differs", "notes": "Source discrepancy: v6 nonitalic item costs 1 load; book v1.0.1 p.25 lists 0. Record the table’s agreed value manually."}, {"name": "A Blade or Two", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Silenced Shooter", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Handcannon", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Electro-Blade", "load": 2, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Pump-Action Scattergun", "load": 2, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Burglary Gear", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Climbing Gear", "load": 2, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Paranormal Implements", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Documents", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Subterfuge Supplies", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Demolition Tools", "load": 2, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Tinkering Tools", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}, {"name": "Arclighter", "load": 1, "quantity": 1, "uses": 0, "carried": false, "source": "Published playbooks v6", "notes": ""}], "advancementNotes": "", "equipmentNotes": ""}'::jsonb,
+'{"abilities": ["Hound’s Instincts", "Learn the Hard Way", "Just a Scratch", "Fixer", "In Too Deep", "Echo Pet", "Dogged Persistence", "Versatile"], "quiet": 3, "loud": 6, "wallet": 4, "bank": 40, "playbookXp": 8, "attributeXp": 6, "builtInArmor": false, "actionMax": 4, "harmSlots": {"passing": 2, "major": 2, "critical": 1, "mortal": 1}, "source": "Blades ’68 playbooks v6; book v1.0.1 pp. 26–28, 153, 158–160"}'::jsonb);
 create function bitd.initialize_character_playbook() returns trigger
 language plpgsql security definer set search_path = '' as $$
 declare definition bitd.character_playbooks;
@@ -41,7 +41,8 @@ end $$;
 revoke all on function bitd.initialize_character_playbook(),bitd.create_character(uuid,text,boolean,text) from public;
 grant execute on function bitd.create_character(uuid,text,boolean,text) to authenticated;
 
--- Keep the complete identity/condition chain. Only equipment-owned keys are removed.
+-- Keep the complete identity/condition chain. Equipment-owned keys plus abilities, actions
+-- and Harm are removed; those three shapes are checked with authoritative playbook context.
 alter function bitd.validate_character_patch(jsonb) rename to validate_character_pre_equipment_patch;
 create function bitd.character_record_integer(p_value jsonb,p_max integer) returns boolean
 language sql immutable set search_path = '' as $$
@@ -51,7 +52,7 @@ create function bitd.validate_character_patch(p_patch jsonb) returns void
 language plpgsql set search_path = '' as $$
 declare e record; n record; item jsonb;
 begin
- perform bitd.validate_character_pre_equipment_patch(p_patch - array['loadout','equipment','armor','resources','wealth','xp','advancementNotes','equipmentNotes','abilities']);
+ perform bitd.validate_character_pre_equipment_patch(p_patch - array['loadout','equipment','armor','resources','wealth','xp','advancementNotes','equipmentNotes','abilities','actions','harm']);
  for e in select * from jsonb_each(p_patch) loop
   if e.key in ('advancementNotes','equipmentNotes') then
    if jsonb_typeof(e.value)<>'string' or length(e.value #>> '{}')>12000 then raise exception 'Invalid record notes'; end if;
@@ -93,10 +94,26 @@ end $$;
 -- The saved playbook selects authoritative choices. Client metadata is never authority.
 create function bitd.validate_character_playbook_patch(p_playbook text,p_patch jsonb) returns void
 language plpgsql set search_path = '' as $$
-declare rules jsonb; item jsonb;
+declare rules jsonb; item jsonb; entry record; expected integer;
 begin
  select p.rules into rules from bitd.character_playbooks p where name=p_playbook;
  if rules is null then raise exception 'Unknown or unavailable playbook'; end if;
+ if p_patch ? 'actions' then
+  if jsonb_typeof(p_patch->'actions')<>'object' then raise exception 'Expected action ratings'; end if;
+  for entry in select * from jsonb_each(p_patch->'actions') loop
+   if not entry.key=any(array['hunt','study','survey','tinker','finesse','prowl','skirmish','wreck','attune','command','consort','sway']) or not bitd.character_record_integer(entry.value,(rules->>'actionMax')::integer) then raise exception 'Invalid action rating for %',p_playbook; end if;
+  end loop;
+ end if;
+ if p_patch ? 'harm' then
+  if jsonb_typeof(p_patch->'harm')<>'object' then raise exception 'Invalid Harm'; end if;
+  for entry in select * from jsonb_each(p_patch->'harm') loop
+   expected := (rules->'harmSlots'->>entry.key)::integer;
+   if expected is null or jsonb_typeof(entry.value)<>'array' or jsonb_array_length(entry.value)<>expected then raise exception 'Invalid Harm slots for %',p_playbook; end if;
+   for item in select * from jsonb_array_elements(entry.value) loop
+    if jsonb_typeof(item)<>'string' or length(item #>> '{}')>12000 then raise exception 'Invalid injury'; end if;
+   end loop;
+  end loop;
+ end if;
  if p_patch ? 'abilities' then
   if jsonb_typeof(p_patch->'abilities')<>'array' or jsonb_array_length(p_patch->'abilities')>100 then raise exception 'Expected ability choices'; end if;
   for item in select * from jsonb_array_elements(p_patch->'abilities') loop
@@ -109,7 +126,7 @@ language plpgsql set search_path = '' as $$
 declare rules jsonb; item jsonb; track text;
 begin
  select p.rules into rules from bitd.character_playbooks p where name=p_data->>'playbook';
- perform bitd.validate_character_playbook_patch(p_data->>'playbook',jsonb_build_object('abilities',p_data->'abilities'));
+ perform bitd.validate_character_playbook_patch(p_data->>'playbook',jsonb_build_object('abilities',p_data->'abilities','actions',p_data->'actions','harm',p_data->'harm'));
  if (p_data->'wealth'->>'stacks')::integer>(rules->>'wallet')::integer or (p_data->'wealth'->>'bank')::integer>(rules->>'bank')::integer then raise exception 'Stacks or bank exceed this sheet’s capacity'; end if;
  if (p_data->'loadout'->>'carriedStacks')::integer>(p_data->'wealth'->>'stacks')::integer then raise exception 'Carried stacks cannot exceed wallet stacks'; end if;
  foreach track in array array['playbook','insight','prowess','resolve'] loop
