@@ -1,6 +1,8 @@
 import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useSession } from '@/lib/session'
 import { activities, approaches, phases, createActivity, createOpportunity, deleteActivity, planningError, selectOpportunity, setCampaignPhase, updateActivity, updateOpportunity, updateScorePlan, usePlanning, type ActivityData, type OpportunityData, type ScoreData } from '@/lib/planning'
+import { useClocks } from '@/lib/clocks'
+import { createScoreActivity, transitionScore, transitionScoreActivity, updateScoreActivity, updateScoreRecord, type ScoreRecordData, type ScoreEvent } from '@/lib/planning'
 import './CampaignPlanning.css'
 
 type Field<T> = { key: keyof T; label: string; type?: 'number' | 'checkbox' | 'select'; options?: readonly string[]; gmOnly?: boolean }
@@ -86,7 +88,66 @@ function Planning({ campaign, user, gm }: { campaign: string; user: string; gm: 
     {state.ready && <form className="planning-create" onSubmit={sketch}><fieldset disabled={busy}><legend>Sketch a new opportunity</legend><label>Opportunity client<input aria-label="Opportunity client" value={client} maxLength={5000} onChange={event => setClient(event.target.value)} /></label><label>Opportunity target<input aria-label="Opportunity target" value={target} maxLength={5000} onChange={event => setTarget(event.target.value)} /></label><label>Opportunity operation<input aria-label="Opportunity operation" value={operation} maxLength={5000} onChange={event => setOperation(event.target.value)} /></label><button disabled={!client.trim() && !target.trim() && !operation.trim()}>Sketch opportunity</button></fieldset></form>}
     <h3>Selected score plans</h3><p>Choose the approach and opening gambit, then Quiet (3 load) or Loud (6 load), with playbook and rigging exceptions. Record engagement details and the table’s result. No roll or load reset happens here.</p>
     <div className="planning-list">{state.scores.map(row => <RecordEditor key={row.id} title={`Score plan · ${row.data.name}`} data={row.data} fields={scoreFields} gm={gm} canEdit={true} saveLabel="Save plan" refresh={state.refresh} save={async (patch, expected) => { state.accept('scores', await updateScorePlan(row.id, patch, expected)) }}>{() => <div><p>{row.id === state.cycle?.selected_score_id ? 'Current primary selection' : 'Retained score'} · {row.data.status}</p><p>Selection snapshot: {row.data.opportunity.client || 'No client yet'} / {row.data.opportunity.target || 'Target to define'} / Tier {row.data.opportunity.targetTier} / potential {row.data.opportunity.payout ?? 'unrecorded'} stacks</p><p>Opening gambits: {Object.entries(approaches).map(([key, value]) => `${key} — ${value.toLowerCase()}`).join('; ')}.</p></div>}</RecordEditor>)}</div>
+    <ScoreOperations campaign={campaign} gm={gm} state={state} />
     {status && <p role="status">{status}</p>}{error && <p role="alert">{error}</p>}
     <footer>Source: Blades ’68 v1.0.1, Personal Business pp. 164–171; Planning Meeting and Score pp. 180–189. Published baseline, excluding Deep Cuts. These are editable records: rewards, Heat, recovery, Armor restoration and other consequences require deliberate table decisions.</footer>
+  </section>
+}
+
+const recordFields: Field<ScoreRecordData>[] = [{ key: 'activeNotes', label: 'Shared score notes' }, { key: 'outcome', label: 'Score outcome', gmOnly: true }, { key: 'recap', label: 'Score recap', gmOnly: true }]
+function ScoreLifecycle({ data, revision, gm, primary, selected, disabled, run, transition }: { data: ScoreRecordData; revision: number; gm: boolean; primary: boolean; selected: boolean; disabled: boolean; run: (action: () => Promise<void>) => void; transition: (status: string, revision: number) => Promise<void> }) {
+  const [confirmation, setConfirmation] = useState<{ status: string; label: string; revision: number } | null>(null)
+  const noun = primary ? 'score' : 'activity'
+  return <div className="score-lifecycle"><p>Status: {data.status}</p>{data.startedAt && <small>Started: {new Date(data.startedAt).toLocaleString()}</small>}{data.finishedAt && <small>Finished: {new Date(data.finishedAt).toLocaleString()}</small>}
+    {gm && <div className="planning-actions">
+      {data.status === 'planned' && selected && <button type="button" disabled={disabled} onClick={() => setConfirmation({ status: 'active', label: 'start', revision })}>Start {noun}</button>}
+      {data.status === 'active' && <button type="button" disabled={disabled} onClick={() => setConfirmation({ status: 'completed', label: 'complete', revision })}>Complete {noun}</button>}
+      {['planned', 'active'].includes(data.status) && <button type="button" className="planning-secondary" disabled={disabled} onClick={() => setConfirmation({ status: 'cancelled', label: 'cancel', revision })}>Cancel {noun}</button>}
+    </div>}
+    {gm && confirmation && <div className="score-confirmation"><p>Confirm {confirmation.label} of this {noun}? This records its status only. Review and apply consequences separately.</p><div className="planning-actions"><button type="button" disabled={disabled} onClick={() => run(async () => { await transition(confirmation.status, confirmation.revision); setConfirmation(null) })}>Confirm {confirmation.label}</button><button type="button" className="planning-secondary" disabled={disabled} onClick={() => setConfirmation(null)}>Keep current status</button></div></div>}
+  </div>
+}
+function ScoreVersions({ events }: { events: ScoreEvent[] }) {
+  return events.length ? <details className="score-versions"><summary>Accepted history ({events.length})</summary><ol>{[...events].sort((a, b) => a.created_at.localeCompare(b.created_at)).map(event => <li key={event.id}><small>{new Date(event.created_at).toLocaleString()} · revision {event.data.revision}</small>{event.data.status ? <p>Changed status to {event.data.status}</p> : <><p className="planning-notes">Outcome: {event.data.outcome || 'Not recorded'}</p><p className="planning-notes">Recap: {event.data.recap || 'Not recorded'}</p></>}</li>)}</ol></details> : null
+}
+function ScoreOperations({ campaign, gm, state }: { campaign: string; gm: boolean; state: ReturnType<typeof usePlanning> }) {
+  const clocks = useClocks(campaign)
+  const [cohort, setCohort] = useState(''), [kind, setKind] = useState('participation'), [opportunity, setOpportunity] = useState('')
+  const [busy, setBusy] = useState(false), [error, setError] = useState('')
+  const selected = state.scores.find(row => row.id === state.cycle?.selected_score_id)
+  const cohorts = state.crews.flatMap(crew => crew.data.cohorts.map(row => ({ crew, cohort: row, value: `${crew.id}:${row.id}` })))
+  const remaining = state.opportunities.filter(row => row.data.targetTier !== null && !state.scores.some(score => score.opportunity_id === row.id))
+  const history = state.scores.filter(row => ['completed', 'cancelled'].includes(row.data.status))
+  async function add(event: FormEvent) {
+    event.preventDefault(); setBusy(true); setError('')
+    try {
+      const chosen = cohorts.find(row => row.value === (cohort || cohorts[0]?.value))
+      if (!selected || !chosen) throw new Error('Choose a score and a current cohort.')
+      state.accept('scoreActivities', await createScoreActivity(selected.id, chosen.crew.id, chosen.cohort.id, kind === 'secondary' ? opportunity || remaining[0]?.id : null, kind))
+    } catch (cause) { setError(`Activity was not saved: ${planningError(cause)} Your entries are kept.`) }
+    finally { setBusy(false) }
+  }
+  function scoreCard(row: typeof state.scores[number]) {
+    return <RecordEditor key={row.id} title={`Score · ${row.data.name}`} data={row.data as ScoreRecordData} fields={recordFields} canEdit={true} gm={gm} saveLabel="Save score record" refresh={state.refresh} save={async (patch, expected) => { state.accept('scores', await updateScoreRecord(row.id, patch, expected)) }}>{(run, disabled) => <>
+      <ScoreLifecycle data={row.data} revision={row.revision} gm={gm} primary selected={row.id === selected?.id} disabled={disabled} run={run} transition={async (status, revision) => { state.accept('scores', await transitionScore(row.id, status, revision)); await state.refresh() }} />
+      <p>Saved opportunity: {row.data.opportunity.operation || row.data.opportunity.target || row.data.opportunity.client} · target Tier {row.data.opportunity.targetTier} · potential {row.data.opportunity.payout ?? 'unrecorded'} stacks</p>
+      {row.data.status === 'active' && <div role="region" aria-label={`Permitted clocks · ${row.data.name}`}><h4>Active score clocks</h4>{clocks.error && <p role="alert">{clocks.error}</p>}{clocks.hasSnapshot && <>{clocks.clocks.filter(clock => clock.data.active && clock.data.scoreId === row.id).map(clock => <div className="score-clock" key={clock.id}><strong>{clock.data.name}</strong><p>{clock.data.progress}/{clock.data.segments} · {clock.data.visible_to_players ? 'Shared' : 'GM only'}</p><p className="planning-notes">{clock.data.notes}</p></div>)}{!clocks.clocks.some(clock => clock.data.active && clock.data.scoreId === row.id) && <p>No permitted active clocks linked to this score.</p>}</>}</div>}
+      <ScoreVersions events={state.events.filter(event => event.score_id === row.id && !event.activity_id)} />
+    </>}</RecordEditor>
+  }
+  return <section aria-label="Scores and history" className="score-operations"><h3>Scores and history</h3><p>Start the selected plan when the table is ready. Complete or cancel the active primary before selecting another. Phases remain a flexible reference. Shared notes are editable by members; the GM records outcomes and recaps.</p>
+    <div className="planning-list">{state.scores.filter(row => !history.includes(row)).map(scoreCard)}</div>
+    {!state.scores.length && <p>No scores selected yet.</p>}
+    <h4 className="score-section-title">Cohort participation and secondary scores</h4><p>Keep primary support and off-screen activity separate. One crew cohort can attempt a remaining opportunity as the secondary score; playbook cohorts cannot. Record Quality, applicable type, roll and agreed consequences in the notes. A successful cohort expects Quality + 1 stacks; no payment, Harm, Heat or Rep is applied here.</p>
+    <div className="planning-list">{state.scoreActivities.map(row => <RecordEditor key={row.id} title={`${row.data.kind === 'secondary' ? 'Secondary score' : 'Primary participation'} · ${row.data.cohort.name} · ${row.data.opportunity.operation || row.data.opportunity.target || row.data.opportunity.client}`} data={row.data as ScoreRecordData} fields={recordFields} canEdit={true} gm={gm} saveLabel="Save activity record" refresh={state.refresh} save={async (patch, expected) => { state.accept('scoreActivities', await updateScoreActivity(row.id, patch, expected)) }}>{(run, disabled) => <>
+      <p>Primary: {state.scores.find(score => score.id === row.score_id)?.data.name ?? 'Retained score'} · Saved cohort: {row.data.cohort.name} / {row.data.cohort.types || 'type unrecorded'} / Quality {row.data.cohort.quality} / {row.data.cohort.condition}</p>
+      <p>Saved opportunity: {row.data.opportunity.operation || row.data.opportunity.target || row.data.opportunity.client} · potential {row.data.opportunity.payout ?? 'unrecorded'} stacks</p>
+      <ScoreLifecycle data={row.data} revision={row.revision} gm={gm} primary={false} selected disabled={disabled} run={run} transition={async (status, revision) => { state.accept('scoreActivities', await transitionScoreActivity(row.id, status, revision)); await state.refresh() }} />
+      <ScoreVersions events={state.events.filter(event => event.activity_id === row.id)} />
+    </>}</RecordEditor>)}</div>
+    {gm && selected && cohorts.length > 0 && <form className="planning-create" onSubmit={add}><fieldset disabled={busy}><legend>Record activity for {selected.data.name}</legend><label>Activity cohort<select aria-label="Activity cohort" value={cohort || cohorts[0].value} onChange={event => setCohort(event.target.value)}>{cohorts.map(row => <option key={row.value} value={row.value}>{row.cohort.name} · {row.crew.data.name}</option>)}</select></label><label>Cohort activity<select aria-label="Cohort activity" value={kind} onChange={event => setKind(event.target.value)}><option value="participation">Primary participation</option><option value="secondary">Secondary score</option></select></label>{kind === 'secondary' && <label>Secondary opportunity<select aria-label="Secondary opportunity" value={opportunity || remaining[0]?.id || ''} onChange={event => setOpportunity(event.target.value)}>{!remaining.length && <option value="">No remaining opportunity with Tier</option>}{remaining.map(row => <option key={row.id} value={row.id}>{row.data.operation || row.data.target || row.data.client}</option>)}</select></label>}<button disabled={kind === 'secondary' && !remaining.length}>Record cohort activity</button></fieldset>{error && <p role="alert">{error}</p>}</form>}
+    {gm && selected && !cohorts.length && <p>Add a crew cohort in the crew dossier to record participation. Existing snapshots remain available if a cohort is removed.</p>}
+    <h4 className="score-section-title">Score history</h4><p>Completed and cancelled scores stay available after reload. Corrections retain earlier accepted outcomes and recaps in each record’s history.</p><div className="planning-list">{history.map(scoreCard)}</div>{!history.length && <p>No completed or cancelled scores yet.</p>}
+    <small>Source: Blades ’68 v1.0.1, cohort actions pp. 96–97 and Score pp. 188–189. Completion does not award payout, reset load or Armor, advance XP, or calculate Heat. Aftermath requires a separate deliberate review.</small>
   </section>
 }

@@ -47,3 +47,12 @@
 .planning-phase form { display:flex; align-items:end; gap:1rem; flex-wrap:wrap; margin-bottom:.75rem; }
 .planning-phase form label { flex:1 1 14rem; }
 .planning-phase p { font-weight:800; }
+.score-operations { border-top:4px solid #1d6b70; margin-top:2rem; }
+.score-operations .score-section-title { margin:2rem 0 .75rem; font-size:1.3rem; }
+.score-lifecycle { margin:1rem 0; padding:1rem; background:#f5dda9; }
+.score-confirmation { border-top:1px solid #805110; margin-top:1rem; padding-top:.5rem; }
+.score-clock { border-left:4px solid #1d6b70; padding:.5rem 1rem; margin:.75rem 0; background:#fffdf7; }
+.score-versions { margin-top:1rem; border-top:1px solid #9caea2; padding-top:1rem; }
+.score-versions summary { cursor:pointer; font-weight:700; min-height:32px; }
+.score-versions ol { padding-left:1.5rem; }
+.score-versions li { padding:.5rem; border-bottom:1px solid #9caea2; }
