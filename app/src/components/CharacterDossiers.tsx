@@ -3,6 +3,7 @@ import { useSession } from '@/lib/session'
 import { ACTION_GROUPS, ECHO_PET_CHOICES, useCharacters, type CharacterPatch, type CharacterRecord } from '@/lib/characters'
 import { DossierField } from './DossierField'
 import { supabase } from '@/lib/supabase'
+import { CharacterOwnership } from './CharacterOwnership'
 import { CharacterEquipment } from './CharacterEquipment'
 import { CharacterCondition } from './CharacterCondition'
 import './dossier.css'
@@ -55,6 +56,7 @@ export function CharacterDossiers() {
       <button disabled={busy || !name.trim() || !playbooks.includes(playbook)}>Create {playbook}</button>
     </form>
     {character && <>
+      {session!.role === 'gm' && <CharacterOwnership key={`ownership:${character.id}`} character={character} assign={async (owner, expected) => { await mutate('assign_character_owner', { p_character: character.id, p_owner: owner, p_expected_owner: expected }) }} />}
       <Dossier key={character.id} character={character} editable={session!.role === 'gm' || character.owner_id === session!.userId} patch={changes => patch(character.id, changes)} isGM={session!.role === 'gm'} setKeyCapacity={async (capacity, reason) => { await mutate('set_character_key_capacity', { p_character: character.id, p_capacity: capacity, p_reason: reason }) }} />
       {(session!.role === 'gm' || character.owner_id === session!.userId) && <div className="dossier-danger">
         {!confirmDelete ? <button onClick={() => setConfirmDelete(true)}>Delete character</button> : <><p>Delete {character.data.name} permanently? This cannot be undone.</p><button disabled={busy} onClick={() => void action('delete_character', character.id)}>Confirm delete {character.data.name}</button><button onClick={() => setConfirmDelete(false)}>Keep character</button></>}
