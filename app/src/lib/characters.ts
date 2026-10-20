@@ -30,14 +30,21 @@ export interface CharacterLoadout { mode: 'Quiet' | 'Loud'; carriedStacks: numbe
 export interface CharacterArmor { kind: 'none' | 'armor' | 'light' | 'built-in'; worn: boolean; totaled: boolean; source: string; notes: string }
 export interface CharacterWealth { stacks: number; bank: number }
 export interface CharacterXP { playbook: number; insight: number; prowess: number; resolve: number }
-export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; actionMax: number; harmSlots: Record<keyof CharacterHarm, number>; source: string }
+export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; actionMax: number; harmSlots: Record<keyof CharacterHarm, number>; source: string; creation?: string; abilityChoiceGuidance?: string; fixedAbilities?: string[]; xpTrigger?: string; contacts?: string[]; keys?: string[]; backgroundLabel?: string; backgroundSuggestions?: string[]; abilityGuidance?: string; resourceGuidance?: string; explosives?: string[] }
 export interface CharacterEquipment {
   equipment: CharacterItem[]; resources: CharacterResource[]; loadout: CharacterLoadout; armor: CharacterArmor
   wealth: CharacterWealth; xp: CharacterXP; advancementNotes: string; equipmentNotes: string
 }
 export type EquipmentPatch = Partial<Pick<CharacterEquipment, 'equipment' | 'resources' | 'advancementNotes' | 'equipmentNotes'>> & { loadout?: Partial<CharacterLoadout>; armor?: Partial<CharacterArmor>; wealth?: Partial<CharacterWealth>; xp?: Partial<CharacterXP> }
+export interface OperativeBacking { name: string; tier: number; mission: string; failure: number; prestige: string; help: string; notes: string }
+export interface OperativeRecord { controlAction: string; coverIdentity: string; coverNotes: string; dropEntity: string; dropLoad: number; dropAssetUsed: boolean; sleeperUsed: boolean; backingFactions: OperativeBacking[]; operations: string }
+export interface RadicalWork { name: string; progress: number; circulating: boolean; contribution: string; notes: string }
+export interface RadicalRecord { radicalizedBy: string; cause: string; supplier: string; bandoliers: string[][]; works: RadicalWork[]; praxis: string; dedication: string; operations: string }
+export interface VeteranRecord { tours: string; damage: string; helps: string; hobby: string; assistance: string; operations: string }
+export interface HumanPlaybookPatch { operative?: Partial<OperativeRecord>; radical?: Partial<RadicalRecord>; veteran?: Partial<VeteranRecord> }
 export interface CharacterDossier extends CharacterCondition, CharacterEquipment {
   sheet: CharacterSheetRules
+  operative?: OperativeRecord; radical?: RadicalRecord; veteran?: VeteranRecord
   name: string; playbook: string; alias: string; playerName: string; look: string; wearing: string
   heritage: string; heritageDetails: string; background: string; backgroundDetails: string
   vice: string; viceHookup: string; notes: string; abilityNotes: string
@@ -47,7 +54,7 @@ export interface CharacterDossier extends CharacterCondition, CharacterEquipment
 export interface CharacterRecord {
   id: string; campaign_id: string; owner_id: string | null; data: CharacterDossier; updated_at: string
 }
-export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch
+export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason' | 'operative' | 'radical' | 'veteran'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch & HumanPlaybookPatch
 
 /** Only accepted server snapshots enter this boundary. Polling never trusts peer state. */
 export function useCharacters(campaignId: string) {
@@ -85,4 +92,9 @@ export function useCharacters(campaignId: string) {
     await mutate('patch_character', { p_character: id, p_patch: changes })
   }, [mutate])
   return { records, error, loaded, refresh, patch, mutate }
+}
+
+/** Only a selected native ability or selected, sourced Versatile record supplies guidance. */
+export function hasCharacterAbility(data: CharacterDossier, name: string) {
+  return data.abilities.includes(name) || (data.abilities.includes('Versatile') && data.versatile.some(a => a.name === name && a.source.trim()))
 }
