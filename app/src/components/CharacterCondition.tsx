@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import type { CharacterCondition as Condition, CharacterHarm, ConditionPatch } from '@/lib/characters'
+import type { CharacterDossier, CharacterHarm, ConditionPatch } from '@/lib/characters'
 
 const HARM_LEVELS = { mortal: 'Mortal', critical: 'Critical', major: 'Major', passing: 'Passing' } as const
 const TITLES: Record<keyof ConditionPatch, string> = { stress: 'Stress marked', keys: 'Keys / hit marks', deadlocks: 'Deadlocks', harm: 'Harm', healing: 'Healing clock', recoveryNotes: 'Recovery notes', conditionNotes: 'Condition decisions' }
@@ -11,7 +11,7 @@ function describe(value: unknown): string {
 
 /** Only changed fields are submitted, after review. Accepted state stays visible. */
 export function CharacterCondition({ data, editable, patch, isGM, setKeyCapacity }: {
-  data: Condition; editable: boolean; patch: (changes: ConditionPatch) => Promise<void>
+  data: CharacterDossier; editable: boolean; patch: (changes: ConditionPatch) => Promise<void>
   isGM: boolean; setKeyCapacity: (capacity: number, reason: string) => Promise<void>
 }) {
   const id = useId()
@@ -35,7 +35,7 @@ export function CharacterCondition({ data, editable, patch, isGM, setKeyCapacity
   const number = (label: string, value: number, max: number, save: (value: number) => void) => <label key={label}>{label}<select aria-label={label} value={value} onChange={e => save(Number(e.target.value))}>{Array.from({ length: max + 1 }, (_, n) => <option key={n} value={n}>{n}</option>)}</select></label>
   const text = (label: string, value: string, save: (value: string) => void, multiline = false) => <label key={label}>{label}{multiline ? <textarea aria-label={label} rows={3} value={value} maxLength={12000} onChange={e => save(e.target.value)} /> : <input aria-label={label} value={value} maxLength={12000} onChange={e => save(e.target.value)} />}</label>
   return <section aria-label="Condition records" className="condition-records">
-    <h4>06 / Keys, Stress & Harm</h4>
+    <h4>06 / Keys, Stress & Harm</h4>{data.sheet.keys && <p>Key suggestions: {data.sheet.keys.join(' · ')}. You may create your own.</p>}
     <p className="dossier-source">Published baseline: Blades ’68 v1.0.1, pp. 84, 152–157, 169–170; playbooks v6. Changes below stay in your draft until reviewed and confirmed.</p>
     <p>Keys share four slots with Deadlocks, unless a crew upgrade adds one. Across all Keys combined, earn at most 1 XP per session; three hit marks saturate a Key but do not stop its XP. Record XP separately. Turning a fully marked Key is declared before rolling; record the agreed Deadlock and Stress change together.</p>
     <p>At the last Stress box, resolve the crisis with your table. Four ordinary Deadlocks mean retirement; exceptions apply. These records do not clear Stress, replace Keys, retire a character, or award XP automatically.</p>
@@ -56,7 +56,7 @@ export function CharacterCondition({ data, editable, patch, isGM, setKeyCapacity
       </div>)}
       {editable && <button disabled={occupied >= data.keyCapacity} onClick={() => change({ deadlocks: [...current.deadlocks, { name: '', formerKey: '', notes: '' }] })}>Add Deadlock</button>}
       <h5>Harm · four levels</h5>
-      <p>Unless an ability says otherwise, Harm informs fictional effect; there are no fixed action-dice penalties. Just a Scratch prevents Harm affecting effect during a score, while mortal Harm and complications still apply. Level 4 is rapidly lethal without exceptional intervention. Record agreed survival and complications with the GM. Resistance and Armor outcomes are deliberate table decisions.</p>
+      <p>Unless an ability says otherwise, Harm informs fictional effect; there are no fixed action-dice penalties. {data.playbook === 'Hound' && 'Just a Scratch prevents Harm affecting effect during a score, while mortal Harm and complications still apply.'} Level 4 is rapidly lethal without exceptional intervention. Record agreed survival and complications with the GM. Resistance and Armor outcomes are deliberate table decisions.</p>
       <div className="dossier-grid">{(Object.keys(HARM_LEVELS) as (keyof CharacterHarm)[]).map(level => <div key={level}>{current.harm[level].map((injury, i) => <div key={i}>{text(`${HARM_LEVELS[level]} Harm ${i + 1}`, injury, value => change({ harm: { ...draft.harm, [level]: current.harm[level].map((v, n) => n === i ? value : v) } }))}</div>)}</div>)}</div>
       <h5>Recovery · four-segment healing clock</h5>
       <p>Recover clears passing Harm; the healer’s result marks 1 / 2 / 3 / 5 segments. Filling four reduces remaining Harm one level; extra ticks carry over. Record those changes together after review. Get Back In There’s permanent segment is distinct from ordinary progress. Hull repairs use their own procedure.</p>
