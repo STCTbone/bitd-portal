@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { hasCharacterAbility } from '@/lib/characters'
 import type { CharacterDossier, CharacterItem, EquipmentPatch } from '@/lib/characters'
 
 function describe(value: unknown): string {
@@ -24,7 +25,9 @@ export function CharacterEquipment({ data, editable, patch }: { data: CharacterD
   }
   const armorLoad = current.armor.worn ? current.armor.kind === 'armor' ? 3 : current.armor.kind === 'light' ? 2 : 0 : 0
   const carried = current.equipment.reduce((sum, item) => sum + (item.carried ? item.load * item.quantity : 0), 0) + current.loadout.carriedStacks + armorLoad
-  const capacity = current.loadout.mode === 'Quiet' ? data.sheet.quiet : data.sheet.loud
+  const arsenal = hasCharacterAbility(data, 'Walking Arsenal') ? 2 : 0
+  const quiet = data.sheet.quiet + arsenal, loud = data.sheet.loud + arsenal
+  const capacity = current.loadout.mode === 'Quiet' ? quiet : loud
   const entries = Object.entries(draft) as [keyof EquipmentPatch, unknown][]
   const text = (label: string, value: string, save: (v: string) => void, multiline = false) => <label>{label}{multiline ? <textarea aria-label={label} value={value} rows={3} maxLength={12000} onChange={e => save(e.target.value)} /> : <input aria-label={label} value={value} maxLength={12000} onChange={e => save(e.target.value)} />}</label>
   const number = (label: string, value: number, max: number, save: (v: number) => void, min = 0) => <label key={label}>{label}<input aria-label={label} type="number" min={min} max={max} step={1} value={value} onChange={e => save(Number(e.target.value))} /></label>
@@ -32,12 +35,12 @@ export function CharacterEquipment({ data, editable, patch }: { data: CharacterD
   function itemChange(i: number, changes: Partial<CharacterItem>) { change({ equipment: current.equipment.map((item, n) => i === n ? { ...item, ...changes } : item) }) }
   return <section aria-label="Equipment and advancement records" className="condition-records">
     <h4>07 / Equipment, wealth & advancement</h4>
-    <p className="dossier-source">{data.sheet.source}. Common load costs and Hound items: current v6 sheet. Changes remain drafts until reviewed and confirmed.</p>
+    <p className="dossier-source">{data.sheet.source}. Common and playbook items: current v6 sheet. Changes remain drafts until reviewed and confirmed.</p>
     <p className="condition-saved" aria-live="polite">Saved: {data.loadout.mode} · {data.wealth.stacks} stacks · bank {data.wealth.bank} · playbook XP {data.xp.playbook}. Armor: {data.armor.kind}{data.armor.totaled ? ' · totaled' : ''}.</p>
     <fieldset disabled={!editable || busy}><legend>Equipment and advancement draft</legend>
       <h5>Quiet / Loud load</h5>
-      <p>Choose before engagement. Each carried stack costs 1 load. Listed Armor contributes its load here; do not duplicate it as another item. Italic Hound items are free. Quantity multiplies item load. RF radio handset follows the current nonitalic v6 listing (1 load); book p.25 says 0. Confirm and record your table’s choice. Record rigging, concealment and table-agreed exceptions in the item’s source/notes; label house rules explicitly.</p>
-      <div className="dossier-grid"><label>Load choice<select aria-label="Load choice" value={current.loadout.mode} onChange={e => change({ loadout: { ...draft.loadout, mode: e.target.value as 'Quiet' | 'Loud' } })}><option value="Quiet">Quiet · {data.sheet.quiet}</option><option value="Loud">Loud · {data.sheet.loud}</option></select></label>{number('Carried stacks', current.loadout.carriedStacks, current.wealth.stacks, carriedStacks => change({ loadout: { ...draft.loadout, carriedStacks } }))}</div>
+      <p>Choose before engagement. Each carried stack costs 1 load. Listed Armor contributes its load here; do not duplicate it as another item. Italic items are free. Quantity multiplies item load. {data.playbook === 'Hound' && 'Hound RF radio handset follows the current nonitalic v6 listing (1 load); book p.25 says 0. Confirm and record your table’s choice.'} {arsenal > 0 && 'Walking Arsenal adds 2 load (5 Quiet / 8 Loud ordinarily). Record additional same-type one-load guns as 0 load after the first; handed-off guns count against the recipient.'} Record rigging, concealment and table-agreed exceptions in the item’s source/notes; label house rules explicitly.</p>
+      <div className="dossier-grid"><label>Load choice<select aria-label="Load choice" value={current.loadout.mode} onChange={e => change({ loadout: { ...draft.loadout, mode: e.target.value as 'Quiet' | 'Loud' } })}><option value="Quiet">Quiet · {quiet}</option><option value="Loud">Loud · {loud}</option></select></label>{number('Carried stacks', current.loadout.carriedStacks, current.wealth.stacks, carriedStacks => change({ loadout: { ...draft.loadout, carriedStacks } }))}</div>
       <p data-testid="carried-load">Draft load: {carried} / {capacity} · {current.loadout.mode}</p>
       {carried > capacity && <p role="status">Over listed load. Review your equipment and any sourced exception with the table.</p>}
       <h5>Armor · worn and totaled</h5>
@@ -54,7 +57,7 @@ export function CharacterEquipment({ data, editable, patch }: { data: CharacterD
         {text(`Item ${item.name || i + 1} notes`, item.notes, notes => itemChange(i, { notes }), true)}
       </div>{editable && <button onClick={() => change({ equipment: current.equipment.filter((_, n) => i !== n) })}>Remove item {item.name}</button>}</details>)}
       {editable && <button onClick={() => change({ equipment: [...current.equipment, { name: 'New item', load: 0, quantity: 1, uses: 0, carried: false, source: '', notes: '' }] })}>Add carried item</button>}
-      <h5>Limited resources</h5><p>Hound’s Dogged Persistence grants two Tenacity uses per score; restore them at the start of downtime (book p.28). Mark use/restoration deliberately. Other resources require a named source; no phase change spends or restores them.</p>
+      <h5>Limited resources</h5><p>{data.sheet.resourceGuidance ?? (data.playbook === 'Hound' ? 'Hound’s Dogged Persistence grants two Tenacity uses per score; restore them at the start of downtime (book p.28). Mark use/restoration deliberately.' : 'Follow your playbook’s verified resource procedure; record use and restoration deliberately.')} Other resources require a named source; no phase change spends or restores them.</p>
       {current.resources.map((resource, i) => { const save = (changes: Partial<typeof resource>) => change({ resources: current.resources.map((r, n) => i === n ? { ...r, ...changes } : r) }); return <div className="dossier-grid dossier-row" key={i}>
         {text(`Resource ${i + 1} name`, resource.name, name => save({ name }))}{number(`Resource ${i + 1} used`, resource.used, resource.capacity, used => save({ used }))}{number(`Resource ${i + 1} capacity`, resource.capacity, 100, capacity => save({ capacity }))}{text(`Resource ${i + 1} source`, resource.source, source => save({ source }))}{text(`Resource ${i + 1} notes`, resource.notes, notes => save({ notes }), true)}
         {editable && <button onClick={() => change({ resources: current.resources.filter((_, n) => i !== n) })}>Remove resource {i + 1}</button>}
@@ -64,7 +67,7 @@ export function CharacterEquipment({ data, editable, patch }: { data: CharacterD
       <h5>Stacks / bank</h5><p>Wallet capacity {data.sheet.wallet}; bank {data.sheet.bank}. Each full bank row of 10 gives 1 lifestyle Quality. Withdrawal ordinarily costs 2 bank per 1 cash; source-specific abilities differ. Enter both agreed values explicitly. No automatic transfer, debit or score payout.</p>
       <div className="dossier-grid">{number('Stacks in wallet', current.wealth.stacks, data.sheet.wallet, stacks => change({ wealth: { ...draft.wealth, stacks } }))}{number('Bank', current.wealth.bank, data.sheet.bank, bank => change({ wealth: { ...draft.wealth, bank } }))}</div>
       <p>Lifestyle Quality: {Math.floor(current.wealth.bank / 10)}</p>
-      <h5>XP / advances</h5><p>Record desperate and zero-dot action XP on any track (book p.160); the v6 sheet footer instead says attribute tracks. Keep placement editable and resolve that source discrepancy with your table. Keys collectively grant at most 1 XP/session. A filled track calls for clearing marks and an advance: special ability for playbook, an action dot under the attribute otherwise. Record each agreed change explicitly; filling a track does not apply it automatically. Actions and ability choices are above.</p>
+      <h5>XP / advances</h5>{data.sheet.xpTrigger && <p>Playbook XP: address a challenge with {data.sheet.xpTrigger}.</p>}<p>Record desperate and zero-dot action XP on any track (book p.160); the v6 sheet footer instead says attribute tracks. Keep placement editable and resolve that source discrepancy with your table. Keys collectively grant at most 1 XP/session. A filled track calls for clearing marks and an advance: special ability for playbook, an action dot under the attribute otherwise. Record each agreed change explicitly; filling a track does not apply it automatically. Actions and ability choices are above.</p>
       <div className="dossier-grid">{(['playbook','insight','prowess','resolve'] as const).map(track => number(`${track[0].toUpperCase() + track.slice(1)} XP`, current.xp[track], track === 'playbook' ? data.sheet.playbookXp : data.sheet.attributeXp, value => change({ xp: { ...draft.xp, [track]: value } })))}</div>
       {text('Advancement record', current.advancementNotes, advancementNotes => change({ advancementNotes }), true)}
     </fieldset>
