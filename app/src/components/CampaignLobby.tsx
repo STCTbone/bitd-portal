@@ -5,6 +5,7 @@ import { CampaignPlanning } from './CampaignPlanning'
 import { CampaignClocks } from './CampaignClocks'
 import { CrewDossier } from './CrewDossier'
 import { FactionDossier } from './FactionDossier'
+import { CampaignMedia, CampaignMediaProvider } from './ProtectedMedia'
 import { CharacterDossiers } from './CharacterDossiers'
 
 /** Authenticated campaign landing. Features enter here only after their backend contract is migrated. */
@@ -45,7 +46,7 @@ export function CampaignLobby() {
       <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
     </section>
     <FactionDossier key={`${session.campaignId}:${session.role}`} />
-    <CharacterDossiers />
+    <CampaignMediaProvider key={`media:${session.campaignId}:${session.role}`}><CharacterDossiers /><CampaignMedia /></CampaignMediaProvider>
     <CrewDossier />
     <CampaignPlanning />
     <CampaignClocks />

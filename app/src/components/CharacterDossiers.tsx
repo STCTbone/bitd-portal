@@ -5,6 +5,7 @@ import { DossierField } from './DossierField'
 import { supabase } from '@/lib/supabase'
 import { CharacterOwnership } from './CharacterOwnership'
 import { CharacterEquipment } from './CharacterEquipment'
+import { CharacterMedia } from './ProtectedMedia'
 import { CharacterCondition } from './CharacterCondition'
 import './dossier.css'
 
@@ -80,6 +81,7 @@ function Dossier({ character, editable, patch, isGM, setKeyCapacity }: { charact
     <div className="dossier-title"><span>{d.playbook.toUpperCase()} / CHARACTER DOSSIER</span><h3>{d.alias || d.name}</h3><p>{editable ? 'You can edit this dossier.' : 'Read only · follow the owner’s saved changes.'}</p></div>
     <p className="dossier-source">Published baseline: Blades ’68 playbooks v6, Hound; book v1.0.1, pp. 22–28. <a href="https://evilhat.com/wp-content/uploads/2026/07/Crew-Sheets-and-Playbooks.zip" target="_blank" rel="noreferrer">Official reference sheets</a>. Records are edited deliberately; abilities do not apply automatic consequences.</p>
     {error && <p role="alert" className="dossier-error">{error}</p>}
+    <CharacterMedia character={character} editable={editable} />
     <section aria-label="Identity"><h4>01 / Identity</h4><div className="dossier-grid">{text('Character name', 'name')}{text('Alias', 'alias')}{text('Player name', 'playerName')}{text('Look', 'look')}{text('Wearing', 'wearing')}{text('Heritage', 'heritage', HERITAGES)}{text('Heritage details', 'heritageDetails')}{text('Background', 'background', BACKGROUNDS)}{text('Background details', 'backgroundDetails')}{text('Vice', 'vice', VICES)}{text('Vice hookup', 'viceHookup')}</div></section>
     <section aria-label="Actions"><h4>02 / Actions</h4><p>Hound starts with Survey 1 and Consort 2. At creation add four dots, at most 2 in any action. Later maximum is 3 (4 with Mastery); record table-approved exceptions deliberately.</p><div className="dossier-actions">{Object.entries(ACTION_GROUPS).map(([group, actions]) => <fieldset key={group}><legend>{group}</legend>{actions.map(action => <label key={action}>{action[0].toUpperCase() + action.slice(1)}<select aria-label={`${action[0].toUpperCase() + action.slice(1)} rating`} disabled={!editable || pending} value={d.actions[action]} onChange={e => void change({ actions: { [action]: Number(e.target.value) } })}>{Array.from({ length: d.sheet.actionMax + 1 }, (_, n) => n).map(n => <option key={n} value={n}>{n} · {'●'.repeat(n) || '—'}</option>)}</select></label>)}</fieldset>)}</div></section>
     <section aria-label="Special abilities"><h4>03 / Special abilities</h4><p>Choose one at creation. Record later advances and ability decisions with your table.</p><div className="dossier-options">{d.sheet.abilities.map(ability => <label className="dossier-check" key={ability}><input type="checkbox" checked={d.abilities.includes(ability)} disabled={!editable || pending} onChange={e => void change({ abilities: e.target.checked ? [...d.abilities, ability] : d.abilities.filter(a => a !== ability) })} />{ability}</label>)}</div>
