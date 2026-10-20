@@ -1,3 +1,4 @@
+import { CampaignAftermath } from './CampaignAftermath'
 import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useSession } from '@/lib/session'
 import { activities, approaches, phases, createActivity, createOpportunity, deleteActivity, planningError, selectOpportunity, setCampaignPhase, updateActivity, updateOpportunity, updateScorePlan, usePlanning, type ActivityData, type OpportunityData, type ScoreData } from '@/lib/planning'
@@ -89,6 +90,7 @@ function Planning({ campaign, user, gm }: { campaign: string; user: string; gm: 
     <h3>Selected score plans</h3><p>Choose the approach and opening gambit, then Quiet (3 load) or Loud (6 load), with playbook and rigging exceptions. Record engagement details and the table’s result. No roll or load reset happens here.</p>
     <div className="planning-list">{state.scores.map(row => <RecordEditor key={row.id} title={`Score plan · ${row.data.name}`} data={row.data} fields={scoreFields} gm={gm} canEdit={true} saveLabel="Save plan" refresh={state.refresh} save={async (patch, expected) => { state.accept('scores', await updateScorePlan(row.id, patch, expected)) }}>{() => <div><p>{row.id === state.cycle?.selected_score_id ? 'Current primary selection' : 'Retained score'} · {row.data.status}</p><p>Selection snapshot: {row.data.opportunity.client || 'No client yet'} / {row.data.opportunity.target || 'Target to define'} / Tier {row.data.opportunity.targetTier} / potential {row.data.opportunity.payout ?? 'unrecorded'} stacks</p><p>Opening gambits: {Object.entries(approaches).map(([key, value]) => `${key} — ${value.toLowerCase()}`).join('; ')}.</p></div>}</RecordEditor>)}</div>
     <ScoreOperations campaign={campaign} gm={gm} state={state} />
+    <CampaignAftermath campaign={campaign} gm={gm} planning={state} />
     {status && <p role="status">{status}</p>}{error && <p role="alert">{error}</p>}
     <footer>Source: Blades ’68 v1.0.1, Personal Business pp. 164–171; Planning Meeting and Score pp. 180–189. Published baseline, excluding Deep Cuts. These are editable records: rewards, Heat, recovery, Armor restoration and other consequences require deliberate table decisions.</footer>
   </section>

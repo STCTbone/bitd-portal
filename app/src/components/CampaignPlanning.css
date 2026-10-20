@@ -56,3 +56,9 @@
 .score-versions summary { cursor:pointer; font-weight:700; min-height:32px; }
 .score-versions ol { padding-left:1.5rem; }
 .score-versions li { padding:.5rem; border-bottom:1px solid #9caea2; }
+.aftermath-panel { border-top: 2px solid var(--color-border, #a78b68); padding-top: 1.5rem; margin-top: 2rem; overflow-wrap: anywhere; }
+.aftermath-panel label { display: flex; flex-direction: column; gap: .35rem; margin: .5rem 0; }
+.aftermath-panel input, .aftermath-panel select, .aftermath-panel textarea { max-width: 100%; min-width: 0; box-sizing: border-box; }
+.aftermath-panel input[type=checkbox] { align-self: flex-start; }
+.aftermath-panel fieldset { min-width: 0; }
+.aftermath-panel li { margin-block: .4rem; }
