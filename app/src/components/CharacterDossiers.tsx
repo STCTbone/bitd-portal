@@ -3,8 +3,10 @@ import { useSession } from '@/lib/session'
 import { ACTION_GROUPS, ECHO_PET_CHOICES, useCharacters, type CharacterPatch, type CharacterRecord } from '@/lib/characters'
 import { DossierField } from './DossierField'
 import { supabase } from '@/lib/supabase'
+import { CharacterOwnership } from './CharacterOwnership'
 import { CharacterEquipment } from './CharacterEquipment'
 import { HumanPlaybookRecords } from './HumanPlaybookRecords'
+import { CharacterMedia } from './ProtectedMedia'
 import { CharacterCondition } from './CharacterCondition'
 import './dossier.css'
 
@@ -56,6 +58,7 @@ export function CharacterDossiers() {
       <button disabled={busy || !name.trim() || !playbooks.includes(playbook)}>Create {playbook}</button>
     </form>
     {character && <>
+      {session!.role === 'gm' && <CharacterOwnership key={`ownership:${character.id}`} character={character} assign={async (owner, expected) => { await mutate('assign_character_owner', { p_character: character.id, p_owner: owner, p_expected_owner: expected }) }} />}
       <Dossier key={character.id} character={character} editable={session!.role === 'gm' || character.owner_id === session!.userId} patch={changes => patch(character.id, changes)} isGM={session!.role === 'gm'} setKeyCapacity={async (capacity, reason) => { await mutate('set_character_key_capacity', { p_character: character.id, p_capacity: capacity, p_reason: reason }) }} />
       {(session!.role === 'gm' || character.owner_id === session!.userId) && <div className="dossier-danger">
         {!confirmDelete ? <button onClick={() => setConfirmDelete(true)}>Delete character</button> : <><p>Delete {character.data.name} permanently? This cannot be undone.</p><button disabled={busy} onClick={() => void action('delete_character', character.id)}>Confirm delete {character.data.name}</button><button onClick={() => setConfirmDelete(false)}>Keep character</button></>}
@@ -79,6 +82,7 @@ function Dossier({ character, editable, patch, isGM, setKeyCapacity }: { charact
     <div className="dossier-title"><span>{d.playbook.toUpperCase()} / CHARACTER DOSSIER</span><h3>{d.alias || d.name}</h3><p>{editable ? 'You can edit this dossier.' : 'Read only · follow the owner’s saved changes.'}</p></div>
     <p className="dossier-source">Published baseline: {d.sheet.source}. <a href="https://evilhat.com/wp-content/uploads/2026/07/Crew-Sheets-and-Playbooks.zip" target="_blank" rel="noreferrer">Official reference sheets</a>. Records are edited deliberately; abilities do not apply automatic consequences.</p>
     {error && <p role="alert" className="dossier-error">{error}</p>}
+    <CharacterMedia character={character} editable={editable} />
     <section aria-label="Identity"><h4>01 / Identity</h4><div className="dossier-grid">{text('Character name', 'name')}{text('Alias', 'alias')}{text('Player name', 'playerName')}{text('Look', 'look')}{text('Wearing', 'wearing')}{text('Heritage', 'heritage', HERITAGES)}{text('Heritage details', 'heritageDetails')}{(!d.sheet.backgroundLabel || d.sheet.backgroundLabel === 'Background') && <>{text('Background', 'background', d.sheet.backgroundSuggestions ?? BACKGROUNDS)}{text('Background details', 'backgroundDetails')}</>}{text('Vice', 'vice', VICES)}{text('Vice hookup', 'viceHookup')}</div></section>
     <section aria-label="Actions"><h4>02 / Actions</h4><p>{d.sheet.creation ?? (d.playbook === 'Hound' ? 'Hound starts with Survey 1 and Consort 2. At creation add four dots, at most 2 in any action.' : 'Follow your playbook’s starting dots and creation choices.')} Later maximum is 3 (4 with Mastery); record table-approved exceptions deliberately.</p><div className="dossier-actions">{Object.entries(ACTION_GROUPS).map(([group, actions]) => <fieldset key={group}><legend>{group}</legend>{actions.map(action => <label key={action}>{action[0].toUpperCase() + action.slice(1)}<select aria-label={`${action[0].toUpperCase() + action.slice(1)} rating`} disabled={!editable || pending} value={d.actions[action]} onChange={e => void change({ actions: { [action]: Number(e.target.value) } })}>{Array.from({ length: d.sheet.actionMax + 1 }, (_, n) => n).map(n => <option key={n} value={n}>{n} · {'●'.repeat(n) || '—'}</option>)}</select></label>)}</fieldset>)}</div></section>
     <section aria-label="Special abilities"><h4>03 / Special abilities</h4><p>{d.sheet.abilityChoiceGuidance ?? 'Choose one at creation.'} Record later advances and ability decisions with your table.</p><div className="dossier-options">{d.sheet.abilities.map(ability => <label className="dossier-check" key={ability}><input type="checkbox" checked={d.abilities.includes(ability)} disabled={!editable || pending || d.sheet.fixedAbilities?.includes(ability)} onChange={e => void change({ abilities: e.target.checked ? [...d.abilities, ability] : d.abilities.filter(a => a !== ability) })} />{ability}</label>)}</div>

@@ -5,6 +5,7 @@ import { CampaignPlanning } from './CampaignPlanning'
 import { CampaignClocks } from './CampaignClocks'
 import { CrewDossier } from './CrewDossier'
 import { FactionDossier } from './FactionDossier'
+import { CampaignMedia, CampaignMediaProvider } from './ProtectedMedia'
 import { CharacterDossiers } from './CharacterDossiers'
 
 /** Authenticated campaign landing. Features enter here only after their backend contract is migrated. */
@@ -37,11 +38,15 @@ export function CampaignLobby() {
         <input id="gm-invite" readOnly value={invitations.gm} onFocus={event => event.target.select()} />
         <small>Grants full GM authority. Share only with another GM.</small>
       </div>}
+      <label htmlFor="participant-id">Your participant ID</label>
+      <input id="participant-id" readOnly value={session.userId} onFocus={event => event.target.select()} />
+      <small>For character recovery, send this ID to your GM after rejoining. It identifies this browser identity; it grants no access by itself.</small>
+      <details><summary>Recover campaign or character access</summary><p>Reloading this browser restores current membership. Switching campaigns keeps your identity. After clearing browser data or moving to another browser, rejoin with the player invitation, then ask your GM to assign your character to the participant ID above. Your previous identity keeps ownership until the GM confirms the transfer. Save your invitation outside this browser. Lost GM access needs the secret GM invitation or help from another GM; there is no email reset.</p></details>
       {error && <p role="alert" className="access-error">{error}</p>}
       <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
     </section>
     <FactionDossier key={`${session.campaignId}:${session.role}`} />
-    <CharacterDossiers />
+    <CampaignMediaProvider key={`media:${session.campaignId}:${session.role}`}><CharacterDossiers /><CampaignMedia /></CampaignMediaProvider>
     <CrewDossier />
     <CampaignPlanning />
     <CampaignClocks />
