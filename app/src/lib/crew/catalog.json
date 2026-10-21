@@ -1683,79 +1683,98 @@
     "claims": [
       {
         "id": "utopians-claim-1",
-        "name": "Turf"
+        "name": "Turf",
+        "circle": 1
       },
       {
         "id": "utopians-claim-2",
-        "name": "Turf"
+        "name": "Turf",
+        "circle": 2
       },
       {
         "id": "utopians-claim-3",
-        "name": "Ancient Altar"
+        "name": "Ancient Altar",
+        "circle": 3
       },
       {
         "id": "utopians-claim-4",
-        "name": "Notable Skeptic"
+        "name": "Notable Skeptic",
+        "circle": 4
       },
       {
         "id": "utopians-claim-5",
-        "name": "Temple"
+        "name": "Temple",
+        "circle": 2
       },
       {
         "id": "utopians-claim-6",
-        "name": "Reality Shift"
+        "name": "Reality Shift",
+        "circle": 3
       },
       {
         "id": "utopians-claim-7",
-        "name": "Reality Tear"
+        "name": "Reality Tear",
+        "circle": 4
       },
       {
         "id": "utopians-claim-8",
-        "name": "Luxury Retreat"
+        "name": "Luxury Retreat",
+        "circle": 1
       },
       {
         "id": "utopians-claim-9",
-        "name": "Natural Healer"
+        "name": "Natural Healer",
+        "circle": 2
       },
       {
         "id": "utopians-claim-10",
-        "name": "Ancient Gate"
+        "name": "Ancient Gate",
+        "circle": 3
       },
       {
         "id": "utopians-claim-11",
-        "name": "Figurehead"
+        "name": "Figurehead",
+        "circle": 4
       },
       {
         "id": "utopians-claim-12",
-        "name": "Wellness Class"
+        "name": "Wellness Class",
+        "circle": 1
       },
       {
         "id": "utopians-claim-13",
-        "name": "Donations"
+        "name": "Donations",
+        "circle": 2
       },
       {
         "id": "utopians-claim-14",
-        "name": "Abandoned Lab"
+        "name": "Abandoned Lab",
+        "circle": 3
       },
       {
         "id": "utopians-claim-15",
-        "name": "Ancient Tomes"
+        "name": "Ancient Tomes",
+        "circle": 4
       },
       {
         "id": "utopians-claim-16",
-        "name": "Turf"
+        "name": "Turf",
+        "circle": 1
       },
       {
         "id": "utopians-claim-17",
-        "name": "Turf"
+        "name": "Turf",
+        "circle": 2
       },
       {
         "id": "utopians-claim-18",
-        "name": "Ancient Tower"
+        "name": "Ancient Tower",
+        "circle": 3
       },
       {
         "id": "utopians-claim-19",
-        "name": "Interested Party"
+        "name": "Interested Party",
+        "circle": 4
       }
     ]
   }
