@@ -46,7 +46,7 @@ test('owners and GMs explicitly record gear and advances while malformed and pro
   expect((await owner.from('character_playbooks').update({ rules: { wallet: 999 } }).eq('name', 'Hound')).error).not.toBeNull()
   expect((await owner.from('character_playbooks').insert({ name: 'Forged', defaults: {}, rules: {} })).error).not.toBeNull()
   expect((await owner.from('characters').update({ data: { wealth: { stacks: 999 } } }).eq('id', id)).error).not.toBeNull()
-  expect((await owner.rpc('create_character', { p_campaign: campaign, p_name: 'Forgery', p_playbook: 'Hull' })).error).not.toBeNull()
+  expect((await owner.rpc('create_character', { p_campaign: campaign, p_name: 'Forgery', p_playbook: 'Unpublished playbook' })).error).not.toBeNull()
   expect((await outsider.rpc('create_character', { p_campaign: campaign, p_name: 'Forgery', p_playbook: 'Hound' })).error).not.toBeNull()
 })
 
