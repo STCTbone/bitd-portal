@@ -6,7 +6,11 @@ export interface DealerBusiness {
   product: string; units: number; supply: string; demand: string; distribution: string; competitiveAdvantages: string
 }
 export interface MilitantCause { cause: string; enemies: [string, string] }
+export interface RacerVehicle { id: string; name: string; edges: string[]; flaws: string[]; notes: string }
+export interface RacerCircuit { circuit: string; operations: string[]; signatureStunts: string[]; vehicles: RacerVehicle[] }
+export interface UtopianVision { vision: string; circle: number; stacksEarned: number; livesEnded: number; majorAnomalyCreated: boolean; truths: [string,string,string,string,string]; anomalies: string }
 export interface CrewData {
+  racerCircuit: RacerCircuit; utopianVision: UtopianVision
   dealerBusiness: DealerBusiness; militantCause: MilitantCause
   abilities: CrewAbility[]; upgrades: CrewUpgrade[]; claims: CrewClaim[]; cohorts: CrewCohort[]
   name: string; type: CrewType; reputation: string; tier: number; hold: 'weak' | 'strong'
