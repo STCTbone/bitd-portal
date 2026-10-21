@@ -37,6 +37,8 @@ npm run lint
 
 Tests use real local Supabase and independent browser contexts, never mocks or a hosted database. They create fresh campaigns and check creation, both invitation roles, invalid invitations, reload, browser tampering, direct API forgery/isolation, unconverted legacy writes/storage, and realtime denial. The public API checks cannot run against an empty external service: start the committed local stack first. Existing unrelated lint failures in legacy editors are recorded in the implementation handoff.
 
+Playwright builds the current application and starts its own production preview on the selected frontend port before testing. It never reuses a running server. This keeps browser journeys independent of development hot reloads and verifies the deployed bundle against the real local backend. Use `npm run dev` separately for interactive development.
+
 ## Concurrent worktrees
 
 Never reset a shared backend while another worktree is using it. Each independent worktree can change its local `supabase/config.toml` project ID to a unique identifier (for example `bitd-ticket3`) and add a distinct offset to all three backend ports (`api.port`, `db.port`, `db.shadow_port`), then select a distinct frontend port and update `auth.site_url` accordingly. Example backend ports for offset 100: API 54421, DB 54422, shadow 54420. Use a unique frontend port such as 5273 and set `auth.site_url` to `http://127.0.0.1:5273`.
