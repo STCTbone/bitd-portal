@@ -11,10 +11,13 @@ async function fixture() {
   const campaign = (await gm.rpc('create_campaign', { p_name: 'Intentional setup' })).data.id
   const invites = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data
   await player.rpc('join_campaign', { p_invitation: invites.player })
-  return { gm, player, other, campaign, invites }
+  expect((await gm.rpc('set_paranormal_playbook', { p_campaign: campaign, p_playbook: 'Vampire', p_enabled: true })).error).toBeNull()
+  expect((await gm.rpc('set_paranormal_playbook', { p_campaign: campaign, p_playbook: 'Ghost/Echo', p_enabled: false })).error).toBeNull()
+  const settings = await gm.rpc('get_campaign_playbooks', { p_campaign: campaign }); expect(settings.error).toBeNull()
+  return { gm, player, other, campaign, invites, settings: settings.data }
 }
 test('sample setup is explicit, current-GM only, atomic and exactly once without replacing existing records', async () => {
-  const { gm, player, other, campaign } = await fixture()
+  const { gm, player, other, campaign, settings } = await fixture()
   expect((await gm.from('characters').select('*').eq('campaign_id', campaign)).data).toEqual([])
   const preview = await gm.rpc('preview_campaign_setup', { p_campaign: campaign, p_action: 'sample' })
   expect(preview.error).toBeNull()
@@ -27,6 +30,7 @@ test('sample setup is explicit, current-GM only, atomic and exactly once without
   const applied = await Promise.all([1, 2].map(() => gm.rpc('apply_campaign_setup', { p_request: preview.data.id, p_confirmation: 'LOAD SAMPLE' })))
   for (const response of applied) expect(response.error).toBeNull()
   expect(applied[0].data).toEqual(applied[1].data)
+  expect((await gm.rpc('get_campaign_playbooks', { p_campaign: campaign })).data).toEqual(settings)
   const characters = (await player.from('characters').select('*').eq('campaign_id', campaign)).data!
   expect(characters).toHaveLength(2)
   expect(characters.every(character => character.owner_id === null && character.data.playbook === 'Hound')).toBe(true)
@@ -143,7 +147,7 @@ async function richFixture() {
 }
 
 test('scoped clear preserves actual Aftermath history, sheets, backing, confidential records, uploaded art and map selection', async () => {
-  const { gm, player, other, campaign, invites, portrait, secret, map, character, proposal, receipt } = await richFixture()
+  const { gm, player, other, campaign, invites, settings, portrait, secret, map, character, proposal, receipt } = await richFixture()
   const otherCampaign = (await other.rpc('create_campaign', { p_name: 'Separate intact campaign' })).data.id
   const otherNote = await other.rpc('create_shared_note', { p_campaign: otherCampaign, p_data: { title: 'Other table note' } }); expect(otherNote.error).toBeNull()
   const before = await savedRecords(gm, campaign)
@@ -166,6 +170,10 @@ test('scoped clear preserves actual Aftermath history, sheets, backing, confiden
   expect(await savedRecords(gm, campaign)).toEqual(before)
   expect((await gm.from('character_art').select('*').eq('character_id', character.id)).data).toEqual(artBefore)
   expect((await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data).toEqual(invites)
+  expect((await gm.rpc('get_campaign_playbooks', { p_campaign: campaign })).data).toEqual(settings)
+  expect(settings.find((row: { name: string }) => row.name === 'Vampire').enabled).toBe(true)
+  expect(settings.find((row: { name: string }) => row.name === 'Ghost/Echo').enabled).toBe(false)
+  expect((await player.from('paranormal_playbook_availability').select('*')).error).not.toBeNull()
   for (const asset of [portrait, secret, map]) {
     const file = await gm.storage.from('campaign-assets').download(asset.object_path); expect(file.error).toBeNull(); expect(Buffer.from(await file.data!.arrayBuffer())).toEqual(png)
   }
