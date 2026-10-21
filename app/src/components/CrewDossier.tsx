@@ -3,6 +3,7 @@ import { useSession } from '@/lib/session'
 import { createCrew, crewError, crewTypes, loadCrew, updateCrew, type CrewData, type CrewDossier as CrewRecord, type CrewType } from '@/lib/crew/dossier'
 import './CrewDossier.css'
 import { CrewTools } from './CrewTools'
+import { CrewBusiness } from './CrewBusiness'
 
 const textFields = [
   ['reputation', 'Reputation'], ['base', 'Base'], ['baseDistrict', 'Base district'], ['flair', 'Base flair'],
@@ -117,6 +118,7 @@ function CampaignCrew({ campaign, canManage }: { campaign: string; canManage: bo
         <div className="crew-tracks">{tracks.map(([field, label, maximum]) => <label key={field} htmlFor={`crew-${field}`}>{label}<input aria-label={label} id={`crew-${field}`} type="number" min={0} max={maximum} step={1} required value={values[field]} onChange={event => change(field, event.target.valueAsNumber)} />{['rep','heat','wanted','xp','anger'].includes(field) && <small>of {maximum}</small>}</label>)}</div>
         <p className="crew-guidance">Manual records: changing a track never spends resources, advances Tier, clears Heat, resets Anger or grants an advance. Standard storage: 4 / 8 / 16 stacks with 0 / 1 / 2 Vault expansions. Review any exception with the table.</p>
         <div className="crew-fields">{textFields.map(([field, label]) => <label htmlFor={`crew-${field}`} key={field}>{label}<textarea aria-label={label} id={`crew-${field}`} maxLength={5000} rows={field.endsWith('Notes') || field === 'flair' ? 3 : 2} value={values[field]} onChange={event => change(field, event.target.value)} /></label>)}</div>
+        <CrewBusiness values={values} change={change} />
         <CrewTools values={values} change={change} canManage={canManage} />
       </fieldset>
       {canManage && <div className="crew-actions"><button type="submit" disabled={busy || !hasEdits}>Save crew changes</button><button type="button" className="crew-secondary" disabled={busy} onClick={() => { void reload() }}>Reload latest crew{hasEdits ? ' (discard unsaved)' : ''}</button></div>}
