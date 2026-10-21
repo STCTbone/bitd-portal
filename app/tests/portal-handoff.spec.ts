@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
+if (!['localhost', '127.0.0.1'].includes(new URL(process.env.VITE_SUPABASE_URL!).hostname)) throw new Error('Local backend required')
+
 // Agreed seam: independent real browsers → the committed local Supabase stack.
 // Catalogs and low-level authorization permutations remain in their feature suites.
 test('GM and two players complete one keyboard-accessible cycle, recover a failed save and transfer ownership', async ({ browser }) => {
