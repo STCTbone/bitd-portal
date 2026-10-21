@@ -44,7 +44,7 @@ export function CampaignSetup() {
       <label htmlFor="setup-confirmation">Confirmation phrase</label>
       <input id="setup-confirmation" value={phrase} onChange={event => setPhrase(event.target.value)} autoComplete="off" disabled={busy} />
       <small>Type {preview.action === 'sample' ? 'LOAD SAMPLE' : 'CLEAR WORKSPACE'} exactly to confirm these changes.</small>
-      <div className="setup-actions"><button disabled={busy || phrase !== (preview.action === 'sample' ? 'LOAD SAMPLE' : 'CLEAR WORKSPACE')} onClick={() => void apply()}>{busy ? 'Applying reviewed action…' : preview.action === 'sample' ? 'Confirm sample setup' : 'Confirm clocks, notes and markers clear'}</button><button className="access-secondary" disabled={busy} onClick={() => { setPreview(null); setPhrase(''); setError(''); setStatus('Review cancelled. No campaign records changed.') }}>Cancel setup review</button></div>
+      <div className="setup-actions"><button disabled={busy || phrase !== (preview.action === 'sample' ? 'LOAD SAMPLE' : 'CLEAR WORKSPACE')} onClick={() => void apply()}>{busy ? 'Applying reviewed action…' : preview.action === 'sample' ? 'Confirm sample setup' : 'Confirm clocks, notes and markers clear'}</button><button className="access-secondary" disabled={busy} onClick={() => { setPreview(null); setPhrase(''); setError(''); setStatus('Review closed. No additional action was requested.') }}>Cancel setup review</button></div>
     </div>}
     {error && <p role="alert" className="access-error">{error}</p>}{status && <p role="status">{status}</p>}
   </section>
