@@ -1,26 +1,20 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react'
 import { supabase } from './supabase'
 
-/** A UI selection only. Campaign authority always comes from server membership. */
-export type Seat = { type: 'gm'; name: string } | { type: 'character'; id: string; name: string }
 export interface Session {
   campaignId: string
   campaignName: string
   userId: string
   role: 'gm' | 'player'
-  seat: Seat | null
 }
 type Result = { ok: boolean; error?: string }
 interface SessionContextValue {
   session: Session | null
   loading: boolean
   accessError: string
-  sessionId: string
   createCampaign: (name: string) => Promise<Result>
   joinCampaign: (invitation: string) => Promise<Result>
   refreshMembership: () => Promise<void>
-  claimSeat: (seat: Seat) => void
-  releaseSeat: () => void
   leaveCampaign: () => void
 }
 const STORAGE_KEY = 'bitd.activeCampaign'
@@ -60,7 +54,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [accessError, setAccessError] = useState('')
   const generation = useRef(0)
   const entering = useRef(false)
-  const [sessionId] = useState(() => crypto.randomUUID())
   const refreshMembership = useCallback(async () => {
     if (entering.current) return
     const request = ++generation.current
@@ -77,8 +70,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (member.error) throw member.error
       if (!campaign.data || !member.data) { selectCampaign(null); setSession(null); setAccessError('Campaign access is no longer authorized. Ask your GM for an invitation.'); return }
       setAccessError('')
-      const authorized = { campaignId, campaignName: campaign.data.name, userId, role: member.data.role }
-      setSession(previous => ({ ...authorized, seat: previous?.campaignId === campaignId && previous.role === authorized.role ? previous.seat : null }))
+      setSession({ campaignId, campaignName: campaign.data.name, userId, role: member.data.role })
     } catch {
       if (request !== generation.current) return
       setAccessError('Could not verify campaign access. Reconnect and retry, or rejoin with your invitation.')
@@ -105,7 +97,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (error) throw error
       setAccessError(''); setLoading(false)
       selectCampaign(data.id)
-      setSession({ campaignId: data.id, campaignName: data.name, userId, role: data.role, seat: null })
+      setSession({ campaignId: data.id, campaignName: data.name, userId, role: data.role })
       return { ok: true }
     } catch (error) {
       return { ok: false, error: error instanceof Error || (error && typeof error === 'object' && 'message' in error) ? String(error.message) : 'Could not reach the server. Try again.' }
@@ -113,10 +105,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [])
   const createCampaign = useCallback((name: string) => enter('create_campaign', name), [enter])
   const joinCampaign = useCallback((invitation: string) => enter('join_campaign', invitation), [enter])
-  const claimSeat = useCallback((seat: Seat) => {
-    setSession(previous => previous && (seat.type !== 'gm' || previous.role === 'gm') ? { ...previous, seat } : previous)
-  }, [])
-  const releaseSeat = useCallback(() => setSession(previous => previous ? { ...previous, seat: null } : null), [])
   const leaveCampaign = useCallback(() => { generation.current++; entering.current = false; selectCampaign(null); setSession(null); setAccessError('') }, [])
-  return <SessionContext.Provider value={{ session, loading, accessError, sessionId, createCampaign, joinCampaign, refreshMembership, claimSeat, releaseSeat, leaveCampaign }}>{children}</SessionContext.Provider>
+  return <SessionContext.Provider value={{ session, loading, accessError, createCampaign, joinCampaign, refreshMembership, leaveCampaign }}>{children}</SessionContext.Provider>
 }

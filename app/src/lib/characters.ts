@@ -87,7 +87,11 @@ export function useCharacters(campaignId: string) {
     if (request !== generation.current) return
     setLoaded(true)
     if (error) { setError('Character sync unavailable. Showing the last saved records; reconnect or retry.'); return }
-    setRecords(data as CharacterRecord[])
+    // Older accepted Versatile drafts could omit text keys. Keep them editable
+    // without turning a missing source into a granted ability.
+    setRecords((data as CharacterRecord[]).map(record => ({ ...record, data: { ...record.data,
+      versatile: record.data.versatile.map(ability => ({ name: ability.name ?? '', source: ability.source ?? '', notes: ability.notes ?? '' })),
+    } })))
     setError('')
   }, [campaignId])
   useEffect(() => {
@@ -115,5 +119,5 @@ export function useCharacters(campaignId: string) {
 
 /** Accepted native, sourced Versatile/Hull memories and paired Future Shock advances grant abilities. */
 export function hasCharacterAbility(data: CharacterDossier, name: string) {
-  return data.abilities.includes(name) || (data.abilities.includes('Versatile') && data.versatile.some(a => a.name === name && Boolean(a.source.trim()))) || (data.playbook === 'Hull' && Boolean(data.hull?.memories.some(m => m.progress === 8 && m.ability === name && m.source.trim()))) || (data.playbook === 'Time Traveler from the Future' && data.abilities.includes('Future Shock') && Boolean(data.traveler?.gainedAbilities.some(a => a.name === name && a.source.trim() && data.abilities.includes(a.trait) && data.sheet.abilities.includes(a.trait) && !data.sheet.fixedAbilities?.includes(a.trait))))
+  return data.abilities.includes(name) || (data.abilities.includes('Versatile') && data.versatile.some(a => a.name === name && Boolean(a.source?.trim()))) || (data.playbook === 'Hull' && Boolean(data.hull?.memories.some(m => m.progress === 8 && m.ability === name && m.source.trim()))) || (data.playbook === 'Time Traveler from the Future' && data.abilities.includes('Future Shock') && Boolean(data.traveler?.gainedAbilities.some(a => a.name === name && a.source.trim() && data.abilities.includes(a.trait) && data.sheet.abilities.includes(a.trait) && !data.sheet.fixedAbilities?.includes(a.trait))))
 }

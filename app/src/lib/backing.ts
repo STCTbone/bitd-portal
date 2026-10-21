@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useSnapshotPolling } from './snapshot-polling'
 import { supabase } from './supabase'
 
 export const ASSISTANCE = [
@@ -27,25 +28,16 @@ export async function patchBacking(row: BackingRecord, patch: BackingPatch, vers
 export function useBacking(character: string, campaign: string) {
   const [records, setRecords] = useState<BackingRecord[]>([]), [factions, setFactions] = useState<BackingFaction[]>([])
   const [error, setError] = useState(''), [loaded, setLoaded] = useState(false)
-  const active = useRef(true), request = useRef(0), accepted = useRef(0), epoch = useRef(0)
-  const refresh = useCallback(async () => {
-    const seq = ++request.current, start = epoch.current
+  const read = useCallback(async (acceptSnapshot: () => boolean) => {
     const results = await Promise.all([
       supabase.from('backing_records').select('*').eq('character_id', character).order('updated_at').retry(false),
       supabase.from('faction_records').select('id,name,tier').eq('campaign_id', campaign).order('name').retry(false),
     ])
-    if (!active.current || start !== epoch.current || seq < accepted.current) return
-    accepted.current = seq
+    if (!acceptSnapshot()) return
     if (results.some(r => r.error)) { setError('Backing refresh failed. Saved cards are concealed until the next permitted snapshot; local drafts remain available.'); setLoaded(false); return }
     setRecords(results[0].data as unknown as BackingRecord[]); setFactions(results[1].data as unknown as BackingFaction[]); setLoaded(true); setError('')
   }, [character, campaign])
-  useEffect(() => {
-    active.current = true
-    const initial = window.setTimeout(() => { void refresh() }, 0), timer = window.setInterval(() => { void refresh() }, 1200)
-    const online = () => { void refresh() }
-    window.addEventListener('online', online); window.addEventListener('focus', online)
-    return () => { active.current = false; window.clearTimeout(initial); window.clearInterval(timer); window.removeEventListener('online', online); window.removeEventListener('focus', online) }
-  }, [refresh])
-  function accept(row: BackingRecord) { epoch.current++; setRecords(rows => [...rows.filter(r => r.id !== row.id), row]); setLoaded(true); setError('') }
+  const { refresh, invalidate } = useSnapshotPolling(read, 1200)
+  function accept(row: BackingRecord) { invalidate(); setRecords(rows => [...rows.filter(r => r.id !== row.id), row]); setLoaded(true); setError('') }
   return { records, factions, error, loaded, refresh, accept }
 }
