@@ -32,3 +32,12 @@
 .crew-dossier .crew-cohort { margin:1.5rem 0; border:2px solid #38636b; padding:1rem; }
 .crew-cohort > small { overflow-wrap:anywhere; }
 .crew-cohort button { margin-top:1rem; }
+.crew-business { margin-top:2rem; }
+.crew-business section { border-top:3px solid #db684f; padding:1rem 0; }
+.crew-business h3 { font-size:1.35rem; margin:.5rem 0 1rem; }
+.crew-business a { color:#164d55; text-decoration:underline; }
+.crew-retained { margin:1.5rem 0; border:2px solid #38636b; padding:1rem; }
+.crew-retained summary { font-weight:700; cursor:pointer; min-height:32px; }
+.crew-retained dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap:1rem; }
+.crew-retained dt { font-weight:700; }
+.crew-retained dd { margin:.4rem 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }

@@ -2,7 +2,12 @@ import { supabase } from '@/lib/supabase'
 
 export const crewTypes = ['Dealers', 'Hit Squad', 'Militants', 'Racers', 'Shadows', 'Utopians'] as const
 export type CrewType = typeof crewTypes[number]
+export interface DealerBusiness {
+  product: string; units: number; supply: string; demand: string; distribution: string; competitiveAdvantages: string
+}
+export interface MilitantCause { cause: string; enemies: [string, string] }
 export interface CrewData {
+  dealerBusiness: DealerBusiness; militantCause: MilitantCause
   abilities: CrewAbility[]; upgrades: CrewUpgrade[]; claims: CrewClaim[]; cohorts: CrewCohort[]
   name: string; type: CrewType; reputation: string; tier: number; hold: 'weak' | 'strong'
   rep: number; turf: number; heat: number; wanted: number; stacks: number; vaults: number
