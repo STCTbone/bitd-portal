@@ -73,7 +73,8 @@ test('public API rejects forged membership, invitation disclosure, and cross-cam
   // Trusted fixture setup uses the operator's local-only admin API. Assertions
   // still exercise only the ordinary player's/outsider's public API boundary.
   const admin = localAdmin()
-  for (const table of ['factions', 'scores', 'map_tokens', 'media', 'codex']) {
+  // Converted map token reads and narrow mutations are covered in maps.spec.ts.
+  for (const table of ['factions', 'scores', 'media', 'codex']) {
     expect((await admin.from(table).insert({ campaign_id: campaign, data: { name: 'PRIVATE fixture', visible_to_players: false } })).error).toBeNull()
   }
   const privatePath = `${campaign}/legacy-private.txt`
@@ -82,7 +83,7 @@ test('public API rejects forged membership, invitation disclosure, and cross-cam
     expect((await identity.from('campaigns').select('*').eq('id', other.data.id)).data).toEqual([])
     expect((await identity.from('campaign_members').insert({ campaign_id: other.data.id, user_id: playerId, role: 'gm' })).error).not.toBeNull()
     expect((await identity.rpc('get_campaign_invitations', { p_campaign: other.data.id })).error).not.toBeNull()
-    for (const table of ['factions', 'scores', 'map_tokens', 'media', 'codex']) {
+    for (const table of ['factions', 'scores', 'media', 'codex']) {
       expect((await identity.from(table).select('*')).data).toEqual([])
       expect((await identity.from(table).insert({ campaign_id: campaign, data: { name: 'forged', visible_to_players: false } })).error).not.toBeNull()
       expect((await identity.from(table).update({ data: { role: 'gm' } }).eq('campaign_id', campaign)).error).not.toBeNull()

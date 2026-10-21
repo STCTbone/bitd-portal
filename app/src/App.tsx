@@ -24,7 +24,7 @@ import { ClockDashboard } from '@/components/ClockDashboard'
 import { FactionTracker } from '@/components/FactionTracker'
 import { Overview } from '@/components/Overview'
 import { CharacterAvatar } from '@/components/CharacterAvatar'
-import { GameMap } from '@/components/GameMap'
+import { CampaignMap } from '@/components/CampaignMap'
 import { ScorePanel } from '@/components/ScorePanel'
 import { LoginGate } from '@/components/LoginGate'
 import { CampaignLobby } from '@/components/CampaignLobby'
@@ -548,7 +548,7 @@ export function AppContent() {
 
           {/* Map Tab */}
           <TabsContent value="map">
-            <GameMap isGM={isGM} />
+            <CampaignMap />
           </TabsContent>
         </Tabs>
       </main>
