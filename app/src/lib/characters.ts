@@ -107,7 +107,7 @@ export function useCharacters(campaignId: string) {
   return { records, error, loaded, refresh, patch, mutate }
 }
 
-/** Only a selected native ability or selected, sourced Versatile record supplies guidance. */
+/** Accepted native selections, sourced Versatile and completed sourced Hull memories grant abilities. */
 export function hasCharacterAbility(data: CharacterDossier, name: string) {
-  return data.abilities.includes(name) || (data.abilities.includes('Versatile') && data.versatile.some(a => a.name === name && a.source.trim()))
+  return data.abilities.includes(name) || (data.abilities.includes('Versatile') && data.versatile.some(a => a.name === name && Boolean(a.source.trim()))) || (data.playbook === 'Hull' && Boolean(data.hull?.memories.some(m => m.progress === 8 && m.ability === name && m.source.trim())))
 }
