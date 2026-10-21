@@ -2,7 +2,7 @@ import catalog from '@/lib/crew/catalog.json'
 import type { CrewData, CrewCohort } from '@/lib/crew/dossier'
 
 type AbilityDefinition = { id:string; name:string; choices:string[]; repeatable:boolean; circle?:number }
-type Definition = { abilities:AbilityDefinition[]; upgrades:{id:string;name:string;max:number}[]; claims:{id:string;name:string}[] }
+type Definition = { abilities:AbilityDefinition[]; upgrades:{id:string;name:string;max:number}[]; claims:{id:string;name:string;circle?:number}[] }
 const catalogs: Record<string, Definition> = catalog
 export function CrewTools({ values, change, canManage }: {
   values:CrewData; change:<K extends keyof CrewData>(field:K,value:CrewData[K])=>void; canManage:boolean
@@ -13,16 +13,16 @@ export function CrewTools({ values, change, canManage }: {
   const text = (label:string,value:string,set:(value:string)=>void,max=5000) => <label key={label}>{label}<input aria-label={label} value={value} maxLength={max} onChange={e=>set(e.target.value)} /></label>
   return <div className="crew-tools">
     <h3>Abilities, upgrades & claims</h3>
-    <p className="crew-guidance">Selections are manual records. Review costs, choices and effects with the GM; saving never changes character Keys, load, XP, Heat or resources. Clear incompatible selections before changing crew type. Utopian Circle requirements need GM review.</p>
+    <p className="crew-guidance">Selections are manual records. Review costs, choices and effects with the GM; saving never changes character Keys, load, XP, Heat or resources. Clear incompatible selections before changing crew type. Utopian abilities and claims require the reviewed Circle recorded above.</p>
     <h4>Crew abilities</h4>
     {abilities.map((row,index)=>{
       const definition = choices.abilities.find(item=>item.id===row.catalogId)
       return <div className="crew-tool-row" key={row.id}>
         <label>Ability {index+1}<select aria-label={'Ability '+(index+1)} value={row.catalogId} onChange={e=>change('abilities',abilities.map((item,i)=>i===index?{...item,catalogId:e.target.value,choice:''}:item))}>
           {!definition && <option value={row.catalogId}>Previous crew selection — remove or replace</option>}
-          {choices.abilities.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
+          {choices.abilities.map(item=><option key={item.id} value={item.id} disabled={!!item.circle && item.circle > values.utopianVision.circle}>{item.name}</option>)}
         </select></label>
-        {definition?.circle && <small>Utopians Circle {definition.circle}; GM confirms eligibility.</small>}
+        {definition?.circle && <small>Utopians Circle {definition.circle}; reviewed Circle: {values.utopianVision.circle}.</small>}
         {!!definition?.choices.length && <label>Ability choice {index+1}<select aria-label={'Ability choice '+(index+1)} value={row.choice} onChange={e=>change('abilities',abilities.map((item,i)=>i===index?{...item,choice:e.target.value}:item))}>
           <option value="">Not recorded</option>{definition.choices.map(value=><option key={value}>{value}</option>)}
         </select></label>}
@@ -43,11 +43,11 @@ export function CrewTools({ values, change, canManage }: {
     </div>)}
     {canManage && <button type="button" onClick={()=>change('upgrades',[...upgrades,{id:crypto.randomUUID(),catalogId:choices.upgrades[0].id,marks:0,notes:''}])}>Add crew upgrade</button>}
     <h4>Claims</h4><p>Editable claim records; map adjacency and availability are GM decisions. Repeated names identify separate printed claim spaces.</p>
-    <div className="crew-claims">{choices.claims.map((claim)=>{
+    <div className="crew-claims" role="group" aria-label="Crew claims">{choices.claims.map((claim)=>{
       const siblings=choices.claims.filter(item=>item.name===claim.name)
       const label=claim.name+(siblings.length>1?' ('+(siblings.findIndex(item=>item.id===claim.id)+1)+')':'')
       const selected=claims.find(item=>item.catalogId===claim.id)
-      return <div key={claim.id}><label className="crew-checkbox"><input type="checkbox" checked={!!selected} onChange={e=>change('claims',e.target.checked?[...claims,{catalogId:claim.id,notes:''}]:claims.filter(item=>item.catalogId!==claim.id))}/>{label}</label>
+      return <div key={claim.id}><label className="crew-checkbox"><input type="checkbox" disabled={!!claim.circle && claim.circle > values.utopianVision.circle && !selected} checked={!!selected} onChange={e=>change('claims',e.target.checked?[...claims,{catalogId:claim.id,notes:''}]:claims.filter(item=>item.catalogId!==claim.id))}/>{label}</label>{claim.circle && <small>Circle {claim.circle}</small>}
         {selected && text('Claim notes '+label,selected.notes,value=>change('claims',claims.map(item=>item.catalogId===claim.id?{...item,notes:value}:item)))}
       </div>
     })}</div>
@@ -62,6 +62,6 @@ export function CrewTools({ values, change, canManage }: {
       <label>Cohort Armor {index+1}<select aria-label={'Cohort Armor '+(index+1)} value={row.armor} onChange={e=>editCohort(index,{armor:e.target.value as CrewCohort['armor']})}>{['none','available','totaled'].map(value=><option key={value}>{value}</option>)}</select></label>
     </div>{canManage && <button type="button" className="crew-secondary" onClick={()=>change('cohorts',cohorts.filter((_,i)=>i!==index))}>Remove cohort {index+1}</button>}</fieldset>)}
     {canManage && <button type="button" onClick={()=>change('cohorts',[...cohorts,{id:crypto.randomUUID(),name:'New cohort',kind:'gang',types:'',edges:'',flaws:'',quality:values.tier,scale:values.tier,condition:'healthy',armor:'none',assignment:'',notes:''}])}>Add cohort</button>}
-    <p><small>Sources: official crew sheets v6, six crew pages; Blades ’68 v1.0.1 pp. 91–95, 97–149. Records preserve table corrections and do not enforce advancement or claim-map connections.</small></p>
+    <p><small>Sources: official crew sheets v6, six crew pages; Blades ’68 v1.0.1 pp. 91–95, 97–149. Reviewed Utopian Circles are enforced; advancement consequences and claim-map connections stay with the GM.</small></p>
   </div>
 }

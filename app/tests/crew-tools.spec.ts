@@ -70,7 +70,7 @@ test('verified catalogs allow each crew, repeatable choices and full Mastery whi
     ['Militants','militants-mutual-aid','','militants-complicated','militants-claim-2'],
     ['Racers','racers-stunt-riders','Big Air','racers-airship','racers-claim-3'],
     ['Shadows','shadows-echo-safe-house','','shadows-multifaceted','shadows-claim-9'],
-    ['Utopians','utopians-commune','','utopians-awakened','utopians-claim-13'],
+    ['Utopians','utopians-commune','','utopians-awakened','utopians-claim-12'],
   ]
   let campaign='',crewId=''
   const ability=(catalogId:string,choice='')=>({id:crypto.randomUUID(),catalogId,choice,notes:'Table reviewed'})
@@ -389,6 +389,14 @@ test('all six published crew menus persist every ability choice, upgrade track a
     expect(created.error).toBeNull()
     const campaign = created.data.id
     expect((await gm.rpc('create_crew', { p_campaign: campaign, p_name: type, p_type: type })).error).toBeNull()
+    if (type === 'Utopians') {
+      let current = (await gm.from('crews').select('data').eq('campaign_id', campaign).single()).data!.data.utopianVision
+      for (const circle of [2, 3, 4]) {
+        const next = { ...current, circle, stacksEarned: 20, livesEnded: 10, majorAnomalyCreated: true }
+        expect((await gm.rpc('update_crew', { p_campaign: campaign, p_patch: { tier: 3, utopianVision: next }, p_expected: { tier: circle === 2 ? 0 : 3, utopianVision: current } })).error).toBeNull()
+        current = next
+      }
+    }
     const invitation = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data.gm
     const context = await browser.newContext(), page = await context.newPage()
     await page.goto('/')
@@ -435,7 +443,7 @@ test('all six published crew menus persist every ability choice, upgrade track a
     const patch = { abilities, upgrades, claims }
     const saved = await gm.rpc('update_crew', { p_campaign: campaign, p_patch: patch, p_expected: { abilities: [], upgrades: [], claims: [] } })
     expect(saved.error, type).toBeNull()
-    expect(saved.data.data).toMatchObject({ ...patch, tier: 0, stacks: 2, heat: 0, xp: 0 })
+    expect(saved.data.data).toMatchObject({ ...patch, tier: type === 'Utopians' ? 3 : 0, stacks: 2, heat: 0, xp: 0 })
     // Field Testing's other three choices must also pass authoritative validation.
     if (type === 'Dealers') {
       let previous = abilities
@@ -449,8 +457,8 @@ test('all six published crew menus persist every ability choice, upgrade track a
     await page.reload()
     await expect(dossier.getByLabel('Ability 1', { exact: true })).toHaveValue(abilities[0].catalogId)
     await expect(dossier.getByLabel('Upgrade marks 5', { exact: true })).toHaveValue('4')
-    await expect(dossier.getByRole('checkbox')).toHaveCount(expected.claims.length)
-    for (const checkbox of await dossier.getByRole('checkbox').all()) await expect(checkbox).toBeChecked()
+    await expect(dossier.getByRole('group', { name: 'Crew claims', exact: true }).getByRole('checkbox')).toHaveCount(expected.claims.length)
+    for (const checkbox of await dossier.getByRole('group', { name: 'Crew claims', exact: true }).getByRole('checkbox').all()) await expect(checkbox).toBeChecked()
     await context.close()
   }
 })
