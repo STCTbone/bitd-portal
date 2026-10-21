@@ -37,8 +37,7 @@ export interface CharacterEquipment {
   wealth: CharacterWealth; xp: CharacterXP; advancementNotes: string; equipmentNotes: string
 }
 export type EquipmentPatch = Partial<Pick<CharacterEquipment, 'equipment' | 'resources' | 'advancementNotes' | 'equipmentNotes'>> & { loadout?: Partial<CharacterLoadout>; armor?: Partial<CharacterArmor>; wealth?: Partial<CharacterWealth>; xp?: Partial<CharacterXP> }
-export interface OperativeBacking { name: string; tier: number; mission: string; failure: number; prestige: string; help: string; notes: string }
-export interface OperativeRecord { controlAction: string; coverIdentity: string; coverNotes: string; dropEntity: string; dropLoad: number; dropAssetUsed: boolean; sleeperUsed: boolean; backingFactions: OperativeBacking[]; operations: string }
+export interface OperativeRecord { controlAction: string; coverIdentity: string; coverNotes: string; dropEntity: string; dropLoad: number; dropAssetUsed: boolean; sleeperUsed: boolean; operations: string }
 export interface RadicalWork { name: string; progress: number; circulating: boolean; contribution: string; notes: string }
 export interface RadicalRecord { radicalizedBy: string; cause: string; supplier: string; bandoliers: string[][]; works: RadicalWork[]; praxis: string; dedication: string; operations: string }
 export interface VeteranRecord { tours: string; damage: string; helps: string; hobby: string; assistance: string; operations: string }
