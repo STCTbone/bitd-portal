@@ -1,0 +1,239 @@
+import { test, expect } from '@playwright/test'
+import { createClient } from '@supabase/supabase-js'
+import { execFileSync } from 'node:child_process'
+const url = process.env.VITE_SUPABASE_URL!, key = process.env.VITE_SUPABASE_ANON_KEY!
+if (!['localhost', '127.0.0.1'].includes(new URL(url).hostname)) throw new Error('Local backend required')
+const client = () => createClient(url, key, { db: { schema: 'bitd' }, auth: { persistSession: false, autoRefreshToken: false } })
+async function table() {
+  const gm = client(), player = client(), outsider = client()
+  for (const identity of [gm, player, outsider]) expect((await identity.auth.signInAnonymously()).error).toBeNull()
+  const campaign = (await gm.rpc('create_campaign', { p_name: 'Active operations' })).data.id
+  const invites = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data
+  expect((await player.rpc('join_campaign', { p_invitation: invites.player })).error).toBeNull()
+  const character = (await player.rpc('create_character', { p_campaign: campaign, p_name: 'Moth' })).data
+  const crew = (await gm.rpc('create_crew', { p_campaign: campaign, p_name: 'Station Six', p_type: 'Shadows' })).data
+  const opportunity = (await gm.rpc('create_opportunity', { p_campaign: campaign, p_data: { target: 'Relay station', targetTier: 2, payout: 6 } })).data
+  const selected = await gm.rpc('select_opportunity', { p_opportunity: opportunity.id, p_revision: 1, p_cycle_revision: 1 })
+  expect(selected.error).toBeNull()
+  return { gm, player, outsider, campaign, invites, character, crew, score: selected.data }
+}
+// Approved seams: authenticated public API and real browser → local Supabase.
+async function completed() {
+ const fixture = await table()
+ await fixture.gm.rpc('transition_score', { p_score: fixture.score.id, p_status: 'active', p_revision: 1 })
+ const done = await fixture.gm.rpc('transition_score', { p_score: fixture.score.id, p_status: 'completed', p_revision: 2 })
+ expect(done.error).toBeNull()
+ return { ...fixture, score: done.data }
+}
+test('reviewed Aftermath confirms atomically once across duplicate and competing proposals', async () => {
+ const { gm, player, outsider, crew, character, score } = await completed()
+ expect((await gm.rpc('initialize_gazette_factions', { p_campaign: score.campaign_id })).error).toBeNull()
+ const faction = (await gm.from('faction_records').select('*').eq('campaign_id', score.campaign_id).order('name').limit(1)).data![0]
+ const effects = [
+  { kind: 'crew', id: crew.id, field: 'stacks', expected: 2, value: 4 },
+  { kind: 'crew', id: crew.id, field: 'heat', expected: 0, value: 2 },
+  { kind: 'faction', id: faction.id, field: 'status', expected: 0, value: 1 },
+  { kind: 'character', id: character.id, field: 'wealth.stacks', expected: 0, value: 2 },
+ ]
+ const args = { p_score: score.id, p_effects: effects, p_recap: 'Tapes delivered; payout split', p_reason: '', p_correction_of: null }
+ const proposal = await gm.rpc('propose_aftermath', args)
+ expect(proposal.error).toBeNull()
+ const competing = await gm.rpc('propose_aftermath', args)
+ expect(competing.error).toBeNull()
+ for (const identity of [player, outsider]) expect((await identity.rpc('confirm_aftermath', { p_proposal: proposal.data.id })).error?.code).toBe('42501')
+ const confirmations = await Promise.all([gm, gm].map(identity => identity.rpc('confirm_aftermath', { p_proposal: proposal.data.id })))
+ for (const receipt of confirmations) expect(receipt.error).toBeNull()
+ expect(confirmations[0].data).toEqual(confirmations[1].data)
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: competing.data.id })).error?.code).toBe('40001')
+ expect((await player.from('crews').select('*').eq('id', crew.id)).data![0].data).toMatchObject({ stacks: 4, heat: 2, rep: 0 })
+ expect((await player.from('characters').select('*').eq('id', character.id)).data![0].data.wealth.stacks).toBe(2)
+ expect((await player.from('faction_records').select('*').eq('id', faction.id)).data![0].status).toBe(1)
+ expect((await player.from('aftermath_receipts').select('*').eq('score_id', score.id)).data).toHaveLength(1)
+ expect((await player.from('aftermath_proposals').select('*')).data).toEqual([])
+ expect((await outsider.from('aftermath_receipts').select('*').eq('score_id', score.id)).data).toEqual([])
+})
+test('late invalid effects roll back, stale reviews fail, corrections preserve receipts and secrets', async () => {
+ const { gm, player, outsider, campaign, crew, character, score } = await completed()
+ const propose = (effects: unknown[], correction: string | null = null, reason = '') => gm.rpc('propose_aftermath', { p_score: score.id, p_effects: effects, p_recap: 'Reviewed shared recap', p_reason: reason, p_correction_of: correction })
+ const invalid = await propose([{ kind: 'crew', id: crew.id, field: 'stacks', expected: 2, value: 4 }, { kind: 'character', id: character.id, field: 'wealth.stacks', expected: 0, value: 99 }])
+ expect(invalid.error).toBeNull()
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: invalid.data.id })).error?.message).toContain('capacity')
+ expect((await gm.from('crews').select('*').eq('id', crew.id)).data![0].data.stacks).toBe(2)
+ expect((await gm.from('aftermath_receipts').select('*').eq('score_id', score.id)).data).toEqual([])
+ const staleScore = await propose([])
+ expect((await gm.rpc('update_score_record', { p_score: score.id, p_patch: { recap: 'Intervening score correction' }, p_expected: { recap: '' } })).error).toBeNull()
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: staleScore.data.id })).error?.code).toBe('40001')
+ const effect = { kind: 'crew', id: crew.id, field: 'heat', expected: 0, value: 2 }
+ const review = await propose([effect]); expect(review.error).toBeNull()
+ expect((await gm.rpc('update_crew', { p_campaign: campaign, p_patch: { heat: 1 }, p_expected: { heat: 0 } })).error).toBeNull()
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: review.data.id })).error?.code).toBe('40001')
+ expect((await gm.rpc('update_crew', { p_campaign: campaign, p_patch: { heat: 0 }, p_expected: { heat: 1 } })).error).toBeNull()
+ const first = await gm.rpc('confirm_aftermath', { p_proposal: review.data.id }); expect(first.error).toBeNull()
+ expect((await propose([{ ...effect, expected: 2, value: 1 }], first.data.id)).error?.message).toContain('reason')
+ const correction = await propose([{ ...effect, expected: 2, value: 1 }], first.data.id, 'Exposure was overstated')
+ expect(correction.error).toBeNull()
+ const corrected = await Promise.all([1, 2].map(() => gm.rpc('confirm_aftermath', { p_proposal: correction.data.id })))
+ expect(corrected[0].error).toBeNull(); expect(corrected[0].data).toEqual(corrected[1].data)
+ expect((await gm.from('aftermath_receipts').select('*').eq('score_id', score.id)).data).toHaveLength(2)
+ const secondCorrection = await propose([], first.data.id, 'Competing correction')
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: secondCorrection.data.id })).error?.code).toBe('40001')
+ const manualArgs = { p_score: score.id, p_id: null, p_revision: 0, p_kind: 'Mandate', p_title: 'PRIVATE mandate', p_notes: 'PRIVATE Trouble roll, next recharge penalty', p_shared: false }
+ const secret = await gm.rpc('save_aftermath_manual', manualArgs); expect(secret.error).toBeNull()
+ expect((await player.from('aftermath_manual').select('*').eq('score_id', score.id)).data).toEqual([])
+ expect(JSON.stringify((await player.from('aftermath_receipts').select('*').eq('score_id', score.id)).data)).not.toContain('PRIVATE')
+ expect((await player.rpc('save_aftermath_manual', { ...manualArgs, p_id: secret.data.id, p_revision: 1 })).error?.code).toBe('42501')
+ expect((await gm.rpc('save_aftermath_manual', { ...manualArgs, p_id: secret.data.id, p_revision: 1, p_title: 'Known investigation', p_notes: 'Shared after reveal', p_shared: true })).error).toBeNull()
+ expect((await player.from('aftermath_manual').select('*').eq('score_id', score.id)).data![0].notes).toBe('Shared after reveal')
+ expect((await gm.rpc('save_aftermath_manual', { ...manualArgs, p_id: secret.data.id, p_revision: 1 })).error?.code).toBe('40001')
+ const foreignCampaign = (await outsider.rpc('create_campaign', { p_name: 'Foreign' })).data.id
+ const foreignCrew = (await outsider.rpc('create_crew', { p_campaign: foreignCampaign, p_name: 'Foreign crew', p_type: 'Shadows' })).data
+ const foreign = await propose([{ kind: 'crew', id: foreignCrew.id, field: 'stacks', expected: 2, value: 3 }], corrected[0].data.id, 'Cross campaign denied')
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: foreign.data.id })).error?.message).toContain('campaign crew')
+ for (const effects of [[{ ...effect, kind: 'sql' }], [{ ...effect, extra: true }], [{ ...effect, field: 'xp' }], [effect, effect]]) expect((await propose(effects)).error).not.toBeNull()
+ for (const name of ['aftermath_receipts', 'aftermath_proposals', 'aftermath_manual']) for (const identity of [gm, player]) {
+  expect((await identity.from(name).insert({ campaign_id: campaign, score_id: score.id })).error).not.toBeNull()
+  expect((await identity.from(name).update(name === 'aftermath_manual' ? { notes: 'forged' } : { recap: 'forged' }).eq('score_id', score.id)).error).not.toBeNull()
+  expect((await identity.from(name).delete().eq('score_id', score.id)).error).not.toBeNull()
+ }
+})
+test('GM reviews concrete effects in browser, confirms, reloads recap and records manual Trouble', async ({ browser }) => {
+ const { gm, character, invites, score } = await table()
+ expect((await gm.rpc('patch_character', { p_character: character.id, p_patch: { stress: 5, harm: { passing: ['Bruised', 'Cut'] } } })).error).toBeNull()
+ const context = await browser.newContext(), page = await context.newPage()
+ await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
+ await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+ const cycle = page.getByRole('region', { name: 'Campaign cycle', exact: true })
+ await cycle.getByLabel('Activity description', { exact: true }).fill('Recover between scores; roll and effects recorded manually')
+ await cycle.getByRole('button', { name: 'Record activity', exact: true }).click()
+ await expect(cycle.getByRole('article', { name: 'Free play · Moth', exact: true })).toBeVisible()
+ await cycle.getByLabel('Campaign phase', { exact: true }).selectOption('planning_meeting')
+ await cycle.getByRole('button', { name: 'Set phase', exact: true }).click()
+ const operation = page.getByRole('article', { name: 'Score · Relay station', exact: true })
+ await operation.getByRole('button', { name: 'Start score', exact: true }).click()
+ await operation.getByRole('button', { name: 'Confirm start', exact: true }).click()
+ await expect(operation.getByText('Status: active', { exact: true })).toBeVisible()
+ await operation.getByLabel('Score recap', { exact: true }).fill('Signal tapes retrieved')
+ await operation.getByRole('button', { name: 'Save score record', exact: true }).click()
+ await expect(operation.getByRole('status')).toHaveText('Saved.')
+ await operation.getByRole('button', { name: 'Complete score', exact: true }).click()
+ await operation.getByRole('button', { name: 'Confirm complete', exact: true }).click()
+ await expect(operation.getByText('Status: completed', { exact: true })).toBeVisible()
+ await cycle.getByLabel('Campaign phase', { exact: true }).selectOption('aftermath')
+ await cycle.getByRole('button', { name: 'Set phase', exact: true }).click()
+ const panel = page.getByRole('region', { name: 'Aftermath review', exact: true })
+ await expect(panel).toBeVisible()
+ await panel.getByLabel('Effect record type', { exact: true }).selectOption('crew')
+ await panel.getByLabel('Effect field', { exact: true }).selectOption('stacks')
+ await panel.getByLabel('Proposed value', { exact: true }).fill('4')
+ await panel.getByRole('button', { name: 'Add reviewed effect', exact: true }).click()
+ await expect(panel.getByText('stacks: 2 → 4', { exact: false })).toBeVisible()
+ await panel.getByText('Propose selected Unwind participants', { exact: true }).click()
+ await panel.getByLabel('Moth', { exact: true }).check()
+ await panel.getByRole('button', { name: 'Propose Unwind changes', exact: true }).click()
+ await expect(panel.getByText('Stress: 5 → 4', { exact: false })).toBeVisible()
+ await panel.getByLabel('Shared Aftermath recap', { exact: true }).fill('Tapes delivered; two stacks to crew')
+ await panel.getByRole('button', { name: 'Save proposal for review', exact: true }).click()
+ await expect(panel.getByText('Pending GM review', { exact: true })).toBeVisible()
+ await panel.getByRole('article', { name: 'Pending Aftermath proposal', exact: true }).scrollIntoViewIfNeeded()
+ await page.screenshot({ path: 'test-results/aftermath-review-desktop.png' })
+ await context.setOffline(true)
+ await panel.getByRole('button', { name: 'Confirm all reviewed changes', exact: true }).click()
+ await expect(panel.getByRole('alert').filter({ hasText: 'Aftermath was not saved' })).toBeVisible()
+ await context.setOffline(false)
+ await expect(panel.getByRole('button', { name: 'Confirm all reviewed changes', exact: true })).toBeVisible()
+ await page.route('**/rest/v1/rpc/confirm_aftermath', async route => { await route.fetch(); await route.abort('failed') }, { times: 1 })
+ await panel.getByRole('button', { name: 'Confirm all reviewed changes', exact: true }).click()
+ await expect(panel.getByText('Confirmed Aftermath', { exact: true })).toBeVisible()
+ expect((await gm.from('aftermath_receipts').select('*').eq('score_id', score.id)).data).toHaveLength(1)
+ expect((await gm.from('characters').select('*').eq('id', character.id)).data![0].data).toMatchObject({ stress: 4, harm: { passing: ['Bruised', 'Cut'] } })
+ await page.reload()
+ await expect(panel.getByText('Tapes delivered; two stacks to crew', { exact: true })).toBeVisible()
+ await panel.getByRole('button', { name: 'Prepare correction', exact: true }).click()
+ await panel.getByLabel('Proposed value', { exact: true }).fill('3')
+ await panel.getByRole('button', { name: 'Add reviewed effect', exact: true }).click()
+ await panel.getByLabel('Shared Aftermath recap', { exact: true }).fill('Corrected the agreed split')
+ await panel.getByLabel('Correction reason', { exact: true }).fill('One stack belongs to the courier')
+ await panel.getByRole('button', { name: 'Save proposal for review', exact: true }).click()
+ await panel.getByRole('button', { name: 'Confirm all reviewed changes', exact: true }).click()
+ await expect(panel.getByText('Aftermath correction', { exact: true })).toBeVisible()
+ expect((await gm.from('aftermath_receipts').select('*').eq('score_id', score.id)).data).toHaveLength(2)
+ await panel.getByLabel('Manual record title', { exact: true }).fill('PRIVATE new surveillance')
+ await panel.getByLabel('Manual record notes', { exact: true }).fill('Crew Trouble roll 6, delay reveal; no auto escalation')
+ await panel.getByRole('button', { name: 'Save manual record', exact: true }).click()
+ await expect(panel.getByText('PRIVATE new surveillance', { exact: true })).toBeVisible()
+ const manual = panel.getByRole('article', { name: 'Manual consequence · PRIVATE new surveillance', exact: true })
+ await manual.getByLabel('Manual record notes', { exact: true }).fill('Our retained manual draft')
+ const savedManual = (await gm.from('aftermath_manual').select('*').eq('score_id', score.id)).data![0]
+ expect((await gm.rpc('save_aftermath_manual', { p_score: score.id, p_id: savedManual.id, p_revision: savedManual.revision, p_kind: savedManual.kind, p_title: savedManual.title, p_notes: 'Accepted peer adjudication', p_shared: false })).error).toBeNull()
+ await manual.getByRole('button', { name: 'Save manual record', exact: true }).click()
+ await expect(manual.getByRole('alert')).toContainText('Manual record changed')
+ await expect(manual.getByLabel('Manual record notes', { exact: true })).toHaveValue('Our retained manual draft')
+ await manual.getByRole('button', { name: 'Reload manual record (discard draft)', exact: true }).click()
+ await expect(manual.getByLabel('Manual record notes', { exact: true })).toHaveValue('Accepted peer adjudication')
+ await panel.scrollIntoViewIfNeeded(); await page.screenshot({ path: 'test-results/aftermath-desktop.png' })
+ await page.setViewportSize({ width: 390, height: 844 }); await panel.scrollIntoViewIfNeeded(); await page.screenshot({ path: 'test-results/aftermath-mobile.png' })
+ expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+ await context.close()
+})
+test('competing GMs and different scores cannot double-pay or overwrite reviewed resource deltas', async () => {
+ const { gm, player, campaign, invites, crew, score } = await completed()
+ const secondGM = client(); await secondGM.auth.signInAnonymously(); expect((await secondGM.rpc('join_campaign', { p_invitation: invites.gm })).error).toBeNull()
+ const args = { p_score: score.id, p_effects: [{ kind: 'crew', id: crew.id, field: 'stacks', expected: 2, value: 3 }], p_recap: 'One agreed stack', p_reason: '', p_correction_of: null }
+ const proposals = await Promise.all([gm, secondGM].map(identity => identity.rpc('propose_aftermath', args)))
+ const results = await Promise.all(proposals.map((proposal, index) => [gm, secondGM][index].rpc('confirm_aftermath', { p_proposal: proposal.data.id })))
+ expect(results.filter(result => result.error === null)).toHaveLength(1)
+ expect(results.filter(result => result.error?.code === '40001')).toHaveLength(1)
+ expect((await gm.from('crews').select('*').eq('id', crew.id)).data![0].data.stacks).toBe(3)
+ const winner = results.find(result => result.data)!.data
+ expect((await secondGM.rpc('confirm_aftermath', { p_proposal: winner.proposal_id })).data).toEqual(winner)
+ const cycle = (await gm.from('campaign_cycles').select('*').eq('campaign_id', campaign)).data![0]
+ const opportunity = (await gm.rpc('create_opportunity', { p_campaign: campaign, p_data: { target: 'Second relay', targetTier: 1 } })).data
+ const selected = (await gm.rpc('select_opportunity', { p_opportunity: opportunity.id, p_revision: 1, p_cycle_revision: cycle.revision })).data
+ await gm.rpc('transition_score', { p_score: selected.id, p_status: 'active', p_revision: 1 })
+ await gm.rpc('transition_score', { p_score: selected.id, p_status: 'completed', p_revision: 2 })
+ const next = await gm.rpc('propose_aftermath', { ...args, p_score: selected.id, p_effects: [{ ...args.p_effects[0], expected: 3, value: 4 }] })
+ const correction = await secondGM.rpc('propose_aftermath', { ...args, p_effects: [{ ...args.p_effects[0], expected: 3, value: 2 }], p_correction_of: winner.id, p_reason: 'Correct prior payout' })
+ const deltas = await Promise.all([gm.rpc('confirm_aftermath', { p_proposal: next.data.id }), secondGM.rpc('confirm_aftermath', { p_proposal: correction.data.id })])
+ expect(deltas.filter(result => !result.error)).toHaveLength(1)
+ expect(deltas.filter(result => result.error?.code === '40001')).toHaveLength(1)
+ expect((await player.rpc('propose_aftermath', args)).error?.code).toBe('42501')
+ const status = JSON.parse(execFileSync('node_modules/.bin/supabase', ['status', '-o', 'json'], { encoding: 'utf8' }))
+ const admin = createClient(url, status.SERVICE_ROLE_KEY, { db: { schema: 'bitd' }, auth: { persistSession: false } })
+ const gmId = (await secondGM.auth.getUser()).data.user!.id
+ expect((await admin.from('campaign_members').delete().eq('campaign_id', campaign).eq('user_id', gmId)).error).toBeNull()
+ expect((await secondGM.rpc('confirm_aftermath', { p_proposal: winner.proposal_id })).error?.code).toBe('42501')
+ expect((await secondGM.from('aftermath_proposals').select('*').eq('campaign_id', campaign)).data).toEqual([])
+ expect((await gm.rpc('validate_aftermath_effects', { p_effects: [] })).error?.code).toBe('42501')
+})
+test('private manual consequences stay off two player clients until explicit reveal and disappear on unshare', async ({ browser }) => {
+ const { gm, invites, score } = await completed()
+ const contexts = await Promise.all([browser.newContext(), browser.newContext()])
+ const pages = await Promise.all(contexts.map(context => context.newPage())), received: Promise<string>[] = []
+ for (const page of pages) {
+  page.on('response', response => { if (response.url().includes('/rest/v1/')) received.push(response.text().catch(() => '')) })
+  await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.player)
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+ }
+ const args = { p_score: score.id, p_id: null, p_revision: 0, p_kind: 'Mandate', p_title: 'PRIVATE unrevealed mandate', p_notes: 'PRIVATE next recharge penalty and Trouble escalation', p_shared: false }
+ const secret = await gm.rpc('save_aftermath_manual', args); expect(secret.error).toBeNull()
+ for (const page of pages) {
+  await expect(page.getByRole('region', { name: 'Aftermath review', exact: true })).toBeVisible()
+  await expect(page.getByRole('article', { name: 'Manual consequence · PRIVATE unrevealed mandate', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Save proposal for review', exact: true })).toHaveCount(0)
+ }
+ expect((await gm.rpc('save_aftermath_manual', { ...args, p_id: secret.data.id, p_revision: 1, p_title: 'Known investigation', p_notes: 'Tail spotted by the crew', p_shared: true })).error).toBeNull()
+ for (const page of pages) await expect(page.getByRole('article', { name: 'Manual consequence · Known investigation', exact: true })).toBeVisible()
+ let held = 0, release!: () => void
+ const gate = new Promise<void>(resolve => { release = resolve })
+ await pages[0].route('**/rest/v1/aftermath_manual?*', async route => { const response = await route.fetch(); held++; await gate; await route.fulfill({ response }) }, { times: 2 })
+ await expect.poll(() => held).toBe(2)
+ expect((await gm.rpc('save_aftermath_manual', { ...args, p_id: secret.data.id, p_revision: 2, p_title: 'Known investigation', p_notes: 'PRIVATE unrevealed extension', p_shared: false })).error).toBeNull()
+ for (const page of pages) await expect(page.getByRole('article', { name: 'Manual consequence · Known investigation', exact: true })).toHaveCount(0)
+ const oldReply = pages[0].waitForResponse(response => response.url().includes('/rest/v1/aftermath_manual?'))
+ release(); await oldReply
+ await pages[0].evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+ await expect(pages[0].getByRole('article', { name: 'Manual consequence · Known investigation', exact: true })).toHaveCount(0)
+ for (const page of pages) await page.reload()
+ expect((await Promise.all(received)).join('')).not.toContain('PRIVATE')
+ for (const context of contexts) await context.close()
+})
