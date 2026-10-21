@@ -35,7 +35,7 @@ export function CampaignSetup() {
     <p>New campaigns are empty. Loading or reloading never adds sample records. To start another empty campaign, use Switch campaign and Create campaign.</p>
     <p>Optional Night Wire sample: invented ’68 fiction with two unclaimed Hounds, a Shadows crew, factions, clocks and shared notes. Published v6 sheet defaults supply capacities; no rewards, book secrets or artwork are imported. Players deliberately claim their sample character. Available only while game content is empty.</p>
     <div className="setup-actions"><button disabled={busy || Boolean(preview)} onClick={() => void review('sample')}>Review optional sample</button><button className="access-secondary" disabled={busy || Boolean(preview)} onClick={() => void review('clear')}>Review clocks, notes and markers clear</button></div>
-    <p>This scoped clear removes all clocks, shared notes and map markers, including hidden clocks and transient drawings. It preserves sheets, history and uploads. It does not create a fresh campaign.</p>
+    <p>This scoped clear removes all campaign/score clock records, shared notes and map markers, including hidden clocks and transient drawings. It preserves sheets, history and uploads. It does not create a fresh campaign.</p>
     {preview && <div className="setup-review" role="region" aria-label="Review campaign setup">
       <h3>{preview.action === 'sample' ? 'Review optional sample setup' : 'Review clocks, notes and markers clear'}</h3>
       <p>{preview.changes}</p><p>{preview.preserves}</p>

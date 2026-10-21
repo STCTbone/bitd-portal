@@ -53,8 +53,8 @@ begin
   end loop;
   if exists(select 1 from bitd.campaign_maps where campaign_id=p_campaign and asset_id is not null) then raise exception 'Sample setup requires an empty campaign' using errcode='40001'; end if;
  end if;
- preview:=jsonb_build_object('action',p_action,'counts',snapshot->'counts','changes',case when p_action='sample' then 'Add two unclaimed Hounds, one Shadows crew, two invented factions, one shared and one hidden clock, and two shared notes. Invented sample fiction; published v6 sheet defaults.' else 'Permanently delete all clocks (including hidden clocks), all shared notes, all map markers, and transient map drawings, cursors and pings.' end,
- 'preserves','Preserve campaign identity and name, invitations and members, settings, all character/crew/faction sheet values and ownership, private faction notes, backing records, planning and scores, Aftermath proposals and receipts, all history, uploaded files and asset metadata, character art, and selected map.');
+ preview:=jsonb_build_object('action',p_action,'counts',snapshot->'counts','changes',case when p_action='sample' then 'Add two unclaimed Hounds, one Shadows crew, two invented factions, one shared and one hidden clock, and two shared notes. Invented sample fiction; published v6 sheet defaults.' else 'Permanently delete all campaign/score clock records (including hidden clocks), all shared notes, all map markers, and transient map drawings, cursors and pings.' end,
+ 'preserves','Preserve campaign identity and name, invitations and members, settings, all character/crew/faction sheet values and ownership (including healing and embedded tracks), private faction notes, backing records (including Failure), planning and scores, Aftermath proposals and receipts, all history, uploaded files and asset metadata, character art, and selected map.');
  insert into bitd.campaign_setup_requests(campaign_id,actor_id,action,fingerprint,preview) values(p_campaign,auth.uid(),p_action,snapshot->>'fingerprint',preview) returning id into request;
  return preview||jsonb_build_object('id',request);
 end $$;
