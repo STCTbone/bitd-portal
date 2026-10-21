@@ -47,21 +47,7 @@ export function HumanPlaybookRecords({ data, editable, patch }: { data: Characte
           {check('Dead Drop free asset activity used', operative.dropAssetUsed, dropAssetUsed => change({ operative: { dropAssetUsed } }))}
           {check('Sleeper Agents used this score', operative.sleeperUsed, sleeperUsed => change({ operative: { sleeperUsed } }))}
         </div>
-        <h5>Backing factions</h5><p>Start with one backing faction. Double Agent permits a second. Record each faction’s help and Return the Favor separately; its four-segment mission Failure clock, prestige and faction relationship remain deliberate records. Help, mission and prestige decisions do not change crew status automatically. Book pp. 48, 50–51, 236–241.</p>
-        {operative.backingFactions.map((backing, i) => {
-          const save = (changes: Partial<typeof backing>) => change({ operative: { backingFactions: operative.backingFactions.map((b, n) => n === i ? { ...b, ...changes } : b) } })
-          return <div key={i} className="dossier-grid dossier-row">
-            {text(`Backing ${i + 1} name`, backing.name, name => save({ name }))}
-            {number(`Backing ${i + 1} Tier`, backing.tier, 6, tier => save({ tier }))}
-            {text(`Backing ${i + 1} personal mission`, backing.mission, mission => save({ mission }), true)}
-            {number(`Backing ${i + 1} Failure`, backing.failure, 4, failure => save({ failure }))}
-            {text(`Backing ${i + 1} prestige ability`, backing.prestige, prestige => save({ prestige }), true)}
-            {text(`Backing ${i + 1} help and Return the Favor`, backing.help, help => save({ help }), true)}
-            {text(`Backing ${i + 1} notes`, backing.notes, notes => save({ notes }), true)}
-            {editable && <button onClick={() => change({ operative: { backingFactions: operative.backingFactions.filter((_, n) => n !== i) } })}>Remove backing faction {i + 1}</button>}
-          </div>
-        })}
-        {editable && <button disabled={operative.backingFactions.length >= (data.abilities.includes('Double Agent') ? 2 : 1)} onClick={() => change({ operative: { backingFactions: [...operative.backingFactions, { name: '', tier: 0, mission: '', failure: 0, prestige: '', help: '', notes: '' }] } })}>Add backing faction</button>}
+        <p>Starting backing and Double Agent obligations are recorded in Backing factions above.</p>
       </>}
       {field === 'radical' && <>
         <div className="dossier-grid">
@@ -102,7 +88,7 @@ export function HumanPlaybookRecords({ data, editable, patch }: { data: Characte
     </fieldset>
     {editable && Object.keys(draft).length > 0 && <>
       {!review && <button disabled={busy} onClick={() => setReview(true)}>Review playbook records</button>}
-      {review && <div className="condition-review" role="region" aria-label="Review playbook records"><h5>Review entered changes</h5><p>Only changed subfields below will be saved. Check consequences with your table. Backing factions, bandoliers and works are each saved as a complete list; coordinate edits to the same list.</p><dl>{Object.entries(draft).map(([key, value]) => <div key={key}><dt>{data.playbook}</dt><dd>Saved: {describe(data[key as keyof HumanPlaybookPatch])}<br />Proposed: {describe(value)}</dd></div>)}</dl><button disabled={busy} onClick={() => void confirm()}>{busy ? 'Saving playbook records…' : error ? 'Retry playbook records' : 'Confirm playbook records'}</button><button disabled={busy} onClick={() => setReview(false)}>Keep editing playbook records</button></div>}
+      {review && <div className="condition-review" role="region" aria-label="Review playbook records"><h5>Review entered changes</h5><p>Only changed subfields below will be saved. Check consequences with your table. Bandoliers and works are each saved as a complete list; coordinate edits to the same list.</p><dl>{Object.entries(draft).map(([key, value]) => <div key={key}><dt>{data.playbook}</dt><dd>Saved: {describe(data[key as keyof HumanPlaybookPatch])}<br />Proposed: {describe(value)}</dd></div>)}</dl><button disabled={busy} onClick={() => void confirm()}>{busy ? 'Saving playbook records…' : error ? 'Retry playbook records' : 'Confirm playbook records'}</button><button disabled={busy} onClick={() => setReview(false)}>Keep editing playbook records</button></div>}
       <button disabled={busy} onClick={() => { setDraft({}); setReview(false); setError('') }}>Discard playbook records</button>
     </>}
     {error && <p role="alert" className="dossier-error">{error}</p>}

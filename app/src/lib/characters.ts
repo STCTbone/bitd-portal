@@ -18,6 +18,7 @@ export interface CharacterKey { name: string; hits: number }
 export interface CharacterDeadlock { name: string; formerKey: string; notes: string }
 export interface CharacterHarm { passing: string[]; major: string[]; critical: string[]; mortal: string[] }
 export interface CharacterHealing { progress: number; permanent: number }
+/** stress is the sole condition-resource value; Hull sheets interpret it as Drain. */
 export interface CharacterCondition {
   stress: number; stressCapacity: number; keyCapacity: number; keyCapacityReason: string
   keys: CharacterKey[]; deadlocks: CharacterDeadlock[]; harm: CharacterHarm; healing: CharacterHealing
@@ -30,14 +31,13 @@ export interface CharacterLoadout { mode: 'Quiet' | 'Loud'; carriedStacks: numbe
 export interface CharacterArmor { kind: 'none' | 'armor' | 'light' | 'built-in'; worn: boolean; totaled: boolean; source: string; notes: string }
 export interface CharacterWealth { stacks: number; bank: number }
 export interface CharacterXP { playbook: number; insight: number; prowess: number; resolve: number }
-export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; actionMax: number; harmSlots: Record<keyof CharacterHarm, number>; source: string; creation?: string; abilityChoiceGuidance?: string; fixedAbilities?: string[]; xpTrigger?: string; contacts?: string[]; keys?: string[]; backgroundLabel?: string; backgroundSuggestions?: string[]; abilityGuidance?: string; resourceGuidance?: string; explosives?: string[] }
+export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; actionMax: number; harmSlots: Record<keyof CharacterHarm, number>; source: string; conditionKind?: 'hull'; creation?: string; abilityChoiceGuidance?: string; fixedAbilities?: string[]; xpTrigger?: string; contacts?: string[]; keys?: string[]; backgroundLabel?: string; backgroundSuggestions?: string[]; abilityGuidance?: string; resourceGuidance?: string; explosives?: string[] }
 export interface CharacterEquipment {
   equipment: CharacterItem[]; resources: CharacterResource[]; loadout: CharacterLoadout; armor: CharacterArmor
   wealth: CharacterWealth; xp: CharacterXP; advancementNotes: string; equipmentNotes: string
 }
 export type EquipmentPatch = Partial<Pick<CharacterEquipment, 'equipment' | 'resources' | 'advancementNotes' | 'equipmentNotes'>> & { loadout?: Partial<CharacterLoadout>; armor?: Partial<CharacterArmor>; wealth?: Partial<CharacterWealth>; xp?: Partial<CharacterXP> }
-export interface OperativeBacking { name: string; tier: number; mission: string; failure: number; prestige: string; help: string; notes: string }
-export interface OperativeRecord { controlAction: string; coverIdentity: string; coverNotes: string; dropEntity: string; dropLoad: number; dropAssetUsed: boolean; sleeperUsed: boolean; backingFactions: OperativeBacking[]; operations: string }
+export interface OperativeRecord { controlAction: string; coverIdentity: string; coverNotes: string; dropEntity: string; dropLoad: number; dropAssetUsed: boolean; sleeperUsed: boolean; operations: string }
 export interface RadicalWork { name: string; progress: number; circulating: boolean; contribution: string; notes: string }
 export interface RadicalRecord { radicalizedBy: string; cause: string; supplier: string; bandoliers: string[][]; works: RadicalWork[]; praxis: string; dedication: string; operations: string }
 export interface VeteranRecord { tours: string; damage: string; helps: string; hobby: string; assistance: string; operations: string }
@@ -50,8 +50,12 @@ export interface IntellectualRecord { fieldsOfStudy: string; gadgetDecisions: st
 export interface ParanormalistRecord { precognitionUsed: number; projectionRank: number; projectionActive: boolean; experiments: string; operations: string }
 export interface SwingerRecord { sideHustle: string; hustleActivityGranted: boolean; partyAssistAvailable: boolean; twinSummoned: boolean; twinFeatures: string[]; twinNotes: string; operations: string }
 export interface CompanionPatch { sparkmind?: Partial<Sparkmind>; resonanceEntity?: Partial<ResonanceEntity>; autopod?: Partial<Autopod>; intellectual?: Partial<IntellectualRecord>; paranormalist?: Partial<ParanormalistRecord>; swinger?: Partial<SwingerRecord> }
+export interface HullMemory { progress: number; memory: string; contact: string; ability: string; source: string; notes: string }
+export interface HullRecord { controller: string; owningFaction: string; suspicion: number; frameFeatures: string[]; frameUpgrade: number; frameDetails: string; den: string; pet: string; operations: string; memories: HullMemory[] }
+export interface HullPatch { hull?: Partial<HullRecord> }
 export interface CharacterDossier extends CharacterCondition, CharacterEquipment {
   sparkmind?: Sparkmind; resonanceEntity?: ResonanceEntity; autopod?: Autopod; intellectual?: IntellectualRecord; paranormalist?: ParanormalistRecord; swinger?: SwingerRecord
+  hull?: HullRecord
   sheet: CharacterSheetRules
   operative?: OperativeRecord; radical?: RadicalRecord; veteran?: VeteranRecord
   name: string; playbook: string; alias: string; playerName: string; look: string; wearing: string
@@ -63,7 +67,7 @@ export interface CharacterDossier extends CharacterCondition, CharacterEquipment
 export interface CharacterRecord {
   id: string; campaign_id: string; owner_id: string | null; data: CharacterDossier; updated_at: string
 }
-export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason' | 'operative' | 'radical' | 'veteran' | 'sparkmind' | 'resonanceEntity' | 'autopod' | 'intellectual' | 'paranormalist' | 'swinger'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch & HumanPlaybookPatch & CompanionPatch
+export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason' | 'operative' | 'radical' | 'veteran' | 'sparkmind' | 'resonanceEntity' | 'autopod' | 'intellectual' | 'paranormalist' | 'swinger' | 'hull'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch & HumanPlaybookPatch & CompanionPatch & HullPatch
 
 /** Only accepted server snapshots enter this boundary. Polling never trusts peer state. */
 export function useCharacters(campaignId: string) {

@@ -14,6 +14,12 @@ export function CharacterCondition({ data, editable, patch, isGM, setKeyCapacity
   data: CharacterDossier; editable: boolean; patch: (changes: ConditionPatch) => Promise<void>
   isGM: boolean; setKeyCapacity: (capacity: number, reason: string) => Promise<void>
 }) {
+  const hull = data.sheet.conditionKind === 'hull'
+  const resource = hull ? 'Drain' : 'Stress'
+  const damage = hull ? 'Damage' : 'Harm'
+  const recovery = hull ? 'Repair' : 'Healing'
+  const completed = data.hull?.memories.filter(m => m.progress === 8).length ?? 0
+  const robotic = ['Brutal', 'Detached', 'Ruthless', 'Unstable']
   const id = useId()
   const [draft, setDraft] = useState<ConditionPatch>({})
   const [review, setReview] = useState(false)
@@ -35,42 +41,50 @@ export function CharacterCondition({ data, editable, patch, isGM, setKeyCapacity
   const number = (label: string, value: number, max: number, save: (value: number) => void) => <label key={label}>{label}<select aria-label={label} value={value} onChange={e => save(Number(e.target.value))}>{Array.from({ length: max + 1 }, (_, n) => <option key={n} value={n}>{n}</option>)}</select></label>
   const text = (label: string, value: string, save: (value: string) => void, multiline = false) => <label key={label}>{label}{multiline ? <textarea aria-label={label} rows={3} value={value} maxLength={12000} onChange={e => save(e.target.value)} /> : <input aria-label={label} value={value} maxLength={12000} onChange={e => save(e.target.value)} />}</label>
   return <section aria-label="Condition records" className="condition-records">
-    <h4>06 / Keys, Stress & Harm</h4>{data.sheet.keys && <p>Key suggestions: {data.sheet.keys.join(' · ')}. You may create your own.</p>}
+    <h4>06 / Keys, {resource} & {damage}</h4>{data.sheet.keys && <p>Key suggestions: {data.sheet.keys.join(' · ')}. You may create your own.</p>}
     <p className="dossier-source">Published baseline: Blades ’68 v1.0.1, pp. 84, 152–157, 169–170; playbooks v6. Changes below stay in your draft until reviewed and confirmed.</p>
-    <p>Keys share four slots with Deadlocks, unless a crew upgrade adds one. Across all Keys combined, earn at most 1 XP per session; three hit marks saturate a Key but do not stop its XP. Record XP separately. Turning a fully marked Key is declared before rolling; record the agreed Deadlock and Stress change together.</p>
-    <p>At the last Stress box, resolve the crisis with your table. Four ordinary Deadlocks mean retirement; exceptions apply. These records do not clear Stress, replace Keys, retire a character, or award XP automatically.</p>
-    <p className="condition-saved" aria-live="polite">Saved: {data.stress} / {data.stressCapacity} Stress · {data.keys.length} Keys · {data.deadlocks.length} Deadlocks · healing {data.healing.progress} + {data.healing.permanent} permanent / 4.</p>
+    {hull ? <>
+      <p>Begin with no human Keys. Complete a human memory before adding its Key. Robotic Deadlocks are Brutal, Detached, Ruthless and Unstable. Human Keys and their Deadlocks use the same slots; identify the former Key when deadlocking one. Across all Keys combined, earn at most 1 XP per session; record XP separately.</p>
+      <p>Drain replaces Stress. Recharging from an industrial generator costs one downtime activity and clears 5 Drain. At the last Drain box, immediately go On Program and resolve a Deadlock with the GM; if you have no Keys, choose a robotic Deadlock. Record all resulting changes deliberately. No ordinary human crisis, automatic clearing or retirement is applied.</p>
+    </> : <>
+      <p>Keys share four slots with Deadlocks, unless a crew upgrade adds one. Across all Keys combined, earn at most 1 XP per session; three hit marks saturate a Key but do not stop its XP. Record XP separately. Turning a fully marked Key is declared before rolling; record the agreed Deadlock and Stress change together.</p>
+      <p>At the last Stress box, resolve the crisis with your table. Four ordinary Deadlocks mean retirement; exceptions apply. These records do not clear Stress, replace Keys, retire a character, or award XP automatically.</p>
+    </>}
+    <p className="condition-saved" aria-live="polite">Saved: {data.stress} / {data.stressCapacity} {resource} · {data.keys.length} Keys · {data.deadlocks.length} Deadlocks · {recovery.toLowerCase()} {data.healing.progress} + {data.healing.permanent} permanent / 4.</p>
     <fieldset disabled={!editable || busy}>
       <legend>Condition draft</legend>
-      <div className="dossier-grid">{number('Stress marked', current.stress, data.stressCapacity, stress => change({ stress }))}{text('Condition decisions', current.conditionNotes, conditionNotes => change({ conditionNotes }), true)}</div>
+      <div className="dossier-grid">{number(`${resource} marked`, current.stress, data.stressCapacity, stress => change({ stress }))}{text('Condition decisions', current.conditionNotes, conditionNotes => change({ conditionNotes }), true)}</div>
       <p>{occupied} / {data.keyCapacity} Key and Deadlock slots occupied</p>
       {current.keys.map((key, i) => <div className="dossier-grid dossier-row" key={i}>
         {text(`Key ${i + 1} name`, key.name, name => change({ keys: current.keys.map((k, n) => n === i ? { ...k, name } : k) }))}
         {number(`Key ${i + 1} hits`, key.hits, 3, hits => change({ keys: current.keys.map((k, n) => n === i ? { ...k, hits } : k) }))}
         {editable && <button onClick={() => change({ keys: current.keys.filter((_, n) => n !== i) })}>Remove Key {i + 1}</button>}
       </div>)}
-      {editable && <button disabled={occupied >= data.keyCapacity} onClick={() => change({ keys: [...current.keys, { name: '', hits: 0 }] })}>Add Key</button>}
+      {editable && <button disabled={occupied >= data.keyCapacity || (hull && current.keys.length + current.deadlocks.filter(d => d.formerKey?.trim()).length >= completed)} onClick={() => change({ keys: [...current.keys, { name: '', hits: 0 }] })}>Add Key</button>}
       {current.deadlocks.map((deadlock, i) => <div className="dossier-grid dossier-row" key={i}>
-        {(['name', 'formerKey', 'notes'] as const).map(field => text(`Deadlock ${i + 1} ${field === 'formerKey' ? 'former Key' : field}`, deadlock[field] ?? '', value => change({ deadlocks: current.deadlocks.map((d, n) => n === i ? { ...d, [field]: value } : d) }), field === 'notes'))}
+        {hull && !deadlock.formerKey?.trim() ? <label>Deadlock {i + 1} name<select aria-label={`Deadlock ${i + 1} name`} value={deadlock.name} onChange={e => change({ deadlocks: current.deadlocks.map((d, n) => n === i ? { ...d, name: e.target.value } : d) })}>{robotic.map(name => <option key={name}>{name}</option>)}</select></label> : text(`Deadlock ${i + 1} name`, deadlock.name, name => change({ deadlocks: current.deadlocks.map((d, n) => n === i ? { ...d, name } : d) }))}
+        {(!hull || deadlock.formerKey?.trim()) && text(`Deadlock ${i + 1} former Key`, deadlock.formerKey ?? '', formerKey => change({ deadlocks: current.deadlocks.map((d, n) => n === i ? { ...d, formerKey } : d) }))}
+        {text(`Deadlock ${i + 1} notes`, deadlock.notes ?? '', notes => change({ deadlocks: current.deadlocks.map((d, n) => n === i ? { ...d, notes } : d) }), true)}
         {editable && <button onClick={() => change({ deadlocks: current.deadlocks.filter((_, n) => n !== i) })}>Remove Deadlock {i + 1}</button>}
       </div>)}
-      {editable && <button disabled={occupied >= data.keyCapacity} onClick={() => change({ deadlocks: [...current.deadlocks, { name: '', formerKey: '', notes: '' }] })}>Add Deadlock</button>}
-      <h5>Harm · four levels</h5>
-      <p>Unless an ability says otherwise, Harm informs fictional effect; there are no fixed action-dice penalties. {data.playbook === 'Hound' && 'Just a Scratch prevents Harm affecting effect during a score, while mortal Harm and complications still apply.'} Level 4 is rapidly lethal without exceptional intervention. Record agreed survival and complications with the GM. Resistance and Armor outcomes are deliberate table decisions.</p>
-      <div className="dossier-grid">{(Object.keys(HARM_LEVELS) as (keyof CharacterHarm)[]).map(level => <div key={level}>{current.harm[level].map((injury, i) => <div key={i}>{text(`${HARM_LEVELS[level]} Harm ${i + 1}`, injury, value => change({ harm: { ...draft.harm, [level]: current.harm[level].map((v, n) => n === i ? value : v) } }))}</div>)}</div>)}</div>
-      <h5>Recovery · four-segment healing clock</h5>
-      <p>Recover clears passing Harm; the healer’s result marks 1 / 2 / 3 / 5 segments. Filling four reduces remaining Harm one level; extra ticks carry over. Record those changes together after review. Get Back In There’s permanent segment is distinct from ordinary progress. Hull repairs use their own procedure.</p>
+      {editable && <button disabled={occupied >= data.keyCapacity} onClick={() => change({ deadlocks: [...current.deadlocks, { name: hull ? 'Brutal' : '', formerKey: '', notes: '' }] })}>{hull ? 'Add robotic Deadlock' : 'Add Deadlock'}</button>}
+      {hull && editable && <button disabled={occupied >= data.keyCapacity || current.keys.length + current.deadlocks.filter(d => d.formerKey?.trim()).length >= completed} onClick={() => change({ deadlocks: [...current.deadlocks, { name: '', formerKey: 'Remembered Key', notes: '' }] })}>Add human Deadlock</button>}
+      <h5>{damage} · {hull ? 'three levels' : 'four levels'}</h5>
+      {hull ? <p>Your frame can be repaired even after destruction. The v6 sheet has Passing, Major and Critical Damage, with no mortal slot. Record destruction, repair and Hull Damage Complications with the GM in recovery/condition notes. Armor and resistance remain deliberate decisions.</p> : <p>Unless an ability says otherwise, Harm informs fictional effect; there are no fixed action-dice penalties. {data.playbook === 'Hound' && 'Just a Scratch prevents Harm affecting effect during a score, while mortal Harm and complications still apply.'} Level 4 is rapidly lethal without exceptional intervention. Record agreed survival and complications with the GM. Resistance and Armor outcomes are deliberate table decisions.</p>}
+      <div className="dossier-grid">{(Object.keys(HARM_LEVELS) as (keyof CharacterHarm)[]).map(level => <div key={level}>{current.harm[level].map((injury, i) => <div key={i}>{text(`${HARM_LEVELS[level]} ${damage} ${i + 1}`, injury, value => change({ harm: { ...draft.harm, [level]: current.harm[level].map((v, n) => n === i ? value : v) } }))}</div>)}</div>)}</div>
+      <h5>Recovery · four-segment {recovery.toLowerCase()} clock</h5>
+      {hull ? <p>Hull Repair uses a sparktech acquired as an asset, or another PC’s Tinker (no special ability; the Hull spends the activity). Alternatively, the controller repairs all Damage and ticks Suspicion once. Regular healers and hospitals do not apply. Repair uses the four-segment clock; record agreed Damage reduction and rollover. Any Hull Repair also replaces totaled built-in Armor; record its restoration in equipment. Hull Damage Complications can affect the next recharge or Armor availability (book p.193).</p> : <p>Recover clears passing Harm; the healer’s result marks 1 / 2 / 3 / 5 segments. Filling four reduces remaining Harm one level; extra ticks carry over. Record those changes together after review. Get Back In There’s permanent segment is distinct from ordinary progress. Hull repairs use their own procedure.</p>}
       <div className="dossier-grid">
-        {number('Healing progress', current.healing.progress, 4, progress => change({ healing: { ...draft.healing, progress } }))}
-        {number('Permanent healing segments', current.healing.permanent, 1, permanent => change({ healing: { ...draft.healing, permanent } }))}
+        {number(`${recovery} progress`, current.healing.progress, 4, progress => change({ healing: { ...draft.healing, progress } }))}
+        {!hull && number('Permanent healing segments', current.healing.permanent, 1, permanent => change({ healing: { ...draft.healing, permanent } }))}
         {text('Recovery notes', current.recoveryNotes, recoveryNotes => change({ recoveryNotes }), true)}
       </div>
     </fieldset>
     {editable && entries.length > 0 && <>
       {!review && <button disabled={busy} onClick={() => setReview(true)}>Review condition changes</button>}
       {review && <div className="condition-review" role="region" aria-label="Review condition changes">
-        <h5>Review with your table</h5><p>Only these entered changes will be saved. Check crisis, retirement, mortal survival, recovery and ability decisions before confirming.</p>
-        <dl>{entries.map(([field, value]) => <div key={field}><dt>{TITLES[field]}</dt><dd>Saved: {describe(data[field])}<br />Proposed: {describe(value)}</dd></div>)}</dl>
+        <h5>Review with your table</h5><p>Only these entered changes will be saved. Check playbook crisis, Deadlock, damage, recovery and ability decisions before confirming.</p>
+        <dl>{entries.map(([field, value]) => <div key={field}><dt>{field === 'stress' ? `${resource} marked` : field === 'harm' ? damage : field === 'healing' ? `${recovery} clock` : TITLES[field]}</dt><dd>Saved: {describe(data[field])}<br />Proposed: {describe(value)}</dd></div>)}</dl>
         <button disabled={busy} onClick={() => void confirm()}>{busy ? 'Saving conditions…' : error ? 'Retry condition changes' : 'Confirm condition changes'}</button>
         <button disabled={busy} onClick={() => setReview(false)}>Keep editing conditions</button>
       </div>}
