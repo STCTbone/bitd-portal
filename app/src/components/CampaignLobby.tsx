@@ -8,6 +8,7 @@ import { CrewDossier } from './CrewDossier'
 import { FactionDossier } from './FactionDossier'
 import { CampaignMedia, CampaignMediaProvider } from './ProtectedMedia'
 import { CampaignMap } from './CampaignMap'
+import { CampaignOverview } from './CampaignOverview'
 import { CharacterDossiers } from './CharacterDossiers'
 
 /** Authenticated campaign landing. Features enter here only after their backend contract is migrated. */
@@ -15,6 +16,7 @@ export function CampaignLobby() {
   const { session, leaveCampaign } = useSession()
   const [invitations, setInvitations] = useState<{ player: string; gm: string } | null>(null)
   const [error, setError] = useState('')
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
   useEffect(() => {
     let active = true
     if (session?.role === 'gm') {
@@ -47,8 +49,9 @@ export function CampaignLobby() {
       {error && <p role="alert" className="access-error">{error}</p>}
       <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
     </section>
+    <CampaignOverview openCharacter={setSelectedCharacter} />
     <FactionDossier key={`${session.campaignId}:${session.role}`} />
-    <CampaignMediaProvider key={`media:${session.campaignId}:${session.role}`}><CharacterDossiers /><CampaignMedia /></CampaignMediaProvider>
+    <CampaignMediaProvider key={`media:${session.campaignId}:${session.role}`}><CharacterDossiers selectedCharacter={selectedCharacter} onSelectCharacter={setSelectedCharacter} /><CampaignMedia /></CampaignMediaProvider>
     <CampaignMap key={`map:${session.campaignId}:${session.role}`} />
     <CrewDossier />
     <CampaignPlanning />

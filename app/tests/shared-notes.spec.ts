@@ -153,10 +153,13 @@ test('delayed snapshots and accepted mutation responses cannot restore deleted o
   await expect(reference.getByRole('article')).toHaveCount(0)
   const delayedMutation = page.waitForResponse(response => response.url().includes('/rpc/update_shared_note'))
   releaseMutation(); await delayedMutation
-  await expect(reference.getByText('No shared notes yet.')).toBeVisible()
+  // A current overview/presence denial now removes the whole campaign boundary.
+  await expect(reference).toHaveCount(0)
+  await expect(page.getByRole('alert')).toContainText('Campaign access is no longer authorized')
   await page.reload()
   await expect(page.getByRole('region', { name: 'Shared campaign notes', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('alert')).toContainText('Campaign access is no longer authorized')
+  // The live denial already cleared the selected campaign; reload stays at entry.
+  await expect(page.getByLabel('Invitation', { exact: true })).toBeVisible()
   await context.close()
 })
 
