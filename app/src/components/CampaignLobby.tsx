@@ -6,6 +6,7 @@ import { CampaignClocks } from './CampaignClocks'
 import { CrewDossier } from './CrewDossier'
 import { FactionDossier } from './FactionDossier'
 import { CampaignMedia, CampaignMediaProvider } from './ProtectedMedia'
+import { CampaignMap } from './CampaignMap'
 import { CharacterDossiers } from './CharacterDossiers'
 
 /** Authenticated campaign landing. Features enter here only after their backend contract is migrated. */
@@ -47,6 +48,7 @@ export function CampaignLobby() {
     </section>
     <FactionDossier key={`${session.campaignId}:${session.role}`} />
     <CampaignMediaProvider key={`media:${session.campaignId}:${session.role}`}><CharacterDossiers /><CampaignMedia /></CampaignMediaProvider>
+    <CampaignMap key={`map:${session.campaignId}:${session.role}`} />
     <CrewDossier />
     <CampaignPlanning />
     <CampaignClocks />
