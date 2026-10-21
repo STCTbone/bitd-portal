@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from '@/lib/session'
 import { supabase } from '@/lib/supabase'
 import { CampaignPlanning } from './CampaignPlanning'
+import { CampaignSetup } from './CampaignSetup'
 import { SharedNotes } from './SharedNotes'
 import { CampaignClocks } from './CampaignClocks'
 import { CrewDossier } from './CrewDossier'
@@ -47,6 +48,7 @@ export function CampaignLobby() {
       {error && <p role="alert" className="access-error">{error}</p>}
       <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
     </section>
+    <CampaignSetup key={`setup:${session.campaignId}:${session.userId}:${session.role}`} />
     <FactionDossier key={`${session.campaignId}:${session.role}`} />
     <CampaignMediaProvider key={`media:${session.campaignId}:${session.role}`}><CharacterDossiers /><CampaignMedia /></CampaignMediaProvider>
     <CampaignMap key={`map:${session.campaignId}:${session.role}`} />

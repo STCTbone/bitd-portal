@@ -578,50 +578,10 @@ export function GameProvider({ campaignId, seat, sessionId, children }: GameProv
     if (score) deleteEntity('scores', score.id).catch(onErr)
   }, [applyPut, broadcast, persistChars, persistClocks])
 
-  // Full reset to setup (GM-only, destructive): DELETE every character (players
-  // rebuild their own via the character creator), clear the active score, and
-  // reset the crew's progression (tier, rep, heat, wanted, coin, xp, abilities,
-  // upgrades, claims) back to a fresh setup, flipping Setup Mode on. The crew's
-  // identity (name, type, lair, hunting grounds, notes), completed score
-  // history, clocks, factions, and map are intentionally untouched.
+  // Retired original-game path. Current GM setup is server-confirmed and scoped.
   const resetGame = useCallback(() => {
-    const ids = stateRef.current.characters.map((c) => c.id)
-    if (ids.length) {
-      const rem: RemovePayload = { characterIds: ids }
-      applyRemove(rem); broadcast('remove', rem)
-      ids.forEach((id) => deleteEntity('characters', id).catch(onErr))
-    }
-    setActiveCharacter(null)
-
-    // Clear any in-progress score.
-    const score = stateRef.current.currentScore
-    if (score) {
-      const p: PutPayload = { score: null }
-      applyPut(p); broadcast('put', p)
-      deleteEntity('scores', score.id).catch(onErr)
-    }
-
-    const crew = stateRef.current.crew
-    if (crew) {
-      const nextCrew: Crew = {
-        ...crew,
-        tier: 0,
-        hold: 'strong',
-        rep: 0,
-        heat: 0,
-        wanted_level: 0,
-        coin: 0,
-        vault_capacity: 4,
-        crew_xp: 0,
-        special_abilities: [],
-        upgrades: [],
-        claims_seized: [],
-        setup_mode: true,
-      }
-      const p: PutPayload = { crew: nextCrew }
-      applyPut(p); broadcast('put', p); persistCrew(nextCrew)
-    }
-  }, [applyRemove, applyPut, broadcast, persistCrew])
+    throw new Error('Legacy reset is retired. Use the reviewed Campaign setup controls.')
+  }, [])
 
   // ── Load campaign data from Postgres ──
   useEffect(() => {
