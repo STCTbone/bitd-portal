@@ -32,7 +32,6 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
   const [unclaimed, setUnclaimed] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const character = records.find(c => c.id === selected)
   async function create(e: FormEvent) {
@@ -45,7 +44,7 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
   }
   async function action(operation: string, id: string) {
     setError(''); setBusy(true)
-    try { await mutate(operation, { p_character: id }); setConfirmDelete(false) }
+    try { await mutate(operation, { p_character: id }) }
     catch (error) { setError(error instanceof Error ? error.message : 'Change was not saved.') }
     finally { setBusy(false) }
   }
@@ -55,7 +54,7 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
     {error && <p role="alert" className="dossier-error">{error}</p>}
     <div className="dossier-roster">
       {!loaded ? <p role="status">Loading characters…</p> : records.length === 0 ? <p>No characters yet. Create your first character.</p> : records.map(c => <div key={c.id}>
-        <button onClick={() => { setSelected(c.id); setConfirmDelete(false) }} aria-pressed={selected === c.id} aria-label={`Open ${c.data.name}`}>{c.data.name} <small>{c.data.playbook} · {c.owner_id === session!.userId ? 'Yours' : c.owner_id ? 'Owned' : 'Unclaimed'}</small></button>
+        <button onClick={() => setSelected(c.id)} aria-pressed={selected === c.id} aria-label={`Open ${c.data.name}`}>{c.data.name} <small>{c.data.playbook} · {c.owner_id === session!.userId ? 'Yours' : c.owner_id ? 'Owned' : 'Unclaimed'}</small></button>
         {c.owner_id === null && <button disabled={busy} onClick={() => { setSelected(c.id); void action('claim_character', c.id) }}>Claim {c.data.name}</button>}
       </div>)}
     </div>
@@ -71,11 +70,17 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
       {catalog.some(p => p.name === character.data.playbook && !p.enabled) && <p role="status">Unavailable for new characters. This existing dossier remains readable and editable.</p>}
       {session!.role === 'gm' && <CharacterOwnership key={`ownership:${character.id}`} character={character} assign={async (owner, expected) => { await mutate('assign_character_owner', { p_character: character.id, p_owner: owner, p_expected_owner: expected }) }} />}
       <Dossier key={character.id} character={character} editable={session!.role === 'gm' || character.owner_id === session!.userId} patch={changes => patch(character.id, changes)} isGM={session!.role === 'gm'} setKeyCapacity={async (capacity, reason) => { await mutate('set_character_key_capacity', { p_character: character.id, p_capacity: capacity, p_reason: reason }) }} />
-      {(session!.role === 'gm' || character.owner_id === session!.userId) && <div className="dossier-danger">
-        {!confirmDelete ? <button onClick={() => setConfirmDelete(true)}>Delete character</button> : <><p>Delete {character.data.name} permanently? This cannot be undone.</p><button disabled={busy} onClick={() => void action('delete_character', character.id)}>Confirm delete {character.data.name}</button><button onClick={() => setConfirmDelete(false)}>Keep character</button></>}
-      </div>}
+      {(session!.role === 'gm' || character.owner_id === session!.userId) && <CharacterRemoval key={`remove:${character.id}`} name={character.data.name} busy={busy} remove={() => { void action('delete_character', character.id) }} />}
     </>}
   </section>
+}
+
+/** Confirmation belongs to this dossier and is discarded on any record switch. */
+function CharacterRemoval({ name, busy, remove }: { name: string; busy: boolean; remove: () => void }) {
+  const [confirm, setConfirm] = useState(false)
+  return <div className="dossier-danger">
+    {!confirm ? <button onClick={() => setConfirm(true)}>Delete character</button> : <><p>Delete {name} permanently? This cannot be undone.</p><button disabled={busy} onClick={remove}>Confirm delete {name}</button><button onClick={() => setConfirm(false)}>Keep character</button></>}
+  </div>
 }
 
 function Dossier({ character, editable, patch, isGM, setKeyCapacity }: { character: CharacterRecord; editable: boolean; patch: (changes: CharacterPatch) => Promise<void>; isGM: boolean; setKeyCapacity: (capacity: number, reason: string) => Promise<void> }) {

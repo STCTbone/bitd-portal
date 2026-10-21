@@ -119,6 +119,12 @@ test('GM and two players navigate saved live summaries and manage online table l
   await two.getByRole('link', { name: 'Open Vesper dossier', exact: true }).click()
   await expect(two.getByRole('article', { name: 'Vesper dossier', exact: true })).toBeVisible()
   await expect(two.getByLabel('Alias', { exact: true })).toBeDisabled()
+  await gm.getByRole('link', { name: 'Open Vesper dossier', exact: true }).click()
+  await gm.getByRole('button', { name: 'Delete character', exact: true }).click()
+  await expect(gm.getByRole('button', { name: 'Confirm delete Vesper', exact: true })).toBeVisible()
+  await gm.getByRole('link', { name: 'Open Kite dossier', exact: true }).click()
+  await expect(gm.getByRole('button', { name: 'Confirm delete Kite', exact: true })).toHaveCount(0)
+  await expect(gm.getByRole('button', { name: 'Delete character', exact: true })).toBeVisible()
   await gm.getByRole('link', { name: 'Open crew dossier', exact: true }).click()
   await expect(gm.getByRole('region', { name: 'Crew dossier', exact: true })).toBeInViewport()
   await gm.getByLabel('Heat', { exact: true }).fill('4'); await gm.getByRole('button', { name: 'Save crew changes', exact: true }).click()
@@ -162,7 +168,11 @@ test('live role and ownership changes are authoritative and delayed revoked over
     await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
   }
   const actor = await host.getByLabel('Your participant ID').inputValue(), peerActor = await peer.getByLabel('Your participant ID').inputValue()
-  const character = (await gm.rpc('create_character', { p_campaign: campaign, p_name: 'Current owner', p_unclaimed: true })).data
+  const made = await gm.rpc('create_character', { p_campaign: campaign, p_name: 'Current owner', p_unclaimed: true })
+  expect(made.error).toBeNull()
+  expect(made.data).toMatchObject({ campaign_id: campaign, owner_id: null, data: { name: 'Current owner' } })
+  const character = made.data
+  expect((await gm.rpc('get_campaign_overview', { p_campaign: campaign })).data.characters).toContainEqual(expect.objectContaining({ id: character.id, name: 'Current owner' }))
   const overview = host.getByRole('region', { name: 'Campaign state overview', exact: true })
   const card = overview.getByRole('article', { name: 'Current owner summary', exact: true })
   await expect(card).toContainText('Unclaimed')
@@ -214,11 +224,30 @@ test('presence connection churn is bounded and legacy public and private channel
 })
 
 
-test('overview carries immutable condition metadata for meaningful resource labels', async () => {
-  const { a, b, campaign } = await fixture()
-  const hull = await a.rpc('create_character', { p_campaign: campaign, p_name: 'Signal', p_playbook: 'Hull' })
-  expect(hull.error).toBeNull()
+test('overview carries immutable condition metadata and renders saved paranormal resource labels after creation is disabled', async ({ browser }) => {
+  const { gm, a, b, campaign, invitations } = await fixture()
+  const cases = [
+    ['Hound', null, 'Stress', 9], ['Hull', 'hull', 'Drain', 10],
+    ['Ghost/Echo', 'ghost', 'Drain', 9], ['Vampire', 'vampire', 'Stress', 12],
+    ['Time Traveler from the Future', 'future', 'Instability', 9], ['Time Traveler from the Past', 'past', 'Instability', 9],
+  ] as const
+  for (const [playbook, kind] of cases) {
+    if (kind && kind !== 'hull') expect((await gm.rpc('set_paranormal_playbook', { p_campaign: campaign, p_playbook: playbook, p_enabled: true })).error).toBeNull()
+    const made = await a.rpc('create_character', { p_campaign: campaign, p_name: playbook, p_playbook: playbook })
+    expect(made.error).toBeNull()
+    expect((await a.rpc('patch_character', { p_character: made.data.id, p_patch: { stress: 2 } })).error).toBeNull()
+    if (kind && kind !== 'hull') expect((await gm.rpc('set_paranormal_playbook', { p_campaign: campaign, p_playbook: playbook, p_enabled: false })).error).toBeNull()
+  }
   const snapshot = await b.rpc('get_campaign_overview', { p_campaign: campaign })
   expect(snapshot.error).toBeNull()
-  expect(snapshot.data.characters).toEqual([expect.objectContaining({ id: hull.data.id, condition_kind: 'hull', stress: 0, stress_capacity: 10 })])
+  for (const [playbook, kind, , capacity] of cases) expect(snapshot.data.characters).toContainEqual(expect.objectContaining({ name: playbook, condition_kind: kind, stress: 2, stress_capacity: capacity }))
+  const page = await browser.newPage()
+  await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invitations.player)
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  const overview = page.getByRole('region', { name: 'Campaign state overview', exact: true })
+  for (const [playbook, , resource, capacity] of cases) await expect(overview.getByRole('article', { name: `${playbook} summary`, exact: true })).toContainText(`${resource} 2/${capacity}`)
+  await overview.getByRole('link', { name: 'Open Ghost/Echo dossier', exact: true }).click()
+  await expect(page.getByRole('article', { name: 'Ghost/Echo dossier', exact: true })).toBeVisible()
+  await expect(page.getByLabel('Alias', { exact: true })).toBeDisabled()
+  await page.close()
 })
