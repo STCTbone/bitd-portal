@@ -32,7 +32,7 @@ test('specialized records obey saved playbook authority and merge without erasin
   const backing = (name: string) => ({ name, tier: 3, mission: 'Recover dossier', failure: 2, prestige: 'Pending mission', help: 'Intel received; Return the Favor pending', notes: '' })
   const work = { name: 'Free the streets', progress: 4, circulating: true, contribution: 'One tick to campaign project this downtime', notes: '' }
   const cases = [
-    { name: 'Operative', patch: { abilities: ['Clean', 'Double Agent', 'Control', 'Dead Drop', 'Sleeper Agents', 'Cipher'], operative: { controlAction: 'prowl', coverIdentity: 'Mr Grey', dropLoad: 2, dropAssetUsed: true, sleeperUsed: true, backingFactions: [backing('Palace'), backing('Blackthorn Park')] } }, invalid: [{ operative: { controlAction: 'forged' } }, { operative: { dropLoad: 3 } }, { abilities: ['Clean'] }, { operative: { backingFactions: [backing('A'), backing('B'), backing('C')] } }], field: 'operative', first: { coverNotes: 'Cover intact' }, second: { operations: 'Drop complete' } },
+    { name: 'Operative', patch: { abilities: ['Clean', 'Double Agent', 'Control', 'Dead Drop', 'Sleeper Agents', 'Cipher'], operative: { controlAction: 'prowl', coverIdentity: 'Mr Grey', dropLoad: 2, dropAssetUsed: true, sleeperUsed: true } }, invalid: [{ operative: { controlAction: 'forged' } }, { operative: { dropLoad: 3 } }, { abilities: ['Clean'] }, { operative: { backingFactions: [backing('A'), backing('B'), backing('C')] } }], field: 'operative', first: { coverNotes: 'Cover intact' }, second: { operations: 'Drop complete' } },
     { name: 'Radical', patch: { abilities: ['True Believer', 'Pamphleteer'], radical: { radicalizedBy: 'Labor conditions', cause: 'Housing for all', supplier: 'Delyan', bandoliers: [['Smoke bomb', '', ''], ['', '', '']], works: [work] } }, invalid: [{ radical: { bandoliers: [['One']] } }, { radical: { works: [{ ...work, progress: 3 }] } }, { radical: { works: Array.from({ length: 5 }, () => work) } }, { abilities: ['True Believer'] }], field: 'radical', first: { praxis: 'Symbol destroyed; +2 levels pending' }, second: { dedication: 'Accepted resistance tradeoff' } },
     { name: 'Veteran', patch: { abilities: ['Military Discipline', 'Walking Arsenal', 'Get Back In There', 'Creative Community'], veteran: { tours: 'Unity War III', damage: 'Permanent leg damage', helps: 'Prosthetic', hobby: 'Pottery', assistance: 'Mara assists with prosthetic' }, healing: { permanent: 1, progress: 3 } }, invalid: [{ abilities: ['Walking Arsenal'] }, { abilities: ['Military Discipline'] }, { healing: { progress: 4 } }, { veteran: { forged: true } }], field: 'veteran', first: { assistance: 'New prosthetic fitting' }, second: { operations: 'Protected teammate; recovery reviewed' } },
   ]
@@ -91,10 +91,6 @@ for (const playbook of ['Operative', 'Radical', 'Veteran']) test(`${playbook} cr
     for (const ability of ['Clean', 'Control', 'Cipher', 'Dead Drop', 'Double Agent']) { await owner.getByLabel(ability, { exact: true }).click(); await expect(owner.getByLabel(ability, { exact: true })).toBeChecked() }
     await owner.getByLabel('Control action', { exact: true }).selectOption('prowl')
     await owner.getByLabel('Dead Drop load delivered', { exact: true }).fill('2')
-    await owner.getByRole('button', { name: 'Add backing faction', exact: true }).click()
-    await owner.getByLabel('Backing 1 name', { exact: true }).fill('Palace')
-    await owner.getByRole('button', { name: 'Add backing faction', exact: true }).click()
-    await owner.getByLabel('Backing 2 name', { exact: true }).fill('Blackthorn Park')
   } else if (playbook === 'Radical') {
     for (const ability of ['True Believer', 'Pamphleteer']) { await owner.getByLabel(ability, { exact: true }).click(); await expect(owner.getByLabel(ability, { exact: true })).toBeChecked() }
     await owner.getByLabel('Radicalized by', { exact: true }).fill('Labor conditions')
@@ -159,7 +155,6 @@ for (const playbook of ['Operative', 'Radical', 'Veteran']) test(`${playbook} cr
   await expect(owner.getByLabel('Study rating', { exact: true })).toHaveValue('2')
   await expect(owner.getByText(`${item} · ${playbook === 'Veteran' ? 1 : 0} load × 1 · carried`, { exact: true })).toBeVisible()
   if (playbook === 'Veteran') await expect(owner.getByLabel('Permanent healing segments', { exact: true })).toHaveValue('1')
-  if (playbook === 'Operative') await expect(owner.getByLabel('Backing 2 name', { exact: true })).toHaveValue('Blackthorn Park')
   if (playbook === 'Radical') await expect(owner.getByLabel('Work 1 circulating', { exact: true })).toBeChecked()
   if (playbook === 'Veteran') await expect(owner.getByLabel('Something that helps', { exact: true })).toHaveValue('Prosthetic')
   await owner.getByRole('region', { name: 'Playbook records', exact: true }).screenshot({ path: `test-results/${playbook.toLowerCase()}-desktop.png` })
