@@ -42,7 +42,16 @@ export interface RadicalWork { name: string; progress: number; circulating: bool
 export interface RadicalRecord { radicalizedBy: string; cause: string; supplier: string; bandoliers: string[][]; works: RadicalWork[]; praxis: string; dedication: string; operations: string }
 export interface VeteranRecord { tours: string; damage: string; helps: string; hobby: string; assistance: string; operations: string }
 export interface HumanPlaybookPatch { operative?: Partial<OperativeRecord>; radical?: Partial<RadicalRecord>; veteran?: Partial<VeteranRecord> }
+export interface CompanionConditions { name: string; edges: string; flaws: string; origin: string; notes: string; weak: boolean; impaired: boolean; broken: boolean }
+export interface Sparkmind extends CompanionConditions { types: string[]; housing: '' | 'Small' | 'Large'; advancedChoices: string[] }
+export interface ResonanceEntity extends CompanionConditions { type: 'Paranormal Assistant'; kind: string; abilities: string; armor: boolean }
+export interface Autopod extends CompanionConditions { type: '' | 'Racing' | 'Impressing' | 'Surprising'; style: string }
+export interface IntellectualRecord { fieldsOfStudy: string; gadgetDecisions: string; operations: string }
+export interface ParanormalistRecord { precognitionUsed: number; projectionRank: number; projectionActive: boolean; experiments: string; operations: string }
+export interface SwingerRecord { sideHustle: string; hustleActivityGranted: boolean; partyAssistAvailable: boolean; twinSummoned: boolean; twinFeatures: string[]; twinNotes: string; operations: string }
+export interface CompanionPatch { sparkmind?: Partial<Sparkmind>; resonanceEntity?: Partial<ResonanceEntity>; autopod?: Partial<Autopod>; intellectual?: Partial<IntellectualRecord>; paranormalist?: Partial<ParanormalistRecord>; swinger?: Partial<SwingerRecord> }
 export interface CharacterDossier extends CharacterCondition, CharacterEquipment {
+  sparkmind?: Sparkmind; resonanceEntity?: ResonanceEntity; autopod?: Autopod; intellectual?: IntellectualRecord; paranormalist?: ParanormalistRecord; swinger?: SwingerRecord
   sheet: CharacterSheetRules
   operative?: OperativeRecord; radical?: RadicalRecord; veteran?: VeteranRecord
   name: string; playbook: string; alias: string; playerName: string; look: string; wearing: string
@@ -54,7 +63,7 @@ export interface CharacterDossier extends CharacterCondition, CharacterEquipment
 export interface CharacterRecord {
   id: string; campaign_id: string; owner_id: string | null; data: CharacterDossier; updated_at: string
 }
-export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason' | 'operative' | 'radical' | 'veteran'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch & HumanPlaybookPatch
+export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason' | 'operative' | 'radical' | 'veteran' | 'sparkmind' | 'resonanceEntity' | 'autopod' | 'intellectual' | 'paranormalist' | 'swinger'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch & HumanPlaybookPatch & CompanionPatch
 
 /** Only accepted server snapshots enter this boundary. Polling never trusts peer state. */
 export function useCharacters(campaignId: string) {
