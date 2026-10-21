@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useSnapshotPolling } from './snapshot-polling'
 import { supabase } from './supabase'
 import type { CharacterRecord } from './characters'
 import type { CrewCohort, CrewDossier } from './crew/dossier'
@@ -40,30 +41,20 @@ export function planningError(error: unknown) { return error && typeof error ===
 export function usePlanning(campaign: string) {
   const [snapshot, setSnapshot] = useState<Snapshot>({ cycle: null, activities: [], opportunities: [], scores: [], characters: [], crews: [], scoreActivities: [], events: [] })
   const [ready, setReady] = useState(false), [error, setError] = useState('')
-  const active = useRef(false), epoch = useRef(0), request = useRef(0), accepted = useRef(0)
-  const refresh = useCallback(async () => {
-    const version = epoch.current, sequence = ++request.current
+  const read = useCallback(async (acceptSnapshot: () => boolean) => {
     try {
       const results = await Promise.all(['campaign_cycles', 'personal_business', 'opportunities', 'scores', 'characters', 'crews', 'score_activities', 'score_events'].map(table => supabase.from(table).select('*').eq('campaign_id', campaign).retry(false)))
       for (const result of results) if (result.error) throw result.error
-      if (!active.current || version !== epoch.current || sequence < accepted.current) return false
-      accepted.current = sequence
+      if (!acceptSnapshot()) return false
       setSnapshot({ cycle: results[0].data![0], activities: results[1].data!, opportunities: results[2].data!, scores: results[3].data!, characters: results[4].data!, crews: results[5].data!, scoreActivities: results[6].data!, events: results[7].data! }); setReady(true); setError(''); return true
     } catch {
-      if (active.current && version === epoch.current && sequence >= accepted.current) { accepted.current = sequence; setReady(false); setError('Cycle refresh failed. Reconnect or retry to see the current permitted records.') }
+      if (acceptSnapshot()) { setReady(false); setError('Cycle refresh failed. Reconnect or retry to see the current permitted records.') }
       return false
     }
   }, [campaign])
-  useEffect(() => {
-    active.current = true
-    const first = setTimeout(() => { void refresh() }, 0), timer = setInterval(() => { void refresh() }, 1400)
-    const reconnect = () => { void refresh() }
-    window.addEventListener('online', reconnect); window.addEventListener('focus', reconnect)
-    return () => { active.current = false; clearTimeout(first); clearInterval(timer); window.removeEventListener('online', reconnect); window.removeEventListener('focus', reconnect) }
-  }, [refresh])
+  const { refresh, invalidate } = useSnapshotPolling(read, 1400)
   function accept<K extends keyof Snapshot>(kind: K, value: Snapshot[K] extends (infer T)[] ? T : Snapshot[K]) {
-    epoch.current++
-    if (!active.current) return
+    if (!invalidate()) return
     setSnapshot(previous => {
       if (kind === 'cycle') return { ...previous, cycle: value as CampaignCycle }
       const rows = previous[kind] as Saved<unknown>[]
@@ -71,6 +62,6 @@ export function usePlanning(campaign: string) {
       return { ...previous, [kind]: [...rows.filter(existing => existing.id !== row.id), row] }
     }); setReady(true); setError('')
   }
-  function removeActivity(id: string) { epoch.current++; setSnapshot(previous => ({ ...previous, activities: previous.activities.filter(row => row.id !== id) })) }
+  function removeActivity(id: string) { invalidate(); setSnapshot(previous => ({ ...previous, activities: previous.activities.filter(row => row.id !== id) })) }
   return { ...snapshot, ready, error, refresh, accept, removeActivity }
 }
