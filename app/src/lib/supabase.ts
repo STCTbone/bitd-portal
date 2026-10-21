@@ -6,7 +6,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
     'Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY. ' +
-      'These must be set as build-time env vars (Amplify Console → Environment variables).',
+      'Run npm run backend:start locally, or set these public build-time variables for your static host.',
   )
 }
 
