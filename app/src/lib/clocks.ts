@@ -60,7 +60,9 @@ export function useClocks(campaign: string) {
   }, [refresh])
   function accept(row: ClockRecord) {
     epoch.current++
-    if (active.current) { setClocks(previous => [...previous.filter(value => value.id !== row.id), row]); setHasSnapshot(true); setError('') }
+    // A late accepted save may refer to a clock cleared or unshared since then.
+    // Recheck current permission and existence rather than resurrect its payload.
+    if (active.current && row.campaign_id === campaign) void refresh()
   }
   function remove(id: string) {
     epoch.current++
