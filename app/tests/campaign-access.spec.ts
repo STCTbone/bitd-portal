@@ -73,8 +73,10 @@ test('public API rejects forged membership, invitation disclosure, and cross-cam
   // Trusted fixture setup uses the operator's local-only admin API. Assertions
   // still exercise only the ordinary player's/outsider's public API boundary.
   const admin = localAdmin()
-  // Converted map token reads and narrow mutations are covered in maps.spec.ts.
-  for (const table of ['factions', 'scores', 'media', 'codex']) {
+  // Converted map tokens and uniformly shared notes have their own positive/negative contracts.
+  const shared = await gm.rpc('create_shared_note', { p_campaign: campaign, p_data: { title: 'Shared reference', body: 'Known to the table', category: 'lore' } })
+  expect(shared.error).toBeNull()
+  for (const table of ['factions', 'scores', 'media']) {
     expect((await admin.from(table).insert({ campaign_id: campaign, data: { name: 'PRIVATE fixture', visible_to_players: false } })).error).toBeNull()
   }
   const privatePath = `${campaign}/legacy-private.txt`
@@ -84,7 +86,9 @@ test('public API rejects forged membership, invitation disclosure, and cross-cam
     expect((await identity.from('campaign_members').insert({ campaign_id: other.data.id, user_id: playerId, role: 'gm' })).error).not.toBeNull()
     expect((await identity.rpc('get_campaign_invitations', { p_campaign: other.data.id })).error).not.toBeNull()
     for (const table of ['factions', 'scores', 'media', 'codex']) {
-      expect((await identity.from(table).select('*')).data).toEqual([])
+      const rows = await identity.from(table).select('*')
+      expect(rows.error).toBeNull()
+      expect(rows.data).toEqual(table === 'codex' && identity === player ? [shared.data] : [])
       expect((await identity.from(table).insert({ campaign_id: campaign, data: { name: 'forged', visible_to_players: false } })).error).not.toBeNull()
       expect((await identity.from(table).update({ data: { role: 'gm' } }).eq('campaign_id', campaign)).error).not.toBeNull()
       expect((await identity.from(table).delete().eq('campaign_id', campaign)).error).not.toBeNull()

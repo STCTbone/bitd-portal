@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from '@/lib/session'
 import { supabase } from '@/lib/supabase'
 import { CampaignPlanning } from './CampaignPlanning'
+import { SharedNotes } from './SharedNotes'
 import { CampaignClocks } from './CampaignClocks'
 import { CrewDossier } from './CrewDossier'
 import { FactionDossier } from './FactionDossier'
@@ -52,6 +53,7 @@ export function CampaignLobby() {
     <CrewDossier />
     <CampaignPlanning />
     <CampaignClocks />
+    <SharedNotes />
     <footer>Access is remembered in this browser. Keep your invitation to rejoin from another browser.</footer>
   </main>
 }

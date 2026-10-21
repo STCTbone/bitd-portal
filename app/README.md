@@ -203,6 +203,11 @@ Authenticated `send_map_activity`, `read_map_activity` and `leave_map_activity` 
 
 The browser coalesces gesture sends, polls every 250 ms with one read in flight, and clears activity on offline/hidden/leave/unmount. Its two-second response lease rejects delayed responses and clears stale visible activity if polling cannot renew access. Abrupt remote disconnect expires by the server lifetimes above. Reconnect rereads current permitted gestures and the independent saved-token snapshot. This intentionally trades small-table polling load and latency for access checks on every exchange; see `docs/adr/0004-transient-map-activity.md`. No websocket access is enabled by this feature.
 
+### Shared campaign notes
+
+Campaign members maintain a shared reference with titles, plain-text bodies and People, Places, Items, Factions or Lore categories. Every current member, including players, can create, edit and remove notes. Notes contain shared table information; use the separate protected faction notes for GM secrets.
+
+Each new note has its own ID. Saves merge changes to different fields; a concurrent change to the same field rejects the stale save and retains the local draft. Review the saved version with **Reload note (discard unsaved)** before editing again. Removal requires confirmation and rejects a stale record revision. Failed requests show an error and keep unsaved text for retry. Active clients replace authorized snapshots every 1.2 seconds and on focus/reconnect; reload restores saved notes. Campaign switches and current membership checks govern which reference is available. No note content uses the retired campaign broadcast or raw changefeed channels.
 
 ## Hull dossier
 
