@@ -5,6 +5,7 @@ import { useAssetLibrary, useProtectedAsset, reserveAsset, uploadReservedAsset, 
 import { useCampaignMap, type MapToken } from '@/lib/maps'
 import { supabase } from '@/lib/supabase'
 import './CampaignMap.css'
+import { MapCollaboration } from './MapCollaboration'
 
 type Mutate = ReturnType<typeof useCampaignMap>['mutate']
 type Authority = { value: string; label: string }
@@ -119,9 +120,9 @@ export function CampaignMap() {
   }
   return <section className="access-panel campaign-map" aria-label="Campaign map">
     <p className="access-kicker">SHARED TABLE</p><h2>Campaign map</h2>
-    <p>Coordinates are percentages of the image, from its top left. Use each permitted token’s position controls to move it. Saved changes appear for the whole table.</p>
+    <p>Use Show cursor, Ping map or Draw on map to share temporary gestures. Cursors fade after 3 seconds, pings after 4 and drawings after 8; leaving clears your activity. Coordinates are percentages of the image, from its top left. Use each permitted token’s position controls to move it. Saved changes appear for the whole table.</p>
     {map.error && <div role="alert">{map.error}<button onClick={() => void map.refresh()}>Retry map sync</button></div>}
-    {selected ? <MapSurface key={`${campaign}:${selected.id}`} asset={selected} tokens={map.state?.tokens ?? []} /> : <p role="status">{map.state?.map?.asset_id ? 'Selected map unavailable. Its image may have been unshared or removed.' : 'No map selected. The GM can upload or select a shared campaign image.'}</p>}
+    {selected ? <MapCollaboration key={`${campaign}:${selected.id}`} campaign={campaign} asset={selected.id}>{overlay => <MapSurface asset={selected} tokens={map.state?.tokens ?? []}>{overlay}</MapSurface>}</MapCollaboration> : <p role="status">{map.state?.map?.asset_id ? 'Selected map unavailable. Its image may have been unshared or removed.' : 'No map selected. The GM can upload or select a shared campaign image.'}</p>}
     <p className="map-access-note">Protected images recheck current access; previews expire within 10 seconds when access cannot be renewed.</p>
     {gm && <div className="map-gm-tools">
       <label>Saved campaign image<select aria-label="Saved campaign image" disabled={busy} value={choice?.asset ?? map.state?.map?.asset_id ?? ''} onChange={event => setChoice({ asset: event.target.value, revision: choice?.revision ?? map.state?.map?.revision ?? 0 })}><option value="">No map</option>{images.map(asset => <option key={asset.id} value={asset.id}>{asset.title}</option>)}</select></label>
