@@ -196,3 +196,11 @@
 .setup-actions button { min-height: 48px; white-space: normal; max-width: 100%; }
 .setup-review { margin-top: 1rem; padding: 1rem; border: 2px solid var(--color-primary, #176a67); border-radius: .5rem; overflow-wrap: anywhere; }
 .setup-review small { display: block; margin: .5rem 0; }
+
+/* Section links keep the complete workspace reachable without traversing every editor. */
+.campaign-sections { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem 1rem; max-width:76rem; margin:0 auto 1.5rem; padding:1rem; background:#173e46; color:#fff9eb; border:2px solid #e9be65; }
+.campaign-sections span { font-weight:700; color:#e9be65; }
+.campaign-sections a { color:#fff9eb; text-decoration:underline; text-underline-offset:.2em; padding:.4rem .2rem; }
+.campaign-sections a:focus-visible { outline:3px solid #e9be65; outline-offset:3px; }
+.access-page section[tabindex="-1"] { scroll-margin-top:1rem; }
+.access-page section[tabindex="-1"]:focus { outline:3px solid #e9be65; outline-offset:4px; }

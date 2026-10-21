@@ -67,7 +67,7 @@ function Planning({ campaign, user, gm }: { campaign: string; user: string; gm: 
   }
   function addActivity(event: FormEvent) { event.preventDefault(); void run(async () => { state.accept('activities', await createActivity(character || owned[0]?.id, { activity, description })); setDescription('') }) }
   function sketch(event: FormEvent) { event.preventDefault(); void run(async () => { state.accept('opportunities', await createOpportunity(campaign, { client, target, operation })); setClient(''); setTarget(''); setOperation('') }) }
-  return <section className="campaign-planning" aria-label="Campaign cycle">
+  return <section className="campaign-planning" id="campaign-cycle" tabIndex={-1} aria-label="Campaign cycle">
     <header><p className="planning-kicker">PERSONAL BUSINESS → PLANNING MEETING → SCORE → AFTERMATH</p><h2>Campaign cycle</h2><p>Shared records for the table. Move between phases whenever the fiction calls for it; planning can happen during Personal Business.</p></header>
     {state.error && <div role="alert"><p>{state.error}</p><button onClick={() => { void state.refresh() }}>Retry cycle refresh</button></div>}
     {!state.ready && !state.error && <p role="status">Loading campaign cycle…</p>}

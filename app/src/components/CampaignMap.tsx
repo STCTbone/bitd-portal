@@ -118,7 +118,7 @@ export function CampaignMap() {
     await map.mutate('set_campaign_map', { p_campaign: campaign, p_asset: ready.id, p_revision: expected })
     await library.refresh(); setFile(null); setReservation(null); setChoice(null)
   }
-  return <section className="access-panel campaign-map" aria-label="Campaign map">
+  return <section className="access-panel campaign-map" id="campaign-map" tabIndex={-1} aria-label="Campaign map">
     <p className="access-kicker">SHARED TABLE</p><h2>Campaign map</h2>
     <p>Use Show cursor, Ping map or Draw on map to share temporary gestures. Cursors fade after 3 seconds, pings after 4 and drawings after 8; leaving clears your activity. Coordinates are percentages of the image, from its top left. Use each permitted token’s position controls to move it. Saved changes appear for the whole table.</p>
     {map.error && <div role="alert">{map.error}<button onClick={() => void map.refresh()}>Retry map sync</button></div>}

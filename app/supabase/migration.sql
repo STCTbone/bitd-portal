@@ -1,5 +1,6 @@
 -- Blades in the Dark Tracker Schema
--- Run this against your Supabase database.
+-- HISTORICAL UPSTREAM REFERENCE ONLY: incompatible with the active portal.
+-- Fresh setup uses config.toml and ordered migrations/ through backend:start.
 -- Uses a dedicated 'bitd' schema to keep things separate from public.
 
 CREATE SCHEMA IF NOT EXISTS bitd;

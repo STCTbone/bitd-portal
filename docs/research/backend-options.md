@@ -1,4 +1,4 @@
-> Historical pre-adaptation research. File/line references below describe the upstream implementation; see [the current runtime guide](https://github.com/bsxp/bitd-portal/blob/main/app/README.md) for the shipped architecture.
+> Historical pre-adaptation research. File/line references below describe the upstream implementation; see [the current runtime guide](../../app/README.md) for the shipped architecture.
 
 # Backend options for the Blades ’68 portal
 

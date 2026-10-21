@@ -96,7 +96,7 @@ function CampaignCrew({ campaign, canManage }: { campaign: string; canManage: bo
   }
   const values = crew ? { ...crew.data, ...edits } : null
   const hasEdits = Object.keys(edits).length > 0
-  return <section id="crew-dossier" className="crew-dossier" aria-label="Crew dossier">
+  return <section id="crew-dossier" tabIndex={-1} className="crew-dossier" aria-label="Crew dossier">
     <header><p className="crew-kicker">DOSKVOL / SHARED CREW RECORD</p><h2>{crew?.data.name ?? 'Crew dossier'}</h2><p>{canManage ? 'Managed by the Game Master. Shared with your campaign.' : 'Shared campaign record. Ask your Game Master to make changes.'}</p></header>
     {loading && <p role="status">Loading crew…</p>}
     {!loading && hasSnapshot && !crew && <>

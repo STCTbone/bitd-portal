@@ -18,7 +18,7 @@ function Clocks({ campaign, canManage }: { campaign: string; canManage: boolean 
     catch (cause) { setError(`Clock was not created: ${clockError(cause)}`) }
     finally { setBusy(false) }
   }
-  return <section className="campaign-clocks" aria-label="Campaign clocks">
+  return <section className="campaign-clocks" id="campaign-clocks" tabIndex={-1} aria-label="Campaign clocks">
     <header><p className="clock-kicker">SITUATIONS / PROGRESS / CONSEQUENCES</p><h2>Campaign clocks</h2><p>{canManage ? 'New clocks start hidden. Share only the names and notes you want players to receive.' : 'Clocks deliberately shared by your Game Master.'}</p></header>
     {state.error && <div role="alert"><p>{state.error}</p><button onClick={() => { void state.refresh() }}>Retry clock refresh</button></div>}
     {!state.hasSnapshot && !state.error && <p role="status">Loading clocks…</p>}
