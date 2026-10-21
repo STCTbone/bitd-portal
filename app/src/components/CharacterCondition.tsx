@@ -63,7 +63,7 @@ export function CharacterCondition({ data, editable, patch, isGM, setKeyCapacity
     <fieldset disabled={!editable || busy}>
       <legend>Condition draft</legend>
       <div className="dossier-grid">{number(`${resource} marked`, current.stress, data.stressCapacity, stress => change({ stress }))}{text('Condition decisions', current.conditionNotes, conditionNotes => change({ conditionNotes }), true)}</div>
-      <p>{occupied} / {data.keyCapacity} Key and {deadlockLabel.toLowerCase()} slots occupied</p>
+      <p>{occupied} / {data.keyCapacity} Key and {ghost || traveler ? deadlockLabel.toLowerCase() : deadlockLabel} slots occupied</p>
       {current.keys.map((key, i) => <div className="dossier-grid dossier-row" key={i}>
         {text(`Key ${i + 1} name`, key.name, name => change({ keys: current.keys.map((k, n) => n === i ? { ...k, name } : k) }))}
         {number(`Key ${i + 1} hits`, key.hits, 3, hits => change({ keys: current.keys.map((k, n) => n === i ? { ...k, hits } : k) }))}
