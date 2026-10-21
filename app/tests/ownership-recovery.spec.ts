@@ -69,14 +69,14 @@ for (const outcome of ['rejected', 'authorized GM', 'revoked'] as const) test(`a
     await page.getByLabel('Invitation', { exact: true }).fill(firstInvite)
     await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'First table', exact: true })).toBeVisible()
-    if (outcome === 'revoked') {
-      const userId = await page.getByLabel('Your participant ID', { exact: true }).inputValue()
-      expect((await localAdmin().from('campaign_members').delete().eq('campaign_id', first).eq('user_id', userId)).error).toBeNull()
-    }
+    const userId = await page.getByLabel('Your participant ID', { exact: true }).inputValue()
     let captured!: () => void, release!: () => void
     const intercepted = new Promise<void>(resolve => { captured = resolve })
     const gate = new Promise<void>(resolve => { release = resolve })
     await page.route('**/rest/v1/campaign_members?*', async route => {
+      // Revoke at the captured read so independent current-access checks cannot
+      // remove the workspace before this delayed-response fixture is armed.
+      if (outcome === 'revoked') expect((await localAdmin().from('campaign_members').delete().eq('campaign_id', first).eq('user_id', userId)).error).toBeNull()
       const response = await route.fetch()
       captured()
       await gate
@@ -85,7 +85,11 @@ for (const outcome of ['rejected', 'authorized GM', 'revoked'] as const) test(`a
     }, { times: 1 })
     await page.evaluate(() => window.dispatchEvent(new Event('focus')))
     await intercepted
-    await page.getByRole('button', { name: 'Switch campaign', exact: true }).click()
+    // Overview/presence now detect current revocation without waiting for focus.
+    // Enter the new campaign from that denied-access screen while the old read
+    // remains held, preserving the original old-response/new-membership race.
+    if (outcome === 'revoked') await expect(page.getByLabel('Invitation', { exact: true })).toBeVisible()
+    else await page.getByRole('button', { name: 'Switch campaign', exact: true }).click()
     await page.getByLabel('Invitation', { exact: true }).fill(secondInvite)
     await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
     await page.getByRole('button', { name: 'Open Recovery editor', exact: true }).click()
