@@ -31,7 +31,7 @@ export interface CharacterLoadout { mode: 'Quiet' | 'Loud'; carriedStacks: numbe
 export interface CharacterArmor { kind: 'none' | 'armor' | 'light' | 'built-in'; worn: boolean; totaled: boolean; source: string; notes: string }
 export interface CharacterWealth { stacks: number; bank: number }
 export interface CharacterXP { playbook: number; insight: number; prowess: number; resolve: number }
-export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; actionMax: number; harmSlots: Record<keyof CharacterHarm, number>; source: string; conditionKind?: 'hull'; creation?: string; abilityChoiceGuidance?: string; fixedAbilities?: string[]; xpTrigger?: string; contacts?: string[]; keys?: string[]; backgroundLabel?: string; backgroundSuggestions?: string[]; abilityGuidance?: string; resourceGuidance?: string; explosives?: string[] }
+export interface CharacterSheetRules { abilities: string[]; quiet: number; loud: number; wallet: number; bank: number; playbookXp: number; attributeXp: number; builtInArmor: boolean; actionMax: number; harmSlots: Record<keyof CharacterHarm, number>; source: string; conditionKind?: 'hull' | 'ghost' | 'vampire' | 'future' | 'past'; creation?: string; abilityChoiceGuidance?: string; fixedAbilities?: string[]; xpTrigger?: string; contacts?: string[]; keys?: string[]; backgroundLabel?: string; backgroundSuggestions?: string[]; abilityGuidance?: string; resourceGuidance?: string; explosives?: string[] }
 export interface CharacterEquipment {
   equipment: CharacterItem[]; resources: CharacterResource[]; loadout: CharacterLoadout; armor: CharacterArmor
   wealth: CharacterWealth; xp: CharacterXP; advancementNotes: string; equipmentNotes: string
@@ -53,8 +53,14 @@ export interface CompanionPatch { sparkmind?: Partial<Sparkmind>; resonanceEntit
 export interface HullMemory { progress: number; memory: string; contact: string; ability: string; source: string; notes: string }
 export interface HullRecord { controller: string; owningFaction: string; suspicion: number; frameFeatures: string[]; frameUpgrade: number; frameDetails: string; den: string; pet: string; operations: string; memories: HullMemory[] }
 export interface HullPatch { hull?: Partial<HullRecord> }
+export interface GhostRecord { retainedEcho: VersatileAbility[]; transformation: string; needNotes: string; operations: string }
+export interface VampireRecord { retainedEcho: VersatileAbility[]; transformation: string; feeding: string; strictures: string[]; darkServants: Relationship[]; darkMajesty: '' | 'Insight' | 'Prowess' | 'Resolve'; sinisterGuile: '' | 'Additional activity' | '+1d downtime rolls'; operations: string }
+export interface TravelerAbility extends VersatileAbility { trait: string }
+export interface TravelerRecord { alluvium: number; mission: string; details: { revealed: boolean; text: string }[]; gainedAbilities: TravelerAbility[]; origin: string; operations: string; itemDecisions: string }
+export interface ParanormalPatch { ghost?: Partial<GhostRecord>; vampire?: Partial<VampireRecord>; traveler?: Partial<TravelerRecord> }
 export interface CharacterDossier extends CharacterCondition, CharacterEquipment {
   sparkmind?: Sparkmind; resonanceEntity?: ResonanceEntity; autopod?: Autopod; intellectual?: IntellectualRecord; paranormalist?: ParanormalistRecord; swinger?: SwingerRecord
+  ghost?: GhostRecord; vampire?: VampireRecord; traveler?: TravelerRecord
   hull?: HullRecord
   sheet: CharacterSheetRules
   operative?: OperativeRecord; radical?: RadicalRecord; veteran?: VeteranRecord
@@ -67,7 +73,7 @@ export interface CharacterDossier extends CharacterCondition, CharacterEquipment
 export interface CharacterRecord {
   id: string; campaign_id: string; owner_id: string | null; data: CharacterDossier; updated_at: string
 }
-export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason' | 'operative' | 'radical' | 'veteran' | 'sparkmind' | 'resonanceEntity' | 'autopod' | 'intellectual' | 'paranormalist' | 'swinger' | 'hull'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch & HumanPlaybookPatch & CompanionPatch & HullPatch
+export type CharacterPatch = Partial<Omit<CharacterDossier, 'playbook' | 'sheet' | 'pet' | 'harm' | 'healing' | 'loadout' | 'armor' | 'wealth' | 'xp' | 'stressCapacity' | 'keyCapacity' | 'keyCapacityReason' | 'operative' | 'radical' | 'veteran' | 'sparkmind' | 'resonanceEntity' | 'autopod' | 'intellectual' | 'paranormalist' | 'swinger' | 'hull' | 'ghost' | 'vampire' | 'traveler'>> & { pet?: Partial<HoundPet>; harm?: Partial<CharacterHarm>; healing?: Partial<CharacterHealing> } & EquipmentPatch & HumanPlaybookPatch & CompanionPatch & HullPatch & ParanormalPatch
 
 /** Only accepted server snapshots enter this boundary. Polling never trusts peer state. */
 export function useCharacters(campaignId: string) {
@@ -107,7 +113,7 @@ export function useCharacters(campaignId: string) {
   return { records, error, loaded, refresh, patch, mutate }
 }
 
-/** Accepted native selections, sourced Versatile and completed sourced Hull memories grant abilities. */
+/** Accepted native, sourced Versatile/Hull memories and paired Future Shock advances grant abilities. */
 export function hasCharacterAbility(data: CharacterDossier, name: string) {
-  return data.abilities.includes(name) || (data.abilities.includes('Versatile') && data.versatile.some(a => a.name === name && Boolean(a.source.trim()))) || (data.playbook === 'Hull' && Boolean(data.hull?.memories.some(m => m.progress === 8 && m.ability === name && m.source.trim())))
+  return data.abilities.includes(name) || (data.abilities.includes('Versatile') && data.versatile.some(a => a.name === name && Boolean(a.source.trim()))) || (data.playbook === 'Hull' && Boolean(data.hull?.memories.some(m => m.progress === 8 && m.ability === name && m.source.trim()))) || (data.playbook === 'Time Traveler from the Future' && data.abilities.includes('Future Shock') && Boolean(data.traveler?.gainedAbilities.some(a => a.name === name && a.source.trim() && data.abilities.includes(a.trait) && data.sheet.abilities.includes(a.trait) && !data.sheet.fixedAbilities?.includes(a.trait))))
 }
