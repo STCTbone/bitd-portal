@@ -76,7 +76,7 @@ export function CampaignMedia() {
   const library = useMedia()
   const isGM = library.role === 'gm'
   const assets = library.assets.filter(a => !a.character_id)
-  return <section className="campaign-media dossier-workspace" aria-label="Campaign media">
+  return <section className="campaign-media dossier-workspace" id="campaign-media" tabIndex={-1} aria-label="Campaign media">
     <header className="dossier-heading"><p>THE TABLE / SOUND & VISION</p><h2>Campaign media</h2><p>The GM chooses which images and audio to share. New uploads start private.</p></header>
     <p>Images: PNG, JPEG, WebP, GIF up to 10 MiB. Audio: MP3, WAV, Ogg, WebM up to 20 MiB. Private previews clear when access changes or its 10-second check expires. Copies already downloaded cannot be recalled.</p>
     {library.error && <p role="alert">{library.error} <button onClick={() => void library.refresh()}>Retry media access</button></p>}

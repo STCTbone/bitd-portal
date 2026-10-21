@@ -48,7 +48,7 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
     catch (error) { setError(error instanceof Error ? error.message : 'Change was not saved.') }
     finally { setBusy(false) }
   }
-  return <section id="character-dossiers" className="dossier-workspace" aria-label="Character dossiers">
+  return <section id="character-dossiers" tabIndex={-1} className="dossier-workspace" aria-label="Character dossiers">
     <header className="dossier-heading"><p>YOUR PEOPLE / THEIR STORIES</p><h2>Character dossiers</h2><p>Saved changes are shared with campaign members. Only the owner and GM may edit.</p></header>
     {syncError && <div role="alert" className="dossier-error">{syncError} <button onClick={() => void refresh()}>Retry character sync</button></div>}
     {error && <p role="alert" className="dossier-error">{error}</p>}

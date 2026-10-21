@@ -32,6 +32,19 @@ export function CampaignLobby() {
   if (!session) return null
   return <main className="access-page">
     <div className="access-brand"><span>BLADES ’68 / CAMPAIGN DOSSIER</span><h1>{session.campaignName}</h1><p data-testid="campaign-role">{session.role === 'gm' ? 'Game Master' : 'Player'}</p></div>
+    <nav className="campaign-sections" aria-label="Campaign sections">
+      <span>JUMP TO /</span>
+      <a href="#campaign-state-overview">Overview</a>
+      <a href="#character-dossiers">Characters</a>
+      <a href="#crew-dossier">Crew</a>
+      <a href="#campaign-cycle">Cycle</a>
+      <a href="#campaign-factions">Factions</a>
+      <a href="#campaign-map">Map</a>
+      <a href="#campaign-clocks">Clocks</a>
+      <a href="#campaign-notes">Notes</a>
+      <a href="#campaign-media">Media</a>
+      {session.role === 'gm' && <a href="#campaign-setup">Setup</a>}
+    </nav>
     <section className="access-panel" aria-label="Campaign overview">
       <p className="access-kicker">CAMPAIGN ACCESS</p><h2>Your campaign workspace</h2>
       <p>Fresh campaigns start without sample characters, crew, factions, or clocks.</p>

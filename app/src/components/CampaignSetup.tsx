@@ -30,7 +30,7 @@ export function CampaignSetup() {
     setStatus(preview.action === 'sample' ? 'Sample setup saved. Campaign views will refresh automatically.' : 'Clocks, notes and map markers cleared. Preserved records remain saved; campaign views will refresh automatically.')
     setPreview(null); setPhrase('')
   }
-  return <section className="access-panel" aria-label="Campaign setup">
+  return <section className="access-panel" id="campaign-setup" tabIndex={-1} aria-label="Campaign setup">
     <p className="access-kicker">DELIBERATE GM CONTROLS</p><h2>Campaign setup</h2>
     <p>New campaigns are empty. Loading or reloading never adds sample records. To start another empty campaign, use Switch campaign and Create campaign.</p>
     <p>Optional Night Wire sample: invented ’68 fiction with two unclaimed Hounds, a Shadows crew, factions, clocks and shared notes. Published v6 sheet defaults supply capacities; no rewards, book secrets or artwork are imported. Players deliberately claim their sample character. Available only while game content is empty.</p>

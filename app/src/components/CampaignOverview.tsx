@@ -15,7 +15,7 @@ export function CampaignOverview({ openCharacter }: { openCharacter: (id: string
   function ownership(character: CharacterSummary) {
     return character.owner_id === session!.userId ? 'Yours' : character.owner_id ? 'Owned by another participant' : 'Unclaimed'
   }
-  return <section className="campaign-summary" aria-label="Campaign state overview">
+  return <section className="campaign-summary" id="campaign-state-overview" tabIndex={-1} aria-label="Campaign state overview">
     <header><p className="summary-kicker">THE TABLE / SAVED CAMPAIGN STATE</p><h2>Campaign at a glance</h2><p>Follow the current saved records. Open a dossier for details and permitted edits.</p></header>
     {overview.error && <div role="alert"><p>{overview.error}</p><button onClick={overview.retry}>Retry overview</button></div>}
     {!overview.snapshot && !overview.error && <p role="status">Loading campaign summary…</p>}

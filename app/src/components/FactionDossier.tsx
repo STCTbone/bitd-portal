@@ -99,7 +99,7 @@ export function FactionDossier() {
     catch (error) { setError(`Could not create faction: ${(error as Error).message}`) }
     finally { setBusy(false) }
   }
-  return <section className="access-panel factions" aria-label="Factions">
+  return <section className="access-panel factions" id="campaign-factions" tabIndex={-1} aria-label="Factions">
     <p className="access-kicker">DOSKVOL / FACTION ROLODEX</p><h2>Factions</h2>
     <p>Public dossiers are visible to campaign members. GMs manage the faction roster and public facts; every participant can edit shared notes.</p>
     {!factions.length ? <><p>No factions have been added.</p>{session.role === 'gm' && <><p>Optionally add the current 56-faction Player Gazette v4 roster. This adds public reference descriptions, Tier and Hold, with neutral crew status. It does not create character backing relationships or add GM secrets.</p><button disabled={busy} onClick={initialize}>Add Blades ’68 Gazette factions</button></>}</> : <>
