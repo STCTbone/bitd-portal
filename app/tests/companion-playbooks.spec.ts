@@ -18,6 +18,7 @@ test('companion playbooks create distinct published cohorts and own starting she
     const d = result.data.data
     expect(d).toMatchObject({ actions: c.actions, abilities: [], [c.field]: { name: '', edges: '', flaws: '', weak: false, impaired: false, broken: false, ...c.shape }, resources: [{ name: c.resource, capacity: 2, used: 0 }] })
     expect(d.pet).toBeUndefined()
+    expect(d.equipment.find((i: { name: string }) => i.name === 'RF radio handset')).toMatchObject({ load: 0 })
     expect(d.equipment.find((i: { name: string }) => i.name === c.item)).toMatchObject({ load: c.load })
     expect(d.sheet.creation).toContain(c.name)
     expect(d.sheet.contacts).toHaveLength(5)
