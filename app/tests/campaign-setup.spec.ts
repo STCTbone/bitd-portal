@@ -289,3 +289,35 @@ test('current GM authority is checked even for accepted retries and expired prev
   expect((await admin().from('campaign_members').update({ role: 'player' }).eq('campaign_id', campaign).eq('user_id', user)).error).toBeNull()
   expect((await gm.rpc('apply_campaign_setup', { p_request: fresh.data.id, p_confirmation: 'LOAD SAMPLE' })).error?.code).toBe('42501')
 })
+
+test('GM and two players converge on cleared map markers and clocks while saved maps, people and receipts remain private-safe', async ({ browser }) => {
+  const { gm: api, campaign, invites, portrait, secret } = await richFixture()
+  const contexts = await Promise.all([browser.newContext(), browser.newContext(), browser.newContext()])
+  const pages = await Promise.all(contexts.map(context => context.newPage())), captured: string[][] = [[], []]
+  for (const [index, page] of pages.entries()) {
+    if (index > 0) page.on('response', response => { if (response.url().includes('/rest/v1/')) void response.text().then(body => captured[index - 1].push(body)).catch(() => {}) })
+    await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(index === 0 ? invites.gm : invites.player)
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await expect(page.getByRole('article', { name: 'Token Courier', exact: true })).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Campaign clocks', exact: true }).getByRole('article')).toHaveCount(index === 0 ? 2 : 1)
+    await expect(page.getByRole('button', { name: 'Open Mara Vey', exact: true })).toBeVisible()
+    await expect(page.getByText('Real retained receipt', { exact: true }).first()).toBeVisible()
+  }
+  const setup = pages[0].getByRole('region', { name: 'Campaign setup', exact: true })
+  await setup.getByRole('button', { name: 'Review clocks, notes and markers clear', exact: true }).click()
+  await expect(setup).toContainText('1 map markers')
+  await setup.getByLabel('Confirmation phrase').fill('CLEAR WORKSPACE')
+  await setup.getByRole('button', { name: 'Confirm clocks, notes and markers clear', exact: true }).click()
+  await expect(setup.getByRole('status')).toContainText('cleared')
+  for (const page of pages) {
+    await expect(page.getByRole('article', { name: 'Token Courier', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('region', { name: 'Campaign clocks', exact: true }).getByRole('article')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Open Mara Vey', exact: true })).toBeVisible()
+    await expect(page.getByText('Real retained receipt', { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Campaign map', exact: true }).getByRole('img')).toBeVisible()
+  }
+  for (const asset of [portrait, secret]) expect((await api.storage.from('campaign-assets').download(asset.object_path)).error).toBeNull()
+  for (const responses of captured) expect(responses.join('\n')).not.toContain('PRIVATE_')
+  expect((await api.from('aftermath_receipts').select('*').eq('campaign_id', campaign)).data).toHaveLength(1)
+  await Promise.all(contexts.map(context => context.close()))
+})
