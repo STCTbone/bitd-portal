@@ -12,6 +12,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   db: { schema: 'bitd' },
+  auth: { flowType: 'pkce' },
   global: {
     // Uploaders control object Cache-Control, including info responses. Every
     // Storage renewal must recheck current RLS instead of renewing from cache.

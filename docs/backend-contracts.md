@@ -71,7 +71,9 @@ The campaign-cycle workspace keeps editable individual Personal Business activit
 
 ### Recovering campaign access and character ownership
 
-No email account or email reset is used. Reload the same browser to resume its authorized membership. Keep your player invitation (and, for a GM, the separate secret GM invitation) somewhere safe outside browser storage. Switching campaigns keeps the identity; deleting browser data or changing browser profiles creates a different identity.
+Google sign-in recovers the same participant identity, memberships and ownership across browsers. Existing guests must link Google in place before losing their browser data. My campaigns reads only current RLS-protected campaigns and memberships; opening a campaign revalidates membership and role. Google profile or email never grants campaign authority. Sign-out clears the current browser's workspace and tabs; no account merging or ownership transfer happens automatically. Provider activation and callback verification are described in [Google login setup](google-login.md).
+
+Unlinked guests can reload the same browser to resume authorized membership. Keep your player invitation (and, for a GM, the separate secret GM invitation) somewhere safe outside browser storage. Switching campaigns keeps the identity; deleting browser data or changing profiles loses an unlinked guest identity. If Google recovery is unavailable, use the deliberate recovery flow below.
 
 1. After identity loss, ask your GM for the player invitation and join again. Rejoining does not take your previous character or grant GM authority.
 2. In the campaign access panel, copy **Your participant ID** and send it to the GM. It identifies the new browser identity; the ID itself grants no authority. Verify the person outside the app with your table before transferring.

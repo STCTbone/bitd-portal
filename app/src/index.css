@@ -191,6 +191,7 @@
 .access-error { color:#a52b23; font-weight:700; margin-top:1rem; }
 .access-panel .access-secondary { background:transparent; color:#173e46; margin-top:2rem; }
 .access-page footer { color:#b6c9c7; font-size:.85rem; line-height:1.6; margin:1.5rem auto 0; }
+.account-panel { margin-bottom:1.5rem; }
 
 .setup-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1rem 0; }
 .setup-actions button { min-height: 48px; white-space: normal; max-width: 100%; }

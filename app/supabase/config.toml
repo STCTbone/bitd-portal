@@ -27,6 +27,7 @@ enabled = true
 site_url = "http://127.0.0.1:5173"
 enable_signup = true
 enable_anonymous_sign_ins = true
+enable_manual_linking = true
 [auth.rate_limit]
 anonymous_users = 1000
 [auth.email]
@@ -35,3 +36,10 @@ enable_signup = false
 enabled = false
 [edge_runtime]
 enabled = false
+
+# Enable only after creating the OAuth web client; secrets live in ignored app/.env.
+[auth.external.google]
+enabled = false
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false

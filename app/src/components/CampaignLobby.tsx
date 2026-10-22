@@ -11,6 +11,7 @@ import { CampaignMedia, CampaignMediaProvider } from './ProtectedMedia'
 import { CampaignMap } from './CampaignMap'
 import { CampaignOverview } from './CampaignOverview'
 import { CharacterDossiers } from './CharacterDossiers'
+import { AccountPanel } from './AccountPanel'
 
 /** Authenticated campaign landing. Features enter here only after their backend contract is migrated. */
 export function CampaignLobby() {
@@ -45,6 +46,7 @@ export function CampaignLobby() {
       <a href="#campaign-media">Media</a>
       {session.role === 'gm' && <a href="#campaign-setup">Setup</a>}
     </nav>
+    <AccountPanel />
     <section className="access-panel" aria-label="Campaign overview">
       <p className="access-kicker">CAMPAIGN ACCESS</p><h2>Your campaign workspace</h2>
       <p>Fresh campaigns start without sample characters, crew, factions, or clocks.</p>
@@ -59,7 +61,7 @@ export function CampaignLobby() {
       <label htmlFor="participant-id">Your participant ID</label>
       <input id="participant-id" readOnly value={session.userId} onFocus={event => event.target.select()} />
       <small>For character recovery, send this ID to your GM after rejoining. It identifies this browser identity; it grants no access by itself.</small>
-      <details><summary>Recover campaign or character access</summary><p>Reloading this browser restores current membership. Switching campaigns keeps your identity. After clearing browser data or moving to another browser, rejoin with the player invitation, then ask your GM to assign your character to the participant ID above. Your previous identity keeps ownership until the GM confirms the transfer. Save your invitation outside this browser. Lost GM access needs the secret GM invitation or help from another GM; there is no email reset.</p></details>
+      <details><summary>Recover campaign or character access</summary><p>After linking Google, sign in with the same Google account on another device and open My campaigns. Switching campaigns keeps your identity. If an unlinked guest loses browser access, rejoin with an invitation and ask the GM to assign the character to the new participant ID. Your previous identity keeps ownership until that transfer is confirmed. Lost guest GM access needs the secret GM invitation or another GM.</p></details>
       {error && <p role="alert" className="access-error">{error}</p>}
       <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
     </section>
@@ -72,6 +74,6 @@ export function CampaignLobby() {
     <CampaignPlanning />
     <CampaignClocks />
     <SharedNotes />
-    <footer>Access is remembered in this browser. Keep your invitation to rejoin from another browser.</footer>
+    <footer>Use the same Google account to return on another device. Unlinked guests need their invitation and GM-assisted character recovery after losing browser access.</footer>
   </main>
 }

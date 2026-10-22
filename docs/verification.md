@@ -9,6 +9,7 @@ Tests use authenticated API, Storage and Realtime boundaries and real browsers a
 | Assurance | Suites under `app/tests/` |
 | --- | --- |
 | No-email creation/join; role invitations; browser tampering; campaign isolation; denied legacy writes/Storage/Realtime | `campaign-access.spec.ts` |
+| Recoverable account across devices, current campaign list, guest-safe Google setup errors, cancelled callbacks, sign-out across tabs and failed identity checks | `google-login.spec.ts` |
 | Ownership/recovery and delayed old membership/save boundaries | `ownership-recovery.spec.ts`, `character-dossier.spec.ts` |
 | Hound, Operative, Radical, Veteran | `character-dossier.spec.ts`, `human-playbooks.spec.ts` |
 | Intellectual, Paranormalist, Swinger | `companion-playbooks.spec.ts` |
