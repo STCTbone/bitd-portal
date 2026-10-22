@@ -169,3 +169,39 @@
 }
 .toast-in  { animation: toast-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1); }
 .toast-out { animation: toast-out 360ms ease forwards; }
+
+/* The shared campaign entry establishes the ’68 dossier palette. */
+.access-page { min-height:100vh; background:#172e36; color:#faf0d9; padding:clamp(1.5rem,5vw,4rem) 1rem; font-family:Arial,Helvetica,sans-serif; }
+.access-brand,.access-panel,.access-page footer { max-width:36rem; margin:0 auto; }
+.access-brand { border-top:8px solid #f4a64e; padding:1.5rem 0 2rem; }
+.access-brand span,.access-kicker { font-size:.75rem; letter-spacing:.16em; font-weight:700; }
+.access-brand h1 { font-family:'Special Elite',serif; font-size:clamp(2.4rem,8vw,4.5rem); line-height:1.15; margin:.75rem 0; overflow-wrap:anywhere; }
+.access-brand p { color:#a9ddd5; font-size:1.1rem; }
+.access-panel { background:#fcf3df; color:#172e36; padding:clamp(1.2rem,5vw,2.5rem); border-top:6px solid #ee7150; box-shadow:8px 8px 0 #0c2027; }
+.access-panel h2 { font-size:1.7rem; font-weight:750; margin:.5rem 0; }
+.access-panel p { line-height:1.6; }
+.access-panel form,.invitation-list { display:flex; flex-direction:column; gap:.65rem; margin-top:1.5rem; }
+.access-panel label { font-weight:700; }
+.access-panel input { background:white; border:2px solid #44646b; border-radius:0; padding:.8rem; min-width:0; width:100%; font:inherit; }
+.access-panel button { border:2px solid #173e46; padding:.8rem 1rem; background:#173e46; color:#fff9eb; font-weight:700; cursor:pointer; min-height:48px; }
+.access-panel button:disabled { opacity:.55; cursor:wait; }
+.access-panel button:focus-visible,.access-panel input:focus-visible { outline:3px solid #c33b2b; outline-offset:3px; }
+.access-panel small { line-height:1.5; color:#466169; }
+.access-divider { margin:2rem 0 0; border-top:1px solid #9ca9a1; padding-top:1.5rem; letter-spacing:.1em; font-size:.75rem; }
+.access-error { color:#a52b23; font-weight:700; margin-top:1rem; }
+.access-panel .access-secondary { background:transparent; color:#173e46; margin-top:2rem; }
+.access-page footer { color:#b6c9c7; font-size:.85rem; line-height:1.6; margin:1.5rem auto 0; }
+.account-panel { margin-bottom:1.5rem; }
+
+.setup-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1rem 0; }
+.setup-actions button { min-height: 48px; white-space: normal; max-width: 100%; }
+.setup-review { margin-top: 1rem; padding: 1rem; border: 2px solid var(--color-primary, #176a67); border-radius: .5rem; overflow-wrap: anywhere; }
+.setup-review small { display: block; margin: .5rem 0; }
+
+/* Section links keep the complete workspace reachable without traversing every editor. */
+.campaign-sections { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem 1rem; max-width:76rem; margin:0 auto 1.5rem; padding:1rem; background:#173e46; color:#fff9eb; border:2px solid #e9be65; }
+.campaign-sections span { font-weight:700; color:#e9be65; }
+.campaign-sections a { color:#fff9eb; text-decoration:underline; text-underline-offset:.2em; padding:.4rem .2rem; }
+.campaign-sections a:focus-visible { outline:3px solid #e9be65; outline-offset:3px; }
+.access-page section[tabindex="-1"] { scroll-margin-top:1rem; }
+.access-page section[tabindex="-1"]:focus { outline:3px solid #e9be65; outline-offset:4px; }

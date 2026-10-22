@@ -1,0 +1,79 @@
+import { useEffect, useState } from 'react'
+import { useSession } from '@/lib/session'
+import { supabase } from '@/lib/supabase'
+import { CampaignPlanning } from './CampaignPlanning'
+import { CampaignSetup } from './CampaignSetup'
+import { SharedNotes } from './SharedNotes'
+import { CampaignClocks } from './CampaignClocks'
+import { CrewDossier } from './CrewDossier'
+import { FactionDossier } from './FactionDossier'
+import { CampaignMedia, CampaignMediaProvider } from './ProtectedMedia'
+import { CampaignMap } from './CampaignMap'
+import { CampaignOverview } from './CampaignOverview'
+import { CharacterDossiers } from './CharacterDossiers'
+import { AccountPanel } from './AccountPanel'
+
+/** Authenticated campaign landing. Features enter here only after their backend contract is migrated. */
+export function CampaignLobby() {
+  const { session, leaveCampaign } = useSession()
+  const [invitations, setInvitations] = useState<{ player: string; gm: string } | null>(null)
+  const [error, setError] = useState('')
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
+  useEffect(() => {
+    let active = true
+    if (session?.role === 'gm') {
+      supabase.rpc('get_campaign_invitations', { p_campaign: session.campaignId }).then(({ data, error }) => {
+        if (!active) return
+        if (error) setError('Could not load invitations. Reload to retry.')
+        else setInvitations(data)
+      })
+    }
+    return () => { active = false }
+  }, [session?.campaignId, session?.role])
+  if (!session) return null
+  return <main className="access-page">
+    <div className="access-brand"><span>BLADES ’68 / CAMPAIGN DOSSIER</span><h1>{session.campaignName}</h1><p data-testid="campaign-role">{session.role === 'gm' ? 'Game Master' : 'Player'}</p></div>
+    <nav className="campaign-sections" aria-label="Campaign sections">
+      <span>JUMP TO /</span>
+      <a href="#campaign-state-overview">Overview</a>
+      <a href="#character-dossiers">Characters</a>
+      <a href="#crew-dossier">Crew</a>
+      <a href="#campaign-cycle">Cycle</a>
+      <a href="#campaign-factions">Factions</a>
+      <a href="#campaign-map">Map</a>
+      <a href="#campaign-clocks">Clocks</a>
+      <a href="#campaign-notes">Notes</a>
+      <a href="#campaign-media">Media</a>
+      {session.role === 'gm' && <a href="#campaign-setup">Setup</a>}
+    </nav>
+    <AccountPanel />
+    <section className="access-panel" aria-label="Campaign overview">
+      <p className="access-kicker">CAMPAIGN ACCESS</p><h2>Your campaign workspace</h2>
+      <p>Fresh campaigns start without sample characters, crew, factions, or clocks.</p>
+      {session.role === 'gm' && invitations && <div className="invitation-list">
+        <label htmlFor="player-invite">Player invitation</label>
+        <input id="player-invite" readOnly value={invitations.player} onFocus={event => event.target.select()} />
+        <small>Share this with your players.</small>
+        <label htmlFor="gm-invite">Secret GM invitation</label>
+        <input id="gm-invite" readOnly value={invitations.gm} onFocus={event => event.target.select()} />
+        <small>Grants full GM authority. Share only with another GM.</small>
+      </div>}
+      <label htmlFor="participant-id">Your participant ID</label>
+      <input id="participant-id" readOnly value={session.userId} onFocus={event => event.target.select()} />
+      <small>For character recovery, send this ID to your GM after rejoining. It identifies this browser identity; it grants no access by itself.</small>
+      <details><summary>Recover campaign or character access</summary><p>After linking Google, sign in with the same Google account on another device and open My campaigns. Switching campaigns keeps your identity. If an unlinked guest loses browser access, rejoin with an invitation and ask the GM to assign the character to the new participant ID. Your previous identity keeps ownership until that transfer is confirmed. Lost guest GM access needs the secret GM invitation or another GM.</p></details>
+      {error && <p role="alert" className="access-error">{error}</p>}
+      <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
+    </section>
+    <CampaignOverview openCharacter={setSelectedCharacter} />
+    <CampaignSetup key={`setup:${session.campaignId}:${session.userId}:${session.role}`} />
+    <FactionDossier key={`${session.campaignId}:${session.role}`} />
+    <CampaignMediaProvider key={`media:${session.campaignId}:${session.role}`}><CharacterDossiers selectedCharacter={selectedCharacter} onSelectCharacter={setSelectedCharacter} /><CampaignMedia /></CampaignMediaProvider>
+    <CampaignMap key={`map:${session.campaignId}:${session.role}`} />
+    <CrewDossier />
+    <CampaignPlanning />
+    <CampaignClocks />
+    <SharedNotes />
+    <footer>Use the same Google account to return on another device. Unlinked guests need their invitation and GM-assisted character recovery after losing browser access.</footer>
+  </main>
+}

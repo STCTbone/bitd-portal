@@ -1,0 +1,43 @@
+.crew-dossier { max-width:70rem; margin:2rem auto; background:#fff1d5; color:#142f37; border-top:8px solid #f3aa49; box-shadow:8px 8px 0 #0b2029; font-family:Arial,Helvetica,sans-serif; padding:clamp(1rem,4vw,2.5rem); }
+.crew-dossier header { border-bottom:3px solid #db684f; padding-bottom:1rem; margin-bottom:1.5rem; }
+.crew-dossier h2 { font-size:clamp(1.8rem,4vw,3rem); margin:.5rem 0; overflow-wrap:anywhere; }
+.crew-dossier p { line-height:1.6; }
+.crew-kicker { font-size:.75rem; font-weight:800; letter-spacing:.15em; }
+.crew-dossier fieldset { border:0; margin:0; padding:0; min-width:0; }
+.crew-dossier legend { font-size:1.2rem; font-weight:800; margin-bottom:1rem; }
+.crew-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); gap:1rem; }
+.crew-tracks { display:grid; grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr)); gap:1rem; margin:1.5rem 0; }
+.crew-dossier label { font-weight:700; display:flex; flex-direction:column; gap:.4rem; min-width:0; }
+.crew-dossier input,.crew-dossier select,.crew-dossier textarea { font:inherit; font-weight:400; border:2px solid #38636b; border-radius:0; background:#fffdf7; color:#152f36; padding:.65rem; width:100%; min-width:0; min-height:46px; }
+.crew-dossier textarea { resize:vertical; }
+.crew-dossier input:disabled,.crew-dossier select:disabled,.crew-dossier textarea:disabled { color:#173b42; opacity:1; background:#eee6d6; cursor:default; }
+.crew-dossier small,.crew-guidance { font-size:.85rem; font-weight:400; color:#365760; }
+.crew-guidance { border-left:4px solid #da674d; padding:.75rem 1rem; margin:1.5rem 0; }
+.crew-actions { display:flex; gap:.75rem; flex-wrap:wrap; margin:1.5rem 0; }
+.crew-dossier button { background:#144b52; border:2px solid #144b52; color:#fff7e7; min-height:48px; padding:.7rem 1rem; font:inherit; font-weight:700; cursor:pointer; }
+.crew-dossier button:disabled { opacity:.55; cursor:default; }
+.crew-dossier .crew-secondary { background:transparent; color:#173f46; }
+.crew-dossier :is(input,select,textarea,button):focus-visible { outline:3px solid #c13e2e; outline-offset:3px; }
+.crew-dossier .crew-error { color:#a52822; margin-top:1rem; border-top:2px solid #b44530; padding-top:.75rem; font-weight:700; }
+.crew-dossier .crew-save-status { color:#164b47; font-weight:700; margin:1rem 0; }
+.crew-dossier footer { color:#3b5b62; font-size:.8rem; line-height:1.5; border-top:1px solid #a6aea0; margin:1.5rem 0 0; padding-top:1rem; }
+.crew-create { display:grid; gap:1rem; max-width:38rem; margin-top:1rem; }
+.crew-tools { margin-top:2rem; border-top:3px solid #db684f; padding-top:1rem; }
+.crew-tool-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr)); gap:.8rem; padding:1rem 0; align-items:end; border-bottom:1px solid #a6aea0; margin-bottom:1rem; }
+.crew-tools h3 { font-size:1.35rem; margin:1.5rem 0 1rem; }
+.crew-tools h4 { font-size:1.1rem; margin:1.5rem 0 .75rem; }
+.crew-claims { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr)); gap:1rem; }
+.crew-dossier .crew-checkbox { display:flex; flex-direction:row; align-items:center; gap:.7rem; min-height:46px; }
+.crew-dossier .crew-checkbox input { width:24px; min-height:24px; flex-shrink:0; }
+.crew-dossier .crew-cohort { margin:1.5rem 0; border:2px solid #38636b; padding:1rem; }
+.crew-cohort > small { overflow-wrap:anywhere; }
+.crew-cohort button { margin-top:1rem; }
+.crew-business { margin-top:2rem; }
+.crew-business section { border-top:3px solid #db684f; padding:1rem 0; }
+.crew-business h3 { font-size:1.35rem; margin:.5rem 0 1rem; }
+.crew-business a { color:#164d55; text-decoration:underline; }
+.crew-retained { margin:1.5rem 0; border:2px solid #38636b; padding:1rem; }
+.crew-retained summary { font-weight:700; cursor:pointer; min-height:32px; }
+.crew-retained dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap:1rem; }
+.crew-retained dt { font-weight:700; }
+.crew-retained dd { margin:.4rem 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
