@@ -11,7 +11,7 @@ test('GM deliberately initializes the current Gazette factions; players see the 
   const gm = await gmContext.newPage(), player = await playerContext.newPage()
   await gm.goto('/')
   await gm.getByLabel('Campaign name').fill('Gazette campaign')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Factions', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
   await expect(gm.getByText('No factions have been added.')).toBeVisible()
   await gm.getByRole('button', { name: 'Add Blades ’68 Gazette factions' }).click()
@@ -24,7 +24,7 @@ test('GM deliberately initializes the current Gazette factions; players see the 
   await expect(gm.getByText('Public dossier saved.')).toBeVisible()
   await player.goto('/')
   await player.getByLabel('Invitation').fill(invitation)
-  await player.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await player.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => player.getByRole('tab', { name: 'Factions', exact: true }).click())
   await expect(player.getByText('56 factions')).toBeVisible()
   await player.getByRole('button', { name: 'The Unseen', exact: true }).click()
   await expect(player.getByLabel('Description', { exact: true })).toHaveValue('An elusive criminal power in modern Doskvol.')
@@ -49,7 +49,7 @@ test('GM keeps private faction notes confidential and deliberately shares only s
   for (const [page, invitation] of [[gm, invitations.gm], [player, invitations.player]] as const) {
     await page.goto('/')
     await page.getByLabel('Invitation').fill(invitation)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Factions', exact: true }).click())
     await page.getByRole('button', { name: 'The Unseen', exact: true }).click()
   }
   await gm.getByLabel('GM-private notes', { exact: true }).fill('PRIVATE: MIDNIGHT-ORCHID. Public clue: The tower is watched.')
@@ -138,9 +138,10 @@ test('GM adds and deletes custom factions; connected players reconcile deletion 
   for (const [page, invite] of [[gmPage, invitations.gm], [playerPage, invitations.player]] as const) {
     await page.goto('/')
     await page.getByLabel('Invitation').fill(invite)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Factions', exact: true }).click())
     await expect(page.getByText('56 factions')).toBeVisible()
   }
+  await gmPage.getByRole('tab', { name: 'Factions', exact: true }).click()
   await gmPage.getByLabel('New faction name').fill('The Neon Garden')
   await gmPage.getByRole('button', { name: 'Create faction', exact: true }).click()
   await expect(playerPage.getByRole('button', { name: 'The Neon Garden', exact: true })).toBeVisible()
@@ -192,7 +193,7 @@ test('stale faction saves are rejected visibly, and a demoted GM loses the priva
   const page = await context.newPage()
   await page.goto('/')
   await page.getByLabel('Invitation').fill(invitations.gm)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Factions', exact: true }).click())
   await page.getByRole('button', { name: 'The Unseen', exact: true }).click()
   await expect(page.getByLabel('GM-private notes', { exact: true })).toHaveValue('PRIVATE: EMERALD-CANARY')
   await page.getByLabel('Description', { exact: true }).fill('Unsaved stale description')

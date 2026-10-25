@@ -72,12 +72,13 @@ for (const playbook of ['Operative', 'Radical', 'Veteran']) test(`${playbook} cr
   const [gm, owner, observer] = await Promise.all(contexts.map(c => c.newPage()))
   await gm.goto('/')
   await gm.getByLabel('Campaign name').fill(`${playbook} dossier`)
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Characters', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
   for (const p of [owner, observer]) {
     await p.goto('/'); await p.getByLabel('Invitation', { exact: true }).fill(invitation)
-    await p.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await p.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => p.getByRole('tab', { name: 'Characters', exact: true }).click())
   }
+  await owner.getByRole('tab', { name: 'Characters', exact: true }).click()
   await owner.getByLabel('New character name').fill('Morgan')
   await owner.getByLabel('Playbook', { exact: true }).selectOption(playbook)
   await owner.getByRole('button', { name: `Create ${playbook}`, exact: true }).click()

@@ -41,8 +41,10 @@ test('a recoverable account resumes its campaigns and ownership on another devic
     await expect(page.getByText('Another person’s table', { exact: true })).toHaveCount(0)
     await page.getByRole('button', { name: 'Open My saved table', exact: true }).click()
     await expect(page.getByLabel('Your participant ID', { exact: true })).toHaveValue(first.session.user.id)
+    await page.getByRole('tab', { name: 'Characters', exact: true }).click()
     await page.getByRole('button', { name: 'Open Across devices', exact: true }).click()
     await expect(page.getByLabel('Character name', { exact: true })).toBeEnabled()
+    await page.getByRole('tab', { name: 'Account', exact: true }).click()
     await page.getByRole('button', { name: 'Sign out', exact: true }).click()
     await expect(page.getByRole('region', { name: 'Character dossiers', exact: true })).toHaveCount(0)
     await expect(page.getByRole('region', { name: 'My campaigns', exact: true })).toHaveCount(0)
@@ -53,7 +55,9 @@ test('a recoverable account resumes its campaigns and ownership on another devic
   for (const context of contexts) await context.close()
 })
 
-test('Google setup failures are visible and leave an existing guest campaign and ownership intact', async ({ page }) => {
+test('Google setup failures are visible and leave an existing guest campaign and ownership intact', async ({ page, request }) => {
+  const settings = await request.get(backend + '/auth/v1/settings', { headers: { apikey: process.env.VITE_SUPABASE_ANON_KEY! } })
+  test.skip((await settings.json()).external?.google === true, 'This case requires an unconfigured Google provider.')
   await page.goto('/')
   await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Sign in with Google', exact: true }).click()
@@ -62,9 +66,11 @@ test('Google setup failures are visible and leave an existing guest campaign and
   await page.getByRole('button', { name: 'Create campaign', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Keep the guest', exact: true })).toBeVisible()
   const participant = await page.getByLabel('Your participant ID', { exact: true }).inputValue()
+  await page.getByRole('tab', { name: 'Characters', exact: true }).click()
   await page.getByLabel('New character name', { exact: true }).fill('Still mine')
   await page.getByRole('button', { name: 'Create Hound', exact: true }).click()
   await expect(page.getByLabel('Character name', { exact: true })).toHaveValue('Still mine')
+  await page.getByRole('tab', { name: 'Account', exact: true }).click()
   await page.getByRole('button', { name: 'Link Google to this guest', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Account', exact: true }).getByRole('alert')).toContainText('Google sign-in is not configured')
   await expect(page.getByLabel('Your participant ID', { exact: true })).toHaveValue(participant)
@@ -81,6 +87,7 @@ test('a cancelled Google callback preserves guest access and sign-out in one tab
   await page.goto('/?error=access_denied&error_description=Not+approved')
   await expect(page.getByRole('heading', { name: 'Cancelled login', exact: true })).toBeVisible()
   await expect(page.getByLabel('Your participant ID', { exact: true })).toHaveValue(id)
+  await page.getByRole('tab', { name: 'Account', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Account', exact: true }).getByRole('alert')).toContainText('could not be completed')
   expect(new URL(page.url()).searchParams.has('error')).toBe(false)
 
@@ -94,7 +101,10 @@ test('a cancelled Google callback preserves guest access and sign-out in one tab
   await tabs[0].goto('/')
   await tabs[0].getByRole('button', { name: 'Open Close all views', exact: true }).click()
   await tabs[1].goto('/') // Same browser profile restores its selected campaign.
-  for (const tab of tabs) await expect(tab.getByLabel('Secret GM invitation', { exact: true })).toBeVisible()
+  for (const tab of tabs) {
+    await tab.getByRole('tab', { name: 'Account', exact: true }).click()
+    await expect(tab.getByLabel('Secret GM invitation', { exact: true })).toBeVisible()
+  }
   await tabs[0].getByRole('button', { name: 'Sign out', exact: true }).click()
   for (const tab of tabs) {
     await expect(tab.getByRole('region', { name: 'Campaign sections', exact: true })).toHaveCount(0)

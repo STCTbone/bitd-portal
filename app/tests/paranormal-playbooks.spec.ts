@@ -96,15 +96,16 @@ for (const playbook of books) test(`${playbook} owner edits native records, retr
   const contexts = await Promise.all([browser.newContext(), browser.newContext(), browser.newContext()])
   const [gm, owner, observer] = await Promise.all(contexts.map(c => c.newPage()))
   await gm.goto('/'); await gm.getByLabel('Campaign name').fill(`Paranormal ${playbook}`)
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Characters', exact: true }).click())
   const invite = await gm.getByLabel('Player invitation').inputValue()
-  for (const p of [owner, observer]) { await p.goto('/'); await p.getByLabel('Invitation', { exact: true }).fill(invite); await p.getByRole('button', { name: 'Join campaign', exact: true }).click() }
+  for (const p of [owner, observer]) { await p.goto('/'); await p.getByLabel('Invitation', { exact: true }).fill(invite); await p.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => p.getByRole('tab', { name: 'Characters', exact: true }).click()) }
   await expect(owner.getByRole('option', { name: playbook, exact: true })).toHaveCount(0)
   await expect(owner.getByLabel(`Allow ${playbook}`, { exact: true })).toHaveCount(0)
   await gm.getByLabel(`Allow ${playbook}`, { exact: true }).check()
   await gm.getByRole('button', { name: 'Review paranormal availability', exact: true }).click()
   await gm.getByRole('button', { name: 'Confirm paranormal availability', exact: true }).click()
   await expect(owner.getByRole('option', { name: playbook, exact: true })).toHaveCount(1)
+  await owner.getByRole('tab', { name: 'Characters', exact: true }).click()
   await owner.getByLabel('New character name').fill('Anomaly')
   await owner.getByLabel('Playbook', { exact: true }).selectOption(playbook)
   await owner.getByRole('button', { name: `Create ${playbook}`, exact: true }).click()
@@ -243,7 +244,7 @@ test('Aftermath reviews canonical paranormal resources, rejects capacity overflo
   expect((await gm.from('aftermath_receipts').select('id').eq('score_id', score)).data).toEqual([])
   const context = await browser.newContext(), page = await context.newPage()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
   const panel = page.getByRole('region', { name: 'Aftermath review', exact: true })
   await panel.getByLabel('Effect record type', { exact: true }).selectOption('character')
   for (const c of characters) {

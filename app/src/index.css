@@ -198,10 +198,20 @@
 .setup-review { margin-top: 1rem; padding: 1rem; border: 2px solid var(--color-primary, #176a67); border-radius: .5rem; overflow-wrap: anywhere; }
 .setup-review small { display: block; margin: .5rem 0; }
 
-/* Section links keep the complete workspace reachable without traversing every editor. */
-.campaign-sections { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem 1rem; max-width:76rem; margin:0 auto 1.5rem; padding:1rem; background:#173e46; color:#fff9eb; border:2px solid #e9be65; }
-.campaign-sections span { font-weight:700; color:#e9be65; }
-.campaign-sections a { color:#fff9eb; text-decoration:underline; text-underline-offset:.2em; padding:.4rem .2rem; }
-.campaign-sections a:focus-visible { outline:3px solid #e9be65; outline-offset:3px; }
+/* One workspace at a time; hidden editors retain their unsaved drafts. */
+.campaign-page > .access-brand { max-width:76rem; padding-bottom:1.25rem; }
+.campaign-page > .access-brand h1 { font-size:clamp(2rem,5vw,3.5rem); }
+.campaign-sections { position:sticky; top:0; z-index:20; max-width:76rem; margin:0 auto 1.5rem; padding:.45rem; background:#173e46; border:2px solid #e9be65; box-shadow:0 6px 12px #0c202766; }
+.campaign-sections [role="tablist"] { display:flex; flex-wrap:wrap; gap:.3rem; }
+.campaign-sections [role="tab"] { flex:0 0 auto; border:2px solid transparent; padding:.7rem .8rem; min-height:46px; background:transparent; color:#fff9eb; font:inherit; font-weight:700; cursor:pointer; }
+.campaign-sections [role="tab"]:hover { background:#254f56; }
+.campaign-sections [role="tab"][aria-selected="true"] { background:#fcf3df; color:#173e46; border-color:#e9be65; }
+.campaign-sections [role="tab"]:focus-visible { outline:3px solid #f4a64e; outline-offset:-3px; }
+.campaign-tab-panel { max-width:76rem; margin:0 auto; min-width:0; }
+.campaign-tab-panel[hidden] { display:none; }
+.campaign-tab-panel:focus-visible { outline:3px solid #e9be65; outline-offset:4px; }
+@media (max-width:600px) {
+  .campaign-sections [role="tab"] { font-size:.85rem; padding:.55rem .5rem; min-height:44px; }
+}
 .access-page section[tabindex="-1"] { scroll-margin-top:1rem; }
 .access-page section[tabindex="-1"]:focus { outline:3px solid #e9be65; outline-offset:4px; }

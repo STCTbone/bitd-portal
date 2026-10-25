@@ -50,7 +50,7 @@ test('GM and two players share cursors, pings and drawings in responsive geometr
   const pages = await Promise.all(contexts.map(context=>context.newPage()))
   for (const [i,page] of pages.entries()) {
     await page.goto('/'); await page.getByLabel('Invitation',{exact:true}).fill(i===0?invitations.gm:invitations.player)
-    await page.getByRole('button',{name:'Join campaign',exact:true}).click()
+    await page.getByRole('button',{name:'Join campaign',exact:true}).click().then(() => page.getByRole('tab', { name: 'Map', exact: true }).click())
     await expect(page.locator('[data-live-map]')).toBeVisible()
   }
   const [host,a,b] = pages
@@ -141,7 +141,7 @@ test('transient gestures expire without disconnect messages and current roles co
 test('late receive responses cannot renew the local activity lease, and unshared maps unmount the channel', async ({page})=>{
   const {gm,campaign,invitations,asset}=await fixture(), args={p_campaign:campaign,p_asset:asset.id}
   await page.goto('/'); await page.getByLabel('Invitation',{exact:true}).fill(invitations.player)
-  await page.getByRole('button',{name:'Join campaign',exact:true}).click()
+  await page.getByRole('button',{name:'Join campaign',exact:true}).click().then(() => page.getByRole('tab', { name: 'Map', exact: true }).click())
   await expect(page.locator('[data-live-map]')).toBeVisible()
   expect((await gm.rpc('send_map_activity',{...args,p_kind:'stroke',p_points:[{x:20,y:50},{x:80,y:50}]})).error).toBeNull()
   await expect(page.locator('[data-activity-kind="stroke"]')).toBeVisible()
@@ -162,7 +162,7 @@ test('late receive responses cannot renew the local activity lease, and unshared
   await expect(page.locator('[data-live-map]')).toHaveCount(0)
   // A new authorized browser can rejoin; unsharing the selected map then unmounts its overlay.
   await page.reload(); await page.getByLabel('Invitation',{exact:true}).fill(invitations.player)
-  await page.getByRole('button',{name:'Join campaign',exact:true}).click()
+  await page.getByRole('button',{name:'Join campaign',exact:true}).click().then(() => page.getByRole('tab', { name: 'Map', exact: true }).click())
   await expect(page.locator('[data-live-map]')).toBeVisible()
   expect((await gm.rpc('update_asset',{p_asset:asset.id,p_title:'Station',p_annotation:'',p_shared:false,p_revision:asset.revision})).error).toBeNull()
   await expect(page.locator('[data-live-map]')).toHaveCount(0)

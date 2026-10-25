@@ -41,11 +41,11 @@ test('GM uploads a persistent shared map and two players see only accepted token
   const contexts = [await browser.newContext(), await browser.newContext(), await browser.newContext({ viewport: { width: 390, height: 844 } })]
   const [gm, a, b] = await Promise.all(contexts.map(context => context.newPage()))
   await gm.goto('/'); await gm.getByLabel('Campaign name', { exact: true }).fill('Station floor')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Map', exact: true }).click())
   const invite = await gm.getByLabel('Player invitation').inputValue()
   for (const page of [a, b]) {
     await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invite)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Map', exact: true }).click())
   }
   const map = gm.getByRole('region', { name: 'Campaign map', exact: true })
   await expect(map).toBeVisible()
@@ -88,7 +88,7 @@ test('GM uploads a persistent shared map and two players see only accepted token
 test('offline map snapshots preserve a failed move draft until reconnect and explicit retry', async ({ page, context }) => {
   const { gm, campaign, invite } = await table()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invite)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Map', exact: true }).click())
   const owner = await page.getByLabel('Your participant ID').inputValue()
   expect((await gm.rpc('create_map_token', { p_campaign: campaign, p_label: 'Offline scout', p_character: null, p_controller: owner })).error).toBeNull()
   const token = page.getByRole('article', { name: 'Token Offline scout', exact: true })
@@ -170,15 +170,18 @@ test('connected character token controls transfer to the new owner and a held ol
   const contexts = [await browser.newContext(), await browser.newContext(), await browser.newContext({ viewport: { width: 390, height: 844 } })]
   const [gm, old, next] = await Promise.all(contexts.map(context => context.newPage()))
   await gm.goto('/'); await gm.getByLabel('Campaign name', { exact: true }).fill('Movement recovery')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Map', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
   for (const page of [old, next]) {
     await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invitation)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Map', exact: true }).click())
   }
+  await old.getByRole('tab', { name: 'Characters', exact: true }).click()
   await old.getByLabel('New character name', { exact: true }).fill('Cinder')
   await old.getByRole('button', { name: 'Create Hound', exact: true }).click()
+  await gm.getByRole('tab', { name: 'Characters', exact: true }).click()
   await gm.getByRole('button', { name: 'Open Cinder', exact: true }).click()
+  for (const current of [gm, old]) await current.getByRole('tab', { name: 'Map', exact: true }).click()
   const map = gm.getByRole('region', { name: 'Campaign map', exact: true })
   await map.getByLabel('New token label').fill('Cinder marker')
   await map.getByLabel('New token movement authority').selectOption({ label: 'Character: Cinder' })
@@ -190,6 +193,7 @@ test('connected character token controls transfer to the new owner and a held ol
   await oldToken.getByLabel('Horizontal position').fill('11')
   await oldToken.getByRole('button', { name: 'Move token', exact: true }).click(); await held
   const nextId = await next.getByLabel('Your participant ID').inputValue()
+  await gm.getByRole('tab', { name: 'Characters', exact: true }).click()
   await gm.getByRole('button', { name: 'Refresh participant list', exact: true }).click()
   await gm.getByLabel('Assign character to', { exact: true }).selectOption(nextId)
   await gm.getByRole('button', { name: 'Review ownership change', exact: true }).click()
@@ -219,7 +223,7 @@ test('revocation denies assigned token movement immediately and legacy forged br
   const token = (await gm.rpc('create_map_token', { p_campaign: campaign, p_label: 'Keep', p_character: null, p_controller: aId })).data
   const invites = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Map', exact: true }).click())
   const card = page.getByRole('article', { name: 'Token Keep', exact: true })
   await expect(card).toContainText('Saved position: 50%, 50%')
   for (const sender of [a, outsider]) {
@@ -248,7 +252,7 @@ test('map upload failures retry, stale selections require reload, and unshared s
   const first = await sharedImage(gm, campaign), second = await sharedImage(gm, campaign)
   const invite = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data.gm
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invite)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Map', exact: true }).click())
   const map = page.getByRole('region', { name: 'Campaign map', exact: true })
   await map.getByLabel('Saved campaign image').selectOption(first.id)
   expect((await gm.rpc('set_campaign_map', { p_campaign: campaign, p_asset: second.id, p_revision: 0 })).error).toBeNull()

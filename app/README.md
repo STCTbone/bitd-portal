@@ -37,6 +37,12 @@ npm run backend:reset
 
 This destroys the selected local project's database contents across all its campaigns and reapplies committed migrations plus transport settings. It is different from the scoped in-app clear. Stop only your own project with `backend:stop`. Never run the historical `supabase/migration.sql`; fresh setup uses `supabase/config.toml` and `supabase/migrations/`. There is no automatic SQL seed.
 
+## Campaign navigation
+
+The campaign opens in Overview. Tabs show one workspace at a time; overview dossier links open the corresponding tab and character. Account contains sign-in/sign-out, invitations, participant recovery and campaign switching. Setup is available only to GMs. Arrow keys, Home and End select tabs; Tab moves into the selected workspace. The selected tab is reflected in the URL, including existing section links, and follows reload and browser Back/Forward.
+
+Editors retain their drafts and selections while switching tabs. Use each editor's normal save/review controls. Switching campaign, signing out or changing identity/role discards the previous workspace as before.
+
 ## Identity, authorization and synchronization
 
 **Google login:** follow the [Google setup guide](../docs/google-login.md) to create a web OAuth client and configure its backend-only credentials. Google is the primary recoverable account option; local guest campaigns still work before provider configuration. Link an existing guest before leaving its browser to retain the participant ID and owned characters. After signing in on another device, **My campaigns** lists server-authorized memberships; opening one rechecks its current role. **Switch campaign** keeps the account; **Sign out** removes access from this browser and its tabs. Google profile/email never grants a GM role. A Google account already linked to another participant cannot be silently merged with a guest; use another account or explicit GM-assisted recovery.

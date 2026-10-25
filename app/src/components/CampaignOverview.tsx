@@ -5,7 +5,7 @@ import './CampaignOverview.css'
 
 const resourceLabel = (kind: string | null) => kind === 'hull' || kind === 'ghost' ? 'Drain' : kind === 'future' || kind === 'past' ? 'Instability' : 'Stress'
 
-export function CampaignOverview({ openCharacter }: { openCharacter: (id: string) => void }) {
+export function CampaignOverview({ openCharacter, openCrew }: { openCharacter: (id: string) => void; openCrew: () => void }) {
   const { session } = useSession()
   const overview = useCampaignOverview()
   const [joined, setJoined] = useState(true)
@@ -22,12 +22,12 @@ export function CampaignOverview({ openCharacter }: { openCharacter: (id: string
     {overview.snapshot && <>
       <div className="summary-cards">
         {crew ? <article aria-label="Crew summary" className="summary-crew"><p className="summary-kicker">{crew.type} / CREW</p><h3 aria-label={`${crew.name} crew summary`}>{crew.name}</h3>{crew.reputation && <p>{crew.reputation}</p>}
-          <ul className="summary-tracks"><li>Tier {crew.tier} · {crew.hold} Hold</li><li>Rep {crew.rep}</li><li>Heat {crew.heat}</li><li>Wanted {crew.wanted}</li><li>Stacks {crew.stacks}</li><li>Crew XP {crew.xp}</li></ul><a href="#crew-dossier">Open crew dossier</a>
-        </article> : <article aria-label="Crew summary"><h3>Crew</h3><p>No crew yet.</p><a href="#crew-dossier">Open crew dossier</a></article>}
+          <ul className="summary-tracks"><li>Tier {crew.tier} · {crew.hold} Hold</li><li>Rep {crew.rep}</li><li>Heat {crew.heat}</li><li>Wanted {crew.wanted}</li><li>Stacks {crew.stacks}</li><li>Crew XP {crew.xp}</li></ul><a href="#crew-dossier" onClick={event => { event.preventDefault(); openCrew() }}>Open crew dossier</a>
+        </article> : <article aria-label="Crew summary"><h3>Crew</h3><p>No crew yet.</p><a href="#crew-dossier" onClick={event => { event.preventDefault(); openCrew() }}>Open crew dossier</a></article>}
         {characters.map(character => <article key={character.id} aria-label={`${character.name} summary`}><p className="summary-kicker">{character.playbook} / {ownership(character)}</p><h3>{character.alias || character.name}</h3>{character.alias && <p>{character.name}</p>}
           <ul className="summary-tracks"><li>{resourceLabel(character.condition_kind)} {character.stress}/{character.stress_capacity}</li><li>{character.load} load</li><li>Stacks {character.stacks}</li><li>Bank {character.bank}</li></ul>
           <p>{character.condition_kind === 'hull' ? 'Damage' : 'Harm'}: {(['passing', 'major', 'critical', 'mortal'] as const).filter(kind => character.condition_kind !== 'hull' || kind !== 'mortal').map(kind => `${character.harm[kind]} ${kind}`).join(' · ')}</p>
-          <a href="#character-dossiers" onClick={() => openCharacter(character.id)}>Open {character.name} dossier</a>
+          <a href="#character-dossiers" onClick={event => { event.preventDefault(); openCharacter(character.id) }}>Open {character.name} dossier</a>
         </article>)}
       </div>
       {characters.length === 0 && <p>No characters yet.</p>}

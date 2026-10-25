@@ -49,11 +49,11 @@ test('GM and two players maintain a categorized reference with conflict recovery
   const [gm, one, two] = await Promise.all(contexts.map(context => context.newPage()))
   await gm.goto('/')
   await gm.getByLabel('Campaign name', { exact: true }).fill('The shared dossier')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Notes', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
   for (const page of [one, two]) {
     await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invitation)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Notes', exact: true }).click())
   }
   const regions = [gm, one, two].map(page => page.getByRole('region', { name: 'Shared campaign notes', exact: true }))
   for (const region of regions) await expect(region.getByText('No shared notes yet.')).toBeVisible()
@@ -123,7 +123,7 @@ test('delayed snapshots and accepted mutation responses cannot restore deleted o
   const { gm, campaign, invites, note } = await fixture()
   const context = await browser.newContext(), page = await context.newPage()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.player)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Notes', exact: true }).click())
   const reference = page.getByRole('region', { name: 'Shared campaign notes', exact: true })
   const card = reference.getByRole('article', { name: note.data.title, exact: true })
   await expect(card).toBeVisible()
@@ -168,7 +168,7 @@ test('switching campaigns discards a delayed former-campaign snapshot and local 
   const other = (await gm.rpc('create_campaign', { p_name: 'Second note campaign' })).data.id
   const otherInvite = (await gm.rpc('get_campaign_invitations', { p_campaign: other })).data.player
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.player)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Notes', exact: true }).click())
   const card = page.getByRole('article', { name: 'Current campaign reference', exact: true })
   await expect(card).toBeVisible(); await card.getByRole('button', { name: 'Edit note', exact: true }).click()
   await card.getByLabel('Note body', { exact: true }).fill('Former campaign draft')
@@ -176,9 +176,10 @@ test('switching campaigns discards a delayed former-campaign snapshot and local 
   const gate = new Promise<void>(resolve => { release = resolve })
   await page.route('**/rest/v1/codex?*', async route => { const response = await route.fetch(); held = true; await gate; await route.fulfill({ response }) }, { times: 1 })
   await expect.poll(() => held).toBe(true)
+  await page.getByRole('tab', { name: 'Account', exact: true }).click()
   await page.getByRole('button', { name: 'Switch campaign', exact: true }).click()
   await page.getByLabel('Invitation', { exact: true }).fill(otherInvite)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Notes', exact: true }).click())
   const region = page.getByRole('region', { name: 'Shared campaign notes', exact: true })
   await expect(region.getByText('No shared notes yet.')).toBeVisible()
   const delayed = page.waitForResponse(response => response.url().includes('/rest/v1/codex?'))

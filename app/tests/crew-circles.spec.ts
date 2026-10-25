@@ -46,8 +46,9 @@ test('Utopian progression is reviewed in order using earned totals, with final-s
 test('GM and two players share Racers and Utopians records, recover offline drafts, and retain inactive history',async({browser})=>{
  const gm=await browser.newContext(), one=await browser.newContext(), two=await browser.newContext()
  const page=await gm.newPage(), peers=await Promise.all([one.newPage(),two.newPage()])
- await page.goto('/');await page.getByLabel('Campaign name',{exact:true}).fill('Circle browser records');await page.getByRole('button',{name:'Create campaign',exact:true}).click()
+ await page.goto('/');await page.getByLabel('Campaign name',{exact:true}).fill('Circle browser records');await page.getByRole('button',{name:'Create campaign',exact:true}).click().then(() => page.getByRole('tab', { name: 'Crew', exact: true }).click())
  const invitation=await page.getByLabel('Player invitation',{exact:true}).inputValue()
+ await page.getByRole('tab', { name: 'Crew', exact: true }).click()
  await page.getByLabel('Crew name',{exact:true}).fill('Blackline');await page.getByLabel('Crew type',{exact:true}).selectOption('Racers');await page.getByRole('button',{name:'Create crew',exact:true}).click()
  const dossier=page.getByRole('region',{name:'Crew dossier'})
  await dossier.getByLabel('Local circuit',{exact:true}).fill(racers.circuit)
@@ -59,7 +60,7 @@ test('GM and two players share Racers and Utopians records, recover offline draf
  await dossier.getByRole('checkbox',{name:'Vehicle 1 flaw: Finicky',exact:true}).check()
  await dossier.getByRole('button',{name:'Save crew changes',exact:true}).click();await expect(dossier.getByRole('status')).toHaveText('Crew saved.')
  for(const peer of peers){
-  await peer.goto('/');await peer.getByLabel('Invitation',{exact:true}).fill(invitation);await peer.getByRole('button',{name:'Join campaign',exact:true}).click()
+  await peer.goto('/');await peer.getByLabel('Invitation',{exact:true}).fill(invitation);await peer.getByRole('button',{name:'Join campaign',exact:true}).click().then(() => peer.getByRole('tab', { name: 'Crew', exact: true }).click())
   await expect(peer.getByLabel('Local circuit',{exact:true})).toHaveValue(racers.circuit);await expect(peer.getByLabel('Vehicle name 1',{exact:true})).toBeDisabled()
   await expect(peer.getByRole('checkbox',{name:'Signature stunt: Big Air',exact:true})).toBeChecked();await expect(peer.getByRole('button',{name:'Save crew changes',exact:true})).toHaveCount(0)
  }
@@ -160,10 +161,11 @@ test('Circle-specific claims and inactive history preserve source spaces and unr
 
 test('competing specialized drafts preserve values, disjoint fields commute, and a changed crew type cannot bypass validation',async({browser})=>{
  const first=await browser.newContext(),second=await browser.newContext(),ours=await first.newPage(),theirs=await second.newPage()
- await ours.goto('/');await ours.getByLabel('Campaign name',{exact:true}).fill('Racing concurrent records');await ours.getByRole('button',{name:'Create campaign',exact:true}).click()
+ await ours.goto('/');await ours.getByLabel('Campaign name',{exact:true}).fill('Racing concurrent records');await ours.getByRole('button',{name:'Create campaign',exact:true}).click().then(() => ours.getByRole('tab', { name: 'Crew', exact: true }).click())
  const invitation=await ours.getByLabel('Secret GM invitation',{exact:true}).inputValue()
+ await ours.getByRole('tab', { name: 'Crew', exact: true }).click()
  await ours.getByLabel('Crew name',{exact:true}).fill('Concurrent circuits');await ours.getByLabel('Crew type',{exact:true}).selectOption('Racers');await ours.getByRole('button',{name:'Create crew',exact:true}).click()
- await theirs.goto('/');await theirs.getByLabel('Invitation',{exact:true}).fill(invitation);await theirs.getByRole('button',{name:'Join campaign',exact:true}).click();await expect(theirs.getByLabel('Local circuit',{exact:true})).toHaveValue('')
+ await theirs.goto('/');await theirs.getByLabel('Invitation',{exact:true}).fill(invitation);await theirs.getByRole('button',{name:'Join campaign',exact:true}).click().then(() => theirs.getByRole('tab', { name: 'Crew', exact: true }).click());await expect(theirs.getByLabel('Local circuit',{exact:true})).toHaveValue('')
  const a=ours.getByRole('region',{name:'Crew dossier'}),b=theirs.getByRole('region',{name:'Crew dossier'})
  const save=async(dossier:typeof a)=>{await dossier.getByRole('button',{name:'Save crew changes',exact:true}).click();await expect(dossier.getByRole('status')).toHaveText('Crew saved.')}
  await a.getByLabel('Local circuit',{exact:true}).fill('Canal loop');await b.getByLabel('Base',{exact:true}).fill('Tram station');await save(b);await save(a)

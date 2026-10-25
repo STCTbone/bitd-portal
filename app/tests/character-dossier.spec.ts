@@ -54,14 +54,15 @@ test('GM and two players follow saved dossiers live, retain distinct edits, and 
   const [gm, player, observer] = await Promise.all(contexts.map(c => c.newPage()))
   await gm.goto('/')
   await gm.getByLabel('Campaign name').fill('Electric dossiers')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Characters', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
   for (const page of [player, observer]) {
     await page.goto('/')
     await page.getByLabel('Invitation', { exact: true }).fill(invitation)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
     await expect(page.getByTestId('campaign-role')).toHaveText('Player')
   }
+  await player.getByRole('tab', { name: 'Characters', exact: true }).click()
   await player.getByLabel('New character name').fill('Reed')
   await player.getByRole('button', { name: 'Create Hound', exact: true }).click()
   for (const page of [gm, observer]) {
@@ -132,7 +133,7 @@ test('a player claims only a deliberately available Hound and the GM retains edi
   const page = await browser.newPage()
   await page.goto('/')
   await page.getByLabel('Invitation', { exact: true }).fill(invitation)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
   await page.getByRole('button', { name: 'Open Available', exact: true }).click()
   await expect(page.getByLabel('Alias', { exact: true })).toBeDisabled()
   await page.getByRole('button', { name: 'Claim Available', exact: true }).click()

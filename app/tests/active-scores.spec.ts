@@ -114,7 +114,7 @@ test('table starts a planned score, saves notes and independent cohort results, 
   const page = await context.newPage(), peer = await member.newPage()
   for (const [current, invitation] of [[page, invites.gm], [peer, invites.player]] as const) {
     await current.goto('/'); await current.getByLabel('Invitation', { exact: true }).fill(invitation)
-    await current.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await current.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => current.getByRole('tab', { name: 'Cycle', exact: true }).click())
   }
   const scores = page.getByRole('region', { name: 'Scores and history', exact: true }), otherScores = peer.getByRole('region', { name: 'Scores and history', exact: true })
   const ours = scores.getByRole('article', { name: 'Score · Relay station', exact: true }), theirs = otherScores.getByRole('article', { name: 'Score · Relay station', exact: true })
@@ -164,7 +164,7 @@ test('score drafts retain rejected edits, merge other fields and retry after rec
   const { gm, score, invites } = await table()
   const context = await browser.newContext(), page = await context.newPage()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Cycle', exact: true }).click())
   const ours = page.getByRole('region', { name: 'Scores and history', exact: true }).getByRole('article', { name: 'Score · Relay station', exact: true })
   await ours.getByLabel('Shared score notes', { exact: true }).fill('Our unsaved note')
   expect((await gm.rpc('update_score_record', { p_score: score.id, p_patch: { outcome: 'Peer outcome' }, p_expected: { outcome: '' } })).error).toBeNull()
@@ -213,7 +213,7 @@ test('active score clocks remove unshared snapshots, ignore delayed responses an
   const received: Promise<string>[] = []
   page.on('response', response => { if (response.url().includes('/rest/v1/')) received.push(response.text().catch(() => '')) })
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.player)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Cycle', exact: true }).click())
   const active = page.getByRole('region', { name: 'Permitted clocks · Relay station', exact: true })
   await expect(active.getByText('Loading bay guards', { exact: true })).toBeVisible()
   await expect(active.getByText('PRIVATE mandate', { exact: true })).toHaveCount(0)

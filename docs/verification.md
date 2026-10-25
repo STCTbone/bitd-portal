@@ -8,6 +8,7 @@ Tests use authenticated API, Storage and Realtime boundaries and real browsers a
 
 | Assurance | Suites under `app/tests/` |
 | --- | --- |
+| One workspace per tab, retained drafts, overview dossier links, keyboard/history/reload, GM/player tabs and narrow-screen layout | `campaign-tabs.spec.ts` |
 | No-email creation/join; role invitations; browser tampering; campaign isolation; denied legacy writes/Storage/Realtime | `campaign-access.spec.ts` |
 | Recoverable account across devices, current campaign list, guest-safe Google setup errors, cancelled callbacks, sign-out across tabs and failed identity checks | `google-login.spec.ts` |
 | Ownership/recovery and delayed old membership/save boundaries | `ownership-recovery.spec.ts`, `character-dossier.spec.ts` |

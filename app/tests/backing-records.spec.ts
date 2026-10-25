@@ -32,16 +32,19 @@ test('owner records labeled assistance, mission and private Failure; explicit sh
   const [gm, owner, peer] = await Promise.all(contexts.map(c => c.newPage()))
   for (const p of [gm, owner, peer]) p.setDefaultTimeout(10000)
   await gm.goto('/'); await gm.getByLabel('Campaign name').fill('Backing collaboration')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Characters', exact: true }).click())
   const invite = await gm.getByLabel('Player invitation').inputValue()
+  await gm.getByRole('tab', { name: 'Factions', exact: true }).click()
   await gm.getByLabel('New faction name', { exact: true }).fill('Palace')
   await gm.getByRole('button', { name: 'Create faction', exact: true }).click()
   for (const p of [owner, peer]) {
     await p.goto('/'); await p.getByLabel('Invitation', { exact: true }).fill(invite)
-    await p.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await p.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => p.getByRole('tab', { name: 'Characters', exact: true }).click())
   }
+  await owner.getByRole('tab', { name: 'Characters', exact: true }).click()
   await owner.getByLabel('New character name').fill('Morgan')
   await owner.getByRole('button', { name: 'Create Hound', exact: true }).click()
+  await gm.getByRole('tab', { name: 'Characters', exact: true }).click()
   for (const p of [gm, peer]) await p.getByRole('button', { name: 'Open Morgan', exact: true }).click()
   const section = owner.getByRole('region', { name: 'Backing factions', exact: true })
   await section.getByLabel('Public backing faction').selectOption({ label: 'Palace · Tier 0' })
@@ -172,7 +175,7 @@ test('stale backing drafts recover visibly, delayed snapshots cannot restore pri
   for (const p of [owner, peer]) {
     p.setDefaultTimeout(10000)
     p.on('response', r => { if (r.url().includes('/rest/v1/')) received.push(r.text().catch(() => '')) })
-    await p.goto('/'); await p.getByLabel('Invitation', { exact: true }).fill(invite); await p.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await p.goto('/'); await p.getByLabel('Invitation', { exact: true }).fill(invite); await p.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => p.getByRole('tab', { name: 'Characters', exact: true }).click())
   }
   const oldOwner = await owner.getByLabel('Your participant ID').inputValue(), newOwner = await peer.getByLabel('Your participant ID').inputValue()
   await owner.getByRole('button', { name: 'Claim Reed', exact: true }).click()
@@ -231,7 +234,8 @@ test('a sourced borrowed Double Agent supports two backings and its required sel
   const invite = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data.player
   for (const name of ['Palace', 'Paxton']) expect((await gm.rpc('create_faction', { p_campaign: campaign, p_name: name })).error).toBeNull()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invite)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
+  await page.getByRole('tab', { name: 'Characters', exact: true }).click()
   await page.getByLabel('New character name').fill('Borrower')
   await page.getByRole('button', { name: 'Create Hound', exact: true }).click()
   const section = page.getByRole('region', { name: 'Backing factions', exact: true })

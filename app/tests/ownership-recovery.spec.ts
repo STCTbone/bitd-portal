@@ -67,7 +67,7 @@ for (const outcome of ['rejected', 'authorized GM', 'revoked'] as const) test(`a
     await gm.rpc('create_character', { p_campaign: second, p_name: 'Recovery editor', p_unclaimed: true })
     await page.goto('/')
     await page.getByLabel('Invitation', { exact: true }).fill(firstInvite)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
     await expect(page.getByRole('heading', { name: 'First table', exact: true })).toBeVisible()
     const userId = await page.getByLabel('Your participant ID', { exact: true }).inputValue()
     let captured!: () => void, release!: () => void
@@ -89,9 +89,12 @@ for (const outcome of ['rejected', 'authorized GM', 'revoked'] as const) test(`a
     // Enter the new campaign from that denied-access screen while the old read
     // remains held, preserving the original old-response/new-membership race.
     if (outcome === 'revoked') await expect(page.getByLabel('Invitation', { exact: true })).toBeVisible()
-    else await page.getByRole('button', { name: 'Switch campaign', exact: true }).click()
+    else {
+      await page.getByRole('tab', { name: 'Account', exact: true }).click()
+      await page.getByRole('button', { name: 'Switch campaign', exact: true }).click()
+    }
     await page.getByLabel('Invitation', { exact: true }).fill(secondInvite)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
     await page.getByRole('button', { name: 'Open Recovery editor', exact: true }).click()
     await expect(page.getByLabel('Character name', { exact: true })).toHaveValue('Recovery editor')
     const response = page.waitForResponse(r => r.url().includes('/campaign_members?') && r.status() === (outcome === 'rejected' ? 403 : 200))
@@ -113,14 +116,15 @@ test('lost identity rejoins without email and the GM deliberately restores its c
   const [gm, old, recovered] = await Promise.all(contexts.map(c => c.newPage()))
   await gm.goto('/')
   await gm.getByLabel('Campaign name').fill('No email recovery')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Characters', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
   for (const p of [old, recovered]) {
     await p.goto('/')
     await p.getByLabel('Invitation', { exact: true }).fill(invitation)
-    await p.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await p.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => p.getByRole('tab', { name: 'Characters', exact: true }).click())
     await expect(p.getByTestId('campaign-role')).toHaveText('Player')
   }
+  await old.getByRole('tab', { name: 'Characters', exact: true }).click()
   await old.getByLabel('New character name').fill('Reed')
   await old.getByRole('button', { name: 'Create Hound', exact: true }).click()
   await old.getByLabel('Alias', { exact: true }).fill('Remembered')
@@ -171,6 +175,7 @@ test('lost identity rejoins without email and the GM deliberately restores its c
   await expect(gm.getByLabel('Assign character to', { exact: true })).toBeVisible()
   expect(await gm.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await gm.getByRole('region', { name: 'Character ownership', exact: true }).screenshot({ path: 'test-results/ownership-mobile.png' })
+  await gm.getByRole('tab', { name: 'Account', exact: true }).click()
   await gm.getByRole('region', { name: 'Campaign overview', exact: true }).screenshot({ path: 'test-results/recovery-access-mobile.png' })
   for (const context of contexts) await context.close()
 })
@@ -178,10 +183,12 @@ test('lost identity rejoins without email and the GM deliberately restores its c
 test('a current membership failure hides GM information, permits retry, and current revocation remains denied on reconnect and reload', async ({ page }) => {
   await page.goto('/')
   await page.getByLabel('Campaign name').fill('Verify current authority')
-  await page.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
+  await page.getByRole('tab', { name: 'Account', exact: true }).click()
   await expect(page.getByLabel('Secret GM invitation')).toBeVisible()
   const userId = await page.getByLabel('Your participant ID', { exact: true }).inputValue()
   const campaignId = await page.evaluate(() => localStorage.getItem('bitd.activeCampaign'))
+  await page.getByRole('tab', { name: 'Characters', exact: true }).click()
   await page.getByLabel('New character name').fill('Private editor')
   await page.getByRole('button', { name: 'Create Hound', exact: true }).click()
   await expect(page.getByLabel('Alias', { exact: true })).toBeEnabled()
@@ -195,6 +202,7 @@ test('a current membership failure hides GM information, permits retry, and curr
   await expect(page.getByRole('region', { name: 'Character dossiers', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Retry campaign access', exact: true }).click()
   await expect(page.getByTestId('campaign-role')).toHaveText('Game Master')
+  await page.getByRole('tab', { name: 'Account', exact: true }).click()
   await expect(page.getByLabel('Secret GM invitation')).toBeVisible()
   expect((await localAdmin().from('campaign_members').delete().eq('campaign_id', campaignId!).eq('user_id', userId)).error).toBeNull()
   await page.evaluate(() => window.dispatchEvent(new Event('online')))

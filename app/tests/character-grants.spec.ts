@@ -56,12 +56,14 @@ test('completed sourced Hull memories grant backing and healing, and removal req
 test('Hull owner reviews remembered Double Agent, keeps rejected removal and ends backing before correcting the memory', async ({ page }) => {
   test.setTimeout(60000)
   await page.goto('/'); await page.getByLabel('Campaign name').fill('Remembering an agent')
-  await page.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
   for (const name of ['Palace', 'Paxton']) {
+    await page.getByRole('tab', { name: 'Factions', exact: true }).click()
     await page.getByLabel('New faction name', { exact: true }).fill(name)
     await page.getByRole('button', { name: 'Create faction', exact: true }).click()
     await expect(page.getByRole('navigation', { name: 'Faction list' }).getByRole('button', { name, exact: true })).toBeVisible()
   }
+  await page.getByRole('tab', { name: 'Characters', exact: true }).click()
   await page.getByLabel('New character name').fill('Memory')
   await page.getByLabel('Playbook', { exact: true }).selectOption('Hull')
   await page.getByRole('button', { name: 'Create Hull', exact: true }).click()
@@ -110,7 +112,8 @@ test('Hull owner reviews remembered Double Agent, keeps rejected removal and end
 
 test('remembered Get Back In There exposes deliberate permanent Repair and preserves a rejected grant-removal draft', async ({ page }) => {
   await page.goto('/'); await page.getByLabel('Campaign name').fill('Remembering treatment')
-  await page.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
+  await page.getByRole('tab', { name: 'Characters', exact: true }).click()
   await page.getByLabel('New character name').fill('Repair')
   await page.getByLabel('Playbook', { exact: true }).selectOption('Hull')
   await page.getByRole('button', { name: 'Create Hull', exact: true }).click()
@@ -173,9 +176,10 @@ test('legacy incomplete Versatile records remain readable by owner GM and peer a
   for (const page of [owner, manager, peer]) page.on('pageerror', error => pageErrors.push(error.message))
   for (const [page, invite] of [[owner, invites.player], [manager, invites.gm], [peer, invites.player]] as const) {
     await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invite)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
     await expect(page.getByRole('heading', { name: 'Repair borrowed records', exact: true })).toBeVisible()
   }
+  await owner.getByRole('tab', { name: 'Characters', exact: true }).click()
   await owner.getByLabel('New character name').fill('Legacy borrower')
   await owner.getByRole('button', { name: 'Create Hound', exact: true }).click()
   await expect(owner.getByLabel('Character name', { exact: true })).toHaveValue('Legacy borrower')

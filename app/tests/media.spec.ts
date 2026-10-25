@@ -52,10 +52,11 @@ test('owner portrait and avatar reload while GM image/audio sharing plays actual
   const page = await gm.newPage(), peer = await player.newPage()
   await page.goto('/')
   await page.getByLabel('Campaign name', { exact: true }).fill('Sound and vision')
-  await page.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Media', exact: true }).click())
   const invite = await page.getByLabel('Player invitation').inputValue()
   await peer.goto('/'); await peer.getByLabel('Invitation', { exact: true }).fill(invite)
-  await peer.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await peer.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => peer.getByRole('tab', { name: 'Media', exact: true }).click())
+  await peer.getByRole('tab', { name: 'Characters', exact: true }).click()
   await peer.getByLabel('New character name').fill('Neon'); await peer.getByRole('button', { name: 'Create Hound', exact: true }).click()
   const dossier = peer.getByRole('article', { name: 'Neon dossier', exact: true })
   for (const kind of ['portrait', 'avatar']) {
@@ -65,8 +66,10 @@ test('owner portrait and avatar reload while GM image/audio sharing plays actual
   }
   await peer.reload(); await peer.getByRole('button', { name: 'Open Neon', exact: true }).click()
   for (const kind of ['portrait', 'avatar']) await expect(peer.getByRole('img', { name: `Neon ${kind}`, exact: true })).toBeVisible()
+  await page.getByRole('tab', { name: 'Characters', exact: true }).click()
   await page.getByRole('button', { name: 'Open Neon', exact: true }).click()
   for (const kind of ['portrait', 'avatar']) await expect(page.getByRole('img', { name: `Neon ${kind}`, exact: true })).toBeVisible()
+  for (const current of [page, peer]) await current.getByRole('tab', { name: 'Media', exact: true }).click()
   const media = page.getByRole('region', { name: 'Campaign media', exact: true })
   const shared = peer.getByRole('region', { name: 'Campaign media', exact: true })
   await media.getByLabel('New media title').fill('SECRET photo')
@@ -186,10 +189,10 @@ test('upload and media edit failures retain retryable drafts and confirmed remov
   const gm = await browser.newContext(), player = await browser.newContext()
   const page = await gm.newPage(), peer = await player.newPage()
   await page.goto('/'); await page.getByLabel('Campaign name', { exact: true }).fill('Media recovery')
-  await page.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Media', exact: true }).click())
   const invite = await page.getByLabel('Player invitation').inputValue()
   await peer.goto('/'); await peer.getByLabel('Invitation', { exact: true }).fill(invite)
-  await peer.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await peer.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => peer.getByRole('tab', { name: 'Media', exact: true }).click())
   const media = page.getByRole('region', { name: 'Campaign media', exact: true })
   const shared = peer.getByRole('region', { name: 'Campaign media', exact: true })
   await page.route('**/rest/v1/rpc/finish_asset', route => route.abort(), { times: 1 })
@@ -251,7 +254,7 @@ test('two connected viewers clear unshared media within the lease and delayed sn
   const pages = [await contexts[0].newPage(), await contexts[1].newPage()]
   for (const page of pages) {
     await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.player)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Media', exact: true }).click())
     await expect(page.getByRole('img', { name: 'Shared photograph', exact: true })).toBeVisible()
   }
   const page = pages[0]
@@ -368,7 +371,7 @@ test('GM demotion clears private previews and upload controls, reconnect restore
   await gm.rpc('finish_asset', { p_asset: asset.id })
   const context = await browser.newContext(), page = await context.newPage()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Media', exact: true }).click())
   const media = page.getByRole('region', { name: 'Campaign media', exact: true })
   await expect(media.getByRole('img', { name: 'SECRET GM preview', exact: true })).toBeVisible()
   const admin = localAdmin()
@@ -397,7 +400,7 @@ test('protected preview renewal bypasses an uploader controlled long cache lifet
   await gm.rpc('update_asset', { p_asset: asset.id, p_title: 'Long cached image', p_annotation: '', p_shared: true, p_revision: ready.revision })
   const context = await browser.newContext(), page = await context.newPage()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.player)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Media', exact: true }).click())
   const renewal = page.waitForRequest(request => request.url().includes('/storage/v1/object/info/campaign-assets/'))
   await expect(page.getByRole('img', { name: 'Long cached image', exact: true })).toBeVisible()
   // No routing/interception: Playwright routing itself disables HTTP caching.

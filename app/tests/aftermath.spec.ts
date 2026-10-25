@@ -101,7 +101,7 @@ test('GM reviews concrete effects in browser, confirms, reloads recap and record
  expect((await gm.rpc('patch_character', { p_character: character.id, p_patch: { stress: 5, harm: { passing: ['Bruised', 'Cut'] } } })).error).toBeNull()
  const context = await browser.newContext(), page = await context.newPage()
  await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
- await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+ await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Cycle', exact: true }).click())
  const cycle = page.getByRole('region', { name: 'Campaign cycle', exact: true })
  await cycle.getByLabel('Activity description', { exact: true }).fill('Recover between scores; roll and effects recorded manually')
  await cycle.getByRole('button', { name: 'Record activity', exact: true }).click()
@@ -212,7 +212,7 @@ test('private manual consequences stay off two player clients until explicit rev
  for (const page of pages) {
   page.on('response', response => { if (response.url().includes('/rest/v1/')) received.push(response.text().catch(() => '')) })
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.player)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Cycle', exact: true }).click())
  }
  const args = { p_score: score.id, p_id: null, p_revision: 0, p_kind: 'Mandate', p_title: 'PRIVATE unrevealed mandate', p_notes: 'PRIVATE next recharge penalty and Trouble escalation', p_shared: false }
  const secret = await gm.rpc('save_aftermath_manual', args); expect(secret.error).toBeNull()

@@ -46,13 +46,14 @@ test('players review condition edits, share accepted state, correct injuries and
   const [gm, player, observer] = await Promise.all(contexts.map(c => c.newPage()))
   await gm.goto('/')
   await gm.getByLabel('Campaign name').fill('Midnight recovery')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Characters', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
   for (const page of [player, observer]) {
     await page.goto('/')
     await page.getByLabel('Invitation', { exact: true }).fill(invitation)
-    await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
   }
+  await player.getByRole('tab', { name: 'Characters', exact: true }).click()
   await player.getByLabel('New character name').fill('Reed')
   await player.getByRole('button', { name: 'Create Hound', exact: true }).click()
   for (const page of [gm, observer]) await page.getByRole('button', { name: 'Open Reed', exact: true }).click()

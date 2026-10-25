@@ -67,9 +67,10 @@ test('Hull owner and GM review distinct records, recover a failed draft, synchro
   const contexts = await Promise.all([browser.newContext(), browser.newContext(), browser.newContext()])
   const [gm, owner, observer] = await Promise.all(contexts.map(c => c.newPage()))
   await gm.goto('/'); await gm.getByLabel('Campaign name').fill('Hull memory')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Characters', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
-  for (const p of [owner, observer]) { await p.goto('/'); await p.getByLabel('Invitation', { exact: true }).fill(invitation); await p.getByRole('button', { name: 'Join campaign', exact: true }).click() }
+  for (const p of [owner, observer]) { await p.goto('/'); await p.getByLabel('Invitation', { exact: true }).fill(invitation); await p.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => p.getByRole('tab', { name: 'Characters', exact: true }).click()) }
+  await owner.getByRole('tab', { name: 'Characters', exact: true }).click()
   await owner.getByLabel('New character name').fill('N-13')
   await owner.getByLabel('Playbook', { exact: true }).selectOption('Hull')
   await owner.getByRole('button', { name: 'Create Hull', exact: true }).click()
@@ -166,7 +167,7 @@ test('reviewed Aftermath uses canonical Hull Drain and rejects incompatible mort
   // Complete the shared UI review against the same source-specific character.
   const context = await browser.newContext(), page = await context.newPage()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
-  await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
   const panel = page.getByRole('region', { name: 'Aftermath review', exact: true })
   await panel.getByLabel('Effect record type', { exact: true }).selectOption('character')
   await expect(panel.getByLabel('Effect field', { exact: true }).getByRole('option', { name: 'Mortal Harm', exact: true })).toHaveCount(0)

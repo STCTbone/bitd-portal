@@ -56,13 +56,14 @@ test('players review load, Armor and XP changes, retain drafts on failure, and s
   const [gm, owner, observer] = await Promise.all(contexts.map(c => c.newPage()))
   await gm.goto('/')
   await gm.getByLabel('Campaign name').fill('Docks equipment')
-  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click()
+  await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Characters', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
   for (const p of [owner, observer]) {
     await p.goto('/')
     await p.getByLabel('Invitation', { exact: true }).fill(invitation)
-    await p.getByRole('button', { name: 'Join campaign', exact: true }).click()
+    await p.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => p.getByRole('tab', { name: 'Characters', exact: true }).click())
   }
+  await owner.getByRole('tab', { name: 'Characters', exact: true }).click()
   await owner.getByLabel('New character name').fill('Reed')
   await owner.getByRole('button', { name: 'Create Hound', exact: true }).click()
   for (const p of [gm, observer]) await p.getByRole('button', { name: 'Open Reed', exact: true }).click()
