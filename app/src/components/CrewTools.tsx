@@ -1,8 +1,10 @@
 import catalog from '@/lib/crew/catalog.json'
 import type { CrewData, CrewCohort } from '@/lib/crew/dossier'
+import type { ClaimDefinition } from '@/lib/crew/claimMaps'
+import { CrewClaimMap } from './CrewClaimMap'
 
 type AbilityDefinition = { id:string; name:string; choices:string[]; repeatable:boolean; circle?:number }
-type Definition = { abilities:AbilityDefinition[]; upgrades:{id:string;name:string;max:number}[]; claims:{id:string;name:string;circle?:number}[] }
+type Definition = { abilities:AbilityDefinition[]; upgrades:{id:string;name:string;max:number}[]; claims:ClaimDefinition[] }
 const catalogs: Record<string, Definition> = catalog
 export function CrewTools({ values, change, canManage }: {
   values:CrewData; change:<K extends keyof CrewData>(field:K,value:CrewData[K])=>void; canManage:boolean
@@ -43,14 +45,7 @@ export function CrewTools({ values, change, canManage }: {
     </div>)}
     {canManage && <button type="button" onClick={()=>change('upgrades',[...upgrades,{id:crypto.randomUUID(),catalogId:choices.upgrades[0].id,marks:0,notes:''}])}>Add crew upgrade</button>}
     <h4>Claims</h4>
-    <div className="crew-claims" role="group" aria-label="Crew claims">{choices.claims.map((claim)=>{
-      const siblings=choices.claims.filter(item=>item.name===claim.name)
-      const label=claim.name+(siblings.length>1?' ('+(siblings.findIndex(item=>item.id===claim.id)+1)+')':'')
-      const selected=claims.find(item=>item.catalogId===claim.id)
-      return <div key={claim.id}><label className="crew-checkbox"><input type="checkbox" disabled={!!claim.circle && claim.circle > values.utopianVision.circle && !selected} checked={!!selected} onChange={e=>change('claims',e.target.checked?[...claims,{catalogId:claim.id,notes:''}]:claims.filter(item=>item.catalogId!==claim.id))}/>{label}</label>{claim.circle && <small>Circle {claim.circle}</small>}
-        {selected && text('Claim notes '+label,selected.notes,value=>change('claims',claims.map(item=>item.catalogId===claim.id?{...item,notes:value}:item)))}
-      </div>
-    })}</div>
+    <CrewClaimMap type={values.type} definitions={choices.claims} claims={claims} circle={values.utopianVision.circle} base={values.base} canManage={canManage} onChange={claims => change('claims', claims)} />
     {claims.filter(row=>!choices.claims.some(item=>item.id===row.catalogId)).map(row=><div key={row.catalogId}><p>Previous crew claim: {row.catalogId}</p>{canManage&&<button type="button" onClick={()=>change('claims',claims.filter(item=>item.catalogId!==row.catalogId))}>Remove previous claim {row.catalogId}</button>}</div>)}
     <h3>Cohorts</h3><details className="rules-reference"><summary>Cohort reference</summary><p>Gang types: Eggheads, Hustlers, Runners, Infiltrators, Muscle. Expert types describe their expertise. Edges: Fearsome, Independent, Loyal, Resourceful, Tenacious, Vigilant. Flaws: Clumsy, Hedonistic, Panicky, Principled, Ruthless, Superstitious. Vehicle and ability exceptions can be recorded in notes.</p></details>
     {cohorts.map((row,index)=><fieldset className="crew-cohort" key={row.id}><legend>Cohort {index+1}</legend><div className="crew-fields">

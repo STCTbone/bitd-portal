@@ -1,0 +1,26 @@
+.claim-map-scroll { overflow-x:auto; padding:.25rem; border:1px solid #b3b5a3; background:#f5ecd7; }
+.claim-map-scroll:focus-visible { outline:3px solid #c13e2e; outline-offset:3px; }
+.claim-map-board { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); grid-template-rows:repeat(4,1fr); min-width:48rem; position:relative; }
+.claim-map-paths { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; color:#737b68; }
+.claim-map-paths polyline { fill:none; stroke:#737b68; stroke-width:5; vector-effect:non-scaling-stroke; }
+.claim-map-paths polyline.is-held { stroke:#17605d; stroke-width:7; }
+.claim-map-slot { position:relative; padding:.8rem .6rem; min-width:0; }
+.claim-map-slot.has-row-label { padding-top:2.2rem; }
+.claim-map-row-label { position:absolute; top:.25rem; left:.6rem; white-space:nowrap; font-size:.8rem; font-weight:800; color:#7b321c; text-transform:uppercase; letter-spacing:.04em; }
+.crew-dossier .claim-node { display:flex; flex-direction:column; align-items:stretch; justify-content:space-between; gap:.7rem; width:100%; height:100%; min-height:9.5rem; padding:0; border:2px solid #526b66; background:#fffdf5; color:#172e36; box-shadow:2px 3px 0 #d2c9b2; text-align:center; font-size:.82rem; line-height:1.35; }
+.claim-node-name { display:block; padding:.5rem .35rem; background:#e0e3d4; font-weight:800; border-bottom:1px solid #89968a; }
+.claim-node-effect { display:block; padding:0 .45rem; font-weight:400; }
+.claim-node-state { display:block; padding:.35rem; font-size:.75rem; font-weight:700; }
+.crew-dossier .claim-node.is-special { border-color:#b54925; }
+.claim-node.is-special .claim-node-name { background:#b54925; color:#fffdf5; }
+.crew-dossier .claim-node.is-held { border-color:#17605d; background:#c8e6d6; box-shadow:inset 0 0 0 2px #17605d,2px 3px 0 #d2c9b2; }
+.claim-node.is-held .claim-node-state { background:#17605d; color:#fffdf5; }
+.crew-dossier .claim-node:disabled { opacity:1; cursor:default; }
+.crew-dossier .claim-node.is-locked { background:#e6e1d4; color:#53615a; border-style:dashed; box-shadow:none; }
+.claim-node.is-locked .claim-node-name { background:#d9d5c9; color:#3a4c46; }
+.crew-dossier .claim-node:not(:disabled):hover { outline:2px solid #17605d; outline-offset:2px; }
+.crew-dossier .claim-base { justify-content:center; background:#d4d8c7; box-shadow:inset 0 0 0 4px #edf0e2; cursor:default; }
+.claim-base .claim-node-name { background:transparent; border:0; font-family:'Special Elite',cursive; font-size:1.3rem; }
+.claim-map-notes { margin:1rem 0; }
+.claim-map-notes summary { cursor:pointer; min-height:44px; align-content:center; font-weight:700; }
+.claim-map-notes .crew-fields { margin:.75rem 0; }

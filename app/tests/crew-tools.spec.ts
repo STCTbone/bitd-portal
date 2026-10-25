@@ -21,8 +21,11 @@ test('GM records crew selections and a cohort, shares accepted state and recover
   await dossier.getByRole('button',{name:'Add crew upgrade',exact:true}).click()
   await dossier.getByLabel('Upgrade 1',{exact:true}).selectOption({label:'Intriguing'})
   await dossier.getByLabel('Upgrade marks 1',{exact:true}).fill('3')
-  await dossier.getByRole('checkbox',{name:'Local Supplier (1)',exact:true}).check()
-  await dossier.getByRole('checkbox',{name:'Local Supplier (2)',exact:true}).check()
+  await dossier.getByRole('button',{name:'Local Supplier (1)',exact:true}).press('Space')
+  await dossier.getByRole('button',{name:'Local Supplier (2)',exact:true}).click()
+  await dossier.locator('summary').filter({ hasText: 'Claim notes' }).click()
+  await dossier.getByLabel('Claim notes Local Supplier (1)', { exact: true }).fill('Dockside supplier')
+  await dossier.getByLabel('Claim notes Local Supplier (2)', { exact: true }).fill('Night clinic')
   await dossier.getByRole('button',{name:'Add cohort',exact:true}).click()
   await dossier.getByLabel('Cohort name 1',{exact:true}).fill('Canal runners')
   await dossier.getByLabel('Cohort types 1',{exact:true}).fill('Runners, Hustlers')
@@ -38,6 +41,11 @@ test('GM records crew selections and a cohort, shares accepted state and recover
   await peer.getByRole('button',{name:'Join campaign',exact:true}).click().then(() => peer.getByRole('tab', { name: 'Crew', exact: true }).click())
   await expect(peer.getByLabel('Cohort assignment 1',{exact:true})).toHaveValue('Watch the canal')
   await expect(peer.getByLabel('Cohort name 1',{exact:true})).toBeDisabled()
+  await expect(peer.getByRole('button', { name: 'Local Supplier (1)', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(peer.getByRole('button', { name: 'Local Supplier (1)', exact: true })).toBeDisabled()
+  await peer.locator('summary').filter({ hasText: 'Claim notes' }).click()
+  await expect(peer.getByLabel('Claim notes Local Supplier (1)', { exact: true })).toHaveValue('Dockside supplier')
+  await expect(peer.getByLabel('Claim notes Local Supplier (1)', { exact: true })).toBeDisabled()
   await expect(peer.getByRole('button',{name:'Add cohort',exact:true})).toHaveCount(0)
   await dossier.getByLabel('Cohort assignment 1',{exact:true}).fill('Guard the tram')
   await gm.setOffline(true)
@@ -51,11 +59,28 @@ test('GM records crew selections and a cohort, shares accepted state and recover
   await page.reload()
   await expect(page.getByLabel('Ability choice 1',{exact:true})).toHaveValue('Healing')
   await expect(page.getByLabel('Upgrade marks 1',{exact:true})).toHaveValue('3')
-  await expect(page.getByRole('checkbox',{name:'Local Supplier (2)',exact:true})).toBeChecked()
+  await expect(page.getByRole('button',{name:'Local Supplier (2)',exact:true})).toHaveAttribute('aria-pressed', 'true')
+  await dossier.locator('summary').filter({ hasText: 'Claim notes' }).click()
+  await expect(dossier.getByLabel('Claim notes Local Supplier (1)', { exact: true })).toHaveValue('Dockside supplier')
+  await expect(dossier.getByLabel('Claim notes Local Supplier (2)', { exact: true })).toHaveValue('Night clinic')
+  await dossier.getByRole('region', { name: 'Dealers claim map', exact: true }).screenshot({ path: 'test-results/dealers-claim-map.png', style: '.campaign-sections { visibility: hidden !important; }' })
   await dossier.locator('.crew-tools').screenshot({ path: 'test-results/crew-tools-desktop.png' })
   await page.setViewportSize({ width: 390, height: 844 })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await dossier.locator('.crew-tools').screenshot({ path: 'test-results/crew-tools-mobile.png' })
+  const map = dossier.getByRole('region', { name: 'Dealers claim map', exact: true })
+  expect(await map.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true)
+  expect(await map.locator('button').evaluateAll(nodes => nodes.every(node => {
+    const name = node.querySelector('.claim-node-name')!.getBoundingClientRect()
+    const effect = node.querySelector('.claim-node-effect')!.getBoundingClientRect()
+    const state = node.querySelector('.claim-node-state')!.getBoundingClientRect()
+    return name.bottom <= effect.top && effect.bottom <= state.top && state.bottom <= node.getBoundingClientRect().bottom
+  }))).toBe(true)
+  await dossier.getByRole('button', { name: 'Airship', exact: true }).focus()
+  await expect(dossier.getByRole('button', { name: 'Airship', exact: true })).toBeInViewport()
+  await dossier.getByRole('button', { name: 'Airship', exact: true }).press('Space')
+  await expect(dossier.getByRole('button', { name: 'Airship', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await dossier.getByRole('button', { name: 'Airship', exact: true }).press('Space')
   await page.getByRole('button',{name:'Remove cohort 1',exact:true}).click()
   await page.getByRole('button',{name:'Save crew changes',exact:true}).click()
   await expect(peer.getByLabel('Cohort name 1',{exact:true})).toHaveCount(0)
@@ -432,12 +457,33 @@ test('all six published crew menus persist every ability choice, upgrade track a
       await expect(dossier.getByLabel('Upgrade marks 1', { exact: true })).toHaveAttribute('max', String(marks))
       upgrades.push({ id: crypto.randomUUID(), catalogId: await upgradeMenu.inputValue(), marks, notes: '' })
     }
+    const claimMap = dossier.getByRole('region', { name: `${type} claim map`, exact: true })
+    const standardRows = [[1, 5, 9, 12, 16], [2, 6, 10, 13, 17], [3, 7, 11, 14, 18], [4, 8, 0, 15, 19]]
+    const printedRows = type === 'Dealers' ? [[1,2,3,4,5], [6,7,8,9,10], [11,12,13,14,15], [16,17,18,19,20]] : type === 'Utopians' ? [[12,1,0,16,8], [13,2,5,17,9], [14,3,6,18,10], [15,4,7,19,11]] : standardRows
+    for (let row = 0; row < 4; row++) {
+      const slots = claimMap.locator(`[data-row="${row}"]`)
+      expect(await slots.evaluateAll(elements => elements.map(element => Number(element.getAttribute('data-claim'))))).toEqual(printedRows[row])
+      for (const slot of await slots.all()) await expect(slot).toBeVisible()
+    }
+    const pathCounts: Record<string, number> = { Dealers: 17, 'Hit Squad': 25, Militants: 26, Racers: 25, Shadows: 26, Utopians: 0 }
+    await expect(claimMap.locator('polyline')).toHaveCount(pathCounts[type])
+    if (type === 'Dealers') {
+      await expect(claimMap.locator('polyline[data-from="2"][data-to="7"]')).toHaveAttribute('marker-mid', /url/)
+      await expect(claimMap.locator('polyline[data-from="12"][data-to="7"]')).toHaveCount(1)
+      await expect(claimMap.locator('polyline[data-from="6"][data-to="7"]')).toHaveCount(0)
+    }
+    if (['Hit Squad', 'Militants', 'Racers', 'Shadows'].includes(type)) {
+      await expect(claimMap.locator('polyline[data-from="2"][data-to="6"]')).toHaveCount(type === 'Shadows' ? 0 : 1)
+      await expect(claimMap.locator('polyline[data-from="5"][data-to="6"]')).toHaveCount(type === 'Racers' ? 0 : 1)
+      await expect(claimMap.locator('polyline[data-from="3"][data-to="7"]')).toHaveCount(['Militants', 'Racers'].includes(type) ? 0 : 1)
+    }
+    await claimMap.screenshot({ path: `test-results/claim-map-${type.toLowerCase().replaceAll(' ', '-')}.png`, style: '.campaign-sections { visibility: hidden !important; }' })
     const claims = []
     for (let i = 0; i < expected.claims.length; i++) {
       const name = expected.claims[i], count = expected.claims.filter(value => value === name).length
       const occurrence = expected.claims.slice(0, i + 1).filter(value => value === name).length
       const label = name + (count > 1 ? ' (' + occurrence + ')' : '')
-      await expect(dossier.getByRole('checkbox', { name: label, exact: true })).toBeVisible()
+      await expect(dossier.getByRole('button', { name: label, exact: true })).toBeVisible()
       const prefix = type.toLowerCase().replaceAll(' ', '-')
       claims.push({ catalogId: prefix + '-claim-' + (i + 1), notes: label })
     }
@@ -458,8 +504,8 @@ test('all six published crew menus persist every ability choice, upgrade track a
     await page.reload()
     await expect(dossier.getByLabel('Ability 1', { exact: true })).toHaveValue(abilities[0].catalogId)
     await expect(dossier.getByLabel('Upgrade marks 5', { exact: true })).toHaveValue('4')
-    await expect(dossier.getByRole('group', { name: 'Crew claims', exact: true }).getByRole('checkbox')).toHaveCount(expected.claims.length)
-    for (const checkbox of await dossier.getByRole('group', { name: 'Crew claims', exact: true }).getByRole('checkbox').all()) await expect(checkbox).toBeChecked()
+    await expect(dossier.getByRole('group', { name: 'Crew claims', exact: true }).getByRole('button')).toHaveCount(expected.claims.length)
+    for (const claim of await dossier.getByRole('group', { name: 'Crew claims', exact: true }).getByRole('button').all()) await expect(claim).toHaveAttribute('aria-pressed', 'true')
     await context.close()
   }
 })

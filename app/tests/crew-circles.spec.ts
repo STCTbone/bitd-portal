@@ -77,12 +77,15 @@ test('GM and two players share Racers and Utopians records, recover offline draf
  await dossier.getByLabel('Anomalies',{exact:true}).fill(utopian.anomalies);await dossier.getByLabel('Stacks earned since campaign start',{exact:true}).fill('20');await dossier.getByLabel('Lives ended since campaign start',{exact:true}).fill('10')
  await dossier.getByRole('button',{name:'Save crew changes',exact:true}).click();await expect(dossier.getByRole('status')).toHaveText('Crew saved.')
  await expect(dossier.getByLabel('Reviewed Utopian Circle',{exact:true})).toHaveValue('1')
+ await expect(dossier.getByRole('button', { name: 'Wellness Class', exact: true })).toBeEnabled()
+ for (const name of ['Donations', 'Reality Shift', 'Reality Tear']) await expect(dossier.getByRole('button', { name, exact: true })).toBeDisabled()
  for(const peer of peers){await expect(peer.getByLabel('Anomalies',{exact:true})).toHaveValue(utopian.anomalies);await expect(peer.getByLabel('Reviewed Utopian Circle',{exact:true})).toBeDisabled()}
  await dossier.getByRole('button',{name:'Add crew ability',exact:true}).click()
  await expect(dossier.getByLabel('Ability 1',{exact:true}).locator('option[value="utopians-remember-the-forgotten"]')).toHaveAttribute('disabled', '')
  for(const circle of [2,3,4]){
   if(circle===4){await dossier.getByLabel('Tier',{exact:true}).fill('3');await dossier.getByRole('checkbox',{name:'Major anomaly created',exact:true}).check()}
   await dossier.getByLabel('Reviewed Utopian Circle',{exact:true}).selectOption(String(circle))
+  await expect(dossier.getByRole('button', { name: circle === 2 ? 'Donations' : circle === 3 ? 'Reality Shift' : 'Reality Tear', exact: true })).toBeEnabled()
   await dossier.getByLabel(circle===2?'Second Circle truth':circle===3?'Third Circle truth':'Final Circle truth',{exact:true}).fill(circle===2?'Alien':circle===3?'Violent':'Terrifying')
   await dossier.getByRole('button',{name:'Save crew changes',exact:true}).click();await expect(dossier.getByRole('status')).toHaveText('Crew saved.')
  }
