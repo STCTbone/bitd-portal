@@ -31,7 +31,6 @@ export function CrewCircles({ values, change, canManage }: {
         {canManage && <button type="button" className="crew-secondary" onClick={() => editCircuit({ vehicles: circuit.vehicles.filter((_, i) => i !== index) })}>Remove racer vehicle {index + 1}</button>}
       </fieldset>)}
       {canManage && <button type="button" onClick={() => editCircuit({ vehicles: [...circuit.vehicles, { id: crypto.randomUUID(), name: 'New vehicle', edges: [], flaws: [], notes: '' }] })}>Add racer vehicle</button>}
-      <details className="rules-reference"><summary>Sources</summary><p><small>Sources: Blades ’68 v1.0.1, pp. 124–131; <a href={source} target="_blank" rel="noreferrer">official crew sheets v6, p. 4</a>.</small></p></details>
     </section>}
     {values.type === 'Utopians' && <section aria-label="Utopian campaign record">
       <h3>Utopian vision & Circles</h3>

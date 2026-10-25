@@ -127,6 +127,5 @@ function CampaignCrew({ campaign, canManage }: { campaign: string; canManage: bo
     </form>}
     {status && <p role="status" className="crew-save-status">{status}</p>}
     {error && <div role="alert" className="crew-error"><p>{error}</p><button type="button" disabled={busy} onClick={() => { void refresh(); setError('') }}>Retry crew refresh</button></div>}
-    <details className="rules-reference"><summary>Sources</summary><footer>Blades ’68 v1.0.1, pp. 88–90; official crew sheets v6.</footer></details>
   </section>
 }

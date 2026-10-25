@@ -4,7 +4,6 @@ const businessText = [
   ['product', 'Product'], ['supply', 'Supply notes'], ['demand', 'Demand notes'],
   ['distribution', 'Distribution and sales territory'], ['competitiveAdvantages', 'Competitive advantage notes'],
 ] as const
-const source = 'https://evilhat.com/wp-content/uploads/2026/07/Crew-Sheets-and-Playbooks.zip'
 
 /** Distinct records survive type corrections; only the active type is editable. */
 export function CrewBusiness({ values, change }: {
@@ -27,7 +26,6 @@ export function CrewBusiness({ values, change }: {
         {businessText.filter(([field]) => field !== 'product').map(([field, label]) => <label key={field}>{label}<textarea aria-label={label} maxLength={5000} rows={3} value={business[field]} onChange={event => editBusiness(field, event.target.value)} /></label>)}
       </div>
       <details className="rules-reference"><summary>Rules reference</summary><p className="crew-guidance">Supply, demand, competitive advantages and distribution progress left to right on the published tracks. The second Demand claim needs the second Supply or second Competitive Advantage claim. Losing a link makes dependent claims unavailable until restored.</p></details>
-      <details className="rules-reference"><summary>Sources</summary><small>Sources: Blades ’68 v1.0.1, pp. 98–105; <a href={source} target="_blank" rel="noreferrer">official crew sheets v6, p. 1</a>.</small></details>
     </section>}
     {values.type === 'Militants' && <section aria-label="Militants cause">
       <h3>Militants cause</h3>
@@ -40,7 +38,6 @@ export function CrewBusiness({ values, change }: {
           change('militantCause', { ...cause, enemies })
         }} /></label>)}
       </div>
-      <details className="rules-reference"><summary>Sources</summary><small>Sources: Blades ’68 v1.0.1, pp. 116–118; <a href={source} target="_blank" rel="noreferrer">official crew sheets v6, p. 3</a>.</small></details>
     </section>}
     {values.type !== 'Dealers' && hasBusiness && <details className="crew-retained">
       <summary>Retained Dealers business (inactive)</summary>

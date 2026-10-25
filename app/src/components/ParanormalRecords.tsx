@@ -41,7 +41,6 @@ export function ParanormalRecords({ data, editable, patch }: { data: CharacterDo
       {editable && <button onClick={() => change({ [key]: [...list, key === 'retainedEcho' ? { name: '', source: '', notes: '' } satisfies VersatileAbility : { name: '', source: '', notes: '', trait: '' } satisfies TravelerAbility] })}>Add {key === 'retainedEcho' ? 'retained Echo ability' : 'gained ability'}</button>}</>
   }
   return <section className="condition-records" aria-label="Paranormal records"><h4>{data.playbook} / Native records</h4>
-    <details className="rules-reference"><summary>Sources</summary><p>Playbooks v6, pages 9–12; Blades ’68 v1.0.1 pp. 334–340.</p></details>
     <p className="condition-saved">Saved paranormal operations: {saved.operations || '(none)'}</p>
     {data.sheet.resourceGuidance && <p>{data.sheet.resourceGuidance}</p>}
     <fieldset disabled={!editable || busy}><legend>Paranormal draft</legend>

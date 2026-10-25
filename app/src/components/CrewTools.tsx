@@ -57,6 +57,5 @@ export function CrewTools({ values, change, canManage }: {
       <label>Cohort Armor {index+1}<select aria-label={'Cohort Armor '+(index+1)} value={row.armor} onChange={e=>editCohort(index,{armor:e.target.value as CrewCohort['armor']})}>{['none','available','totaled'].map(value=><option key={value}>{value}</option>)}</select></label>
     </div>{canManage && <button type="button" className="crew-secondary" onClick={()=>change('cohorts',cohorts.filter((_,i)=>i!==index))}>Remove cohort {index+1}</button>}</fieldset>)}
     {canManage && <button type="button" onClick={()=>change('cohorts',[...cohorts,{id:crypto.randomUUID(),name:'New cohort',kind:'gang',types:'',edges:'',flaws:'',quality:values.tier,scale:values.tier,condition:'healthy',armor:'none',assignment:'',notes:''}])}>Add cohort</button>}
-    <details className="rules-reference"><summary>Sources</summary><p><small>Sources: official crew sheets v6, six crew pages; Blades ’68 v1.0.1 pp. 91–95, 97–149.</small></p></details>
   </div>
 }

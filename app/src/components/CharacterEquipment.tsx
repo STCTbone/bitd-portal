@@ -35,7 +35,6 @@ export function CharacterEquipment({ data, editable, patch }: { data: CharacterD
   function itemChange(i: number, changes: Partial<CharacterItem>) { change({ equipment: current.equipment.map((item, n) => i === n ? { ...item, ...changes } : item) }) }
   return <section aria-label="Equipment and advancement records" className="condition-records">
     <h4>07 / Equipment, wealth & advancement</h4>
-    <details className="rules-reference"><summary>Sources</summary><p className="dossier-source">{data.sheet.source}. Common and playbook items: current v6 sheet.</p></details>
     <p className="condition-saved" aria-live="polite">Saved: {data.loadout.mode} · {data.wealth.stacks} stacks · bank {data.wealth.bank} · playbook XP {data.xp.playbook}. Armor: {data.armor.kind}{data.armor.totaled ? ' · totaled' : ''}.</p>
     <fieldset disabled={!editable || busy}><legend>Equipment and advancement draft</legend>
       <h5>Quiet / Loud load</h5>
