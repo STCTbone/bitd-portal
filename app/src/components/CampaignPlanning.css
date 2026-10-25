@@ -27,6 +27,10 @@
 .campaign-planning [role=status] { color:#18504c; font-weight:700; }
 .planning-create { display:grid; gap:.75rem; max-width:36rem; border-top:2px solid #ef7358; margin-top:1.5rem; padding-top:1rem; }
 .planning-notes { white-space:pre-wrap; overflow-wrap:anywhere; }
+.approach-reference { width:100%; margin:.75rem 0; border-collapse:collapse; text-align:left; }
+.approach-reference th,.approach-reference td { padding:.5rem .6rem; border-bottom:1px solid #9caea2; vertical-align:top; }
+.approach-reference th { font-weight:700; }
+.approach-reference thead { background:#d6e2d1; }
 .campaign-planning footer { margin:1.5rem 0 0; padding-top:1rem; border-top:1px solid #9caea2; font-size:.8rem; line-height:1.5; }
 .planning-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
 .planning-card svg path { fill:#f3e3c4; stroke:#24515a; }
