@@ -31,16 +31,14 @@ export function CampaignSetup() {
     setPreview(null); setPhrase('')
   }
   return <section className="access-panel" id="campaign-setup" tabIndex={-1} aria-label="Campaign setup">
-    <p className="access-kicker">DELIBERATE GM CONTROLS</p><h2>Campaign setup</h2>
-    <p>New campaigns are empty. Loading or reloading never adds sample records. To start another empty campaign, use Switch campaign and Create campaign.</p>
-    <p>Optional Night Wire sample: invented ’68 fiction with two unclaimed Hounds, a Shadows crew, factions, clocks and shared notes. Published v6 sheet defaults supply capacities; no rewards, book secrets or artwork are imported. Players deliberately claim their sample character. Available only while game content is empty.</p>
+    <p className="access-kicker">GM CONTROLS</p><h2>Campaign setup</h2>
+    <p>Invented Night Wire sample: two unclaimed Hounds, a Shadows crew, factions, clocks and notes. Requires an empty campaign.</p>
     <div className="setup-actions"><button disabled={busy || Boolean(preview)} onClick={() => void review('sample')}>Review optional sample</button><button className="access-secondary" disabled={busy || Boolean(preview)} onClick={() => void review('clear')}>Review clocks, notes and markers clear</button></div>
-    <p>This scoped clear removes all campaign/score clock records, shared notes and map markers, including hidden clocks and transient drawings. It preserves sheets, history and uploads. It does not create a fresh campaign.</p>
+    <p>Clear all clocks (including hidden ones), shared notes and map markers. Sheets, history and uploads are kept.</p>
     {preview && <div className="setup-review" role="region" aria-label="Review campaign setup">
       <h3>{preview.action === 'sample' ? 'Review optional sample setup' : 'Review clocks, notes and markers clear'}</h3>
       <p>{preview.changes}</p><p>{preview.preserves}</p>
-      {preview.action === 'clear' && <p>Saved counts at preview: {preview.counts.clocks} clocks, {preview.counts.codex} shared notes, {preview.counts.map_tokens} map markers. Transient drawings, cursors and pings present when confirmed are also cleared.</p>}
-      <p>Game record changes invalidate this review. Review expires after 15 minutes. Confirmation applies once; retrying the same review recovers a lost response.</p>
+      {preview.action === 'clear' && <p>{preview.counts.clocks} clocks, {preview.counts.codex} shared notes, {preview.counts.map_tokens} map markers. Also clears drawings, cursors and pings.</p>}
       <label htmlFor="setup-confirmation">Confirmation phrase</label>
       <input id="setup-confirmation" value={phrase} onChange={event => setPhrase(event.target.value)} autoComplete="off" disabled={busy} />
       <small>Type {preview.action === 'sample' ? 'LOAD SAMPLE' : 'CLEAR WORKSPACE'} exactly to confirm these changes.</small>

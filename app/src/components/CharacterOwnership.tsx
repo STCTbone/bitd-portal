@@ -33,7 +33,6 @@ export function CharacterOwnership({ character, assign }: { character: Character
   return <section className="character-ownership" aria-label="Character ownership">
     <h3>Character ownership</h3>
     <p>Current owner: <strong>{character.owner_id ?? 'Unclaimed'}</strong></p>
-    <p>For recovery, ask the returning player to join with the player invitation and send you their new participant ID. Confirm their identity with your table before transferring. Rejoining alone cannot take an owned character.</p>
     <button type="button" onClick={() => void load()}>Refresh participant list</button>
     <label>Assign character to<select aria-label="Assign character to" value={owner} disabled={busy} onChange={e => { setOwner(e.target.value); setReview(null) }}>
       <option value="">Unclaimed · any campaign member may claim</option>

@@ -21,14 +21,13 @@ export function LoginGate() {
     <section className="access-panel" aria-label="Campaign access">
       <p className="access-kicker">CAMPAIGN TERMINAL · 01</p>
       <h2>Gather the crew</h2>
-      <p>{account && !account.is_anonymous ? 'Create another campaign or join with an invitation. Your account keeps your memberships across devices.' : 'You can also explore as a guest below. Guest access stays in this browser until you link Google.'}</p>
+      {(!account || account.is_anonymous) && <p>Or continue as a guest.</p>}
       {accessError && <div role="alert"><p>{accessError}</p><button disabled={busy} onClick={() => void refreshMembership()}>Retry campaign access</button></div>}
-      <details><summary>Returning after browser data loss?</summary><p>If you linked Google, sign in with the same Google account and open My campaigns. For an unlinked guest, join with the player invitation to get a new identity, then ask the GM to reassign your character to your new participant ID. Lost guest GM access needs the saved secret GM invitation or another GM. Keep invitations somewhere safe.</p></details>
+      <details><summary>Returning after browser data loss?</summary><p>Sign in with the same Google account and open My campaigns. If you lose an unlinked guest account, rejoin with an invitation and ask your GM to transfer your character using your new participant ID. To recover guest GM access, use the secret GM invitation or ask another GM.</p></details>
       <form onSubmit={event => void submit(event, () => createCampaign(name))}>
         <label htmlFor="campaign-name">Campaign name</label>
         <input id="campaign-name" value={name} onChange={event => setName(event.target.value)} maxLength={100} required placeholder="A new signal in Doskvol" />
         <button disabled={busy || !name.trim()}>Create campaign</button>
-        <small>Start empty as the Game Master, then share invitations.</small>
       </form>
       <div className="access-divider">OR JOIN YOUR TABLE</div>
       <form onSubmit={event => void submit(event, () => joinCampaign(invitation))}>
@@ -38,6 +37,5 @@ export function LoginGate() {
       </form>
       {error && <p role="alert" className="access-error">{error}</p>}
     </section>
-    <footer>Keep your secret GM invitation private. A player invitation grants player access.</footer>
   </main>
 }

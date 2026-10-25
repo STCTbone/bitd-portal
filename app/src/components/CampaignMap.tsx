@@ -54,7 +54,7 @@ function TokenCard({ token, index, gm, options, mutate }: { token: MapToken; ind
   return <article className="map-token-card" aria-label={`Token ${token.label}`}>
     <h4><span className="map-token-number">{index + 1}</span> {token.label}</h4>
     <p>Saved position: {token.x}%, {token.y}%</p>
-    <small>{token.character_id ? 'Movement follows current character ownership.' : token.controller_id ? `Assigned participant: ${token.controller_id}` : 'GM movement only.'}</small>
+    <small>{token.character_id ? 'Character token' : token.controller_id ? `Assigned participant: ${token.controller_id}` : 'GM movement only'}</small>
     {token.can_move && <form onSubmit={event => void saveMove(event)}>
       <div className="map-coordinate-fields"><label>Horizontal position<input aria-label="Horizontal position" type="number" min="0" max="100" step="0.1" required disabled={busy} value={move?.x ?? token.x} onChange={event => setMove({ ...moveDraft(), x: event.target.value })} /></label>
       <label>Vertical position<input aria-label="Vertical position" type="number" min="0" max="100" step="0.1" required disabled={busy} value={move?.y ?? token.y} onChange={event => setMove({ ...moveDraft(), y: event.target.value })} /></label></div>
@@ -120,15 +120,14 @@ export function CampaignMap() {
   }
   return <section className="access-panel campaign-map" id="campaign-map" tabIndex={-1} aria-label="Campaign map">
     <p className="access-kicker">SHARED TABLE</p><h2>Campaign map</h2>
-    <p>Use Show cursor, Ping map or Draw on map to share temporary gestures. Cursors fade after 3 seconds, pings after 4 and drawings after 8; leaving clears your activity. Coordinates are percentages of the image, from its top left. Use each permitted token’s position controls to move it. Saved changes appear for the whole table.</p>
+    <p>Choose a map tool, then click or drag on the map.</p>
     {map.error && <div role="alert">{map.error}<button onClick={() => void map.refresh()}>Retry map sync</button></div>}
     {selected ? <MapCollaboration key={`${campaign}:${selected.id}`} campaign={campaign} asset={selected.id}>{overlay => <MapSurface asset={selected} tokens={map.state?.tokens ?? []}>{overlay}</MapSurface>}</MapCollaboration> : <p role="status">{map.state?.map?.asset_id ? 'Selected map unavailable. Its image may have been unshared or removed.' : 'No map selected. The GM can upload or select a shared campaign image.'}</p>}
-    <p className="map-access-note">Protected images recheck current access; previews expire within 10 seconds when access cannot be renewed.</p>
     {gm && <div className="map-gm-tools">
       <label>Saved campaign image<select aria-label="Saved campaign image" disabled={busy} value={choice?.asset ?? map.state?.map?.asset_id ?? ''} onChange={event => setChoice({ asset: event.target.value, revision: choice?.revision ?? map.state?.map?.revision ?? 0 })}><option value="">No map</option>{images.map(asset => <option key={asset.id} value={asset.id}>{asset.title}</option>)}</select></label>
       <button disabled={busy || !choice} onClick={() => void run(selectMap)}>Use selected map</button>
       <label>Upload map image<input aria-label="Upload map image" type="file" disabled={busy || !!reservation} accept="image/png,image/jpeg,image/webp,image/gif" onChange={event => { setFile(event.target.files?.[0] ?? null); setError('') }} /></label>
-      <small>PNG, JPEG, WebP or GIF; maximum 10 MiB. Uploading here explicitly shares the image with this campaign.</small>
+      <small>Uploads are shared with the campaign.</small>
       <button disabled={busy || !file} onClick={() => void run(upload)}>Upload and use map</button>
       <button disabled={busy} onClick={() => void loadParticipants()}>Refresh token participants</button>
       <form onSubmit={event => { event.preventDefault(); void run(async () => { await map.mutate('create_map_token', { p_campaign: campaign, p_label: label, ...assignment(authority) }); setLabel('') }) }}>

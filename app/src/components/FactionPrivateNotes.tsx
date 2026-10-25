@@ -23,7 +23,7 @@ function NoteEditor({ faction, note, saved }: { faction: FactionRecord; note: Pr
   return <>
     <label>GM-private notes<textarea aria-label="GM-private notes" disabled={busy} value={draft} onChange={e => setDraft(e.target.value)} /></label>
     <button disabled={busy || draft === base.note} onClick={save}>Save private notes</button>
-    <p>Only GMs can retrieve these notes. To share a clue, copy the chosen words into the field below. Publishing adds only that text to Known information. To withdraw it from the current dossier, edit Known information; previously read information cannot be recalled.</p>
+    <p>Only the text below will be shared with players.</p>
     <label>Selected text to share<textarea aria-label="Selected text to share" disabled={busy} value={selected} onChange={e => setSelected(e.target.value)} /></label>
     <button disabled={busy || !selected.trim()} onClick={publish}>Publish selected text</button>
     {message && <p role="status">{message}</p>}

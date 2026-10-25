@@ -13,7 +13,7 @@ export function CrewTools({ values, change, canManage }: {
   const text = (label:string,value:string,set:(value:string)=>void,max=5000) => <label key={label}>{label}<input aria-label={label} value={value} maxLength={max} onChange={e=>set(e.target.value)} /></label>
   return <div className="crew-tools">
     <h3>Abilities, upgrades & claims</h3>
-    <p className="crew-guidance">Selections are manual records. Review costs, choices and effects with the GM; saving never changes character Keys, load, XP, Heat or resources. Clear incompatible selections before changing crew type. Utopian abilities and claims require the reviewed Circle recorded above.</p>
+    <p>Clear incompatible abilities and claims before changing crew type.</p>
     <h4>Crew abilities</h4>
     {abilities.map((row,index)=>{
       const definition = choices.abilities.find(item=>item.id===row.catalogId)
@@ -42,7 +42,7 @@ export function CrewTools({ values, change, canManage }: {
       {canManage && <button type="button" className="crew-secondary" onClick={()=>change('upgrades',upgrades.filter((_,i)=>i!==index))}>Remove upgrade {index+1}</button>}
     </div>)}
     {canManage && <button type="button" onClick={()=>change('upgrades',[...upgrades,{id:crypto.randomUUID(),catalogId:choices.upgrades[0].id,marks:0,notes:''}])}>Add crew upgrade</button>}
-    <h4>Claims</h4><p>Editable claim records; map adjacency and availability are GM decisions. Repeated names identify separate printed claim spaces.</p>
+    <h4>Claims</h4>
     <div className="crew-claims" role="group" aria-label="Crew claims">{choices.claims.map((claim)=>{
       const siblings=choices.claims.filter(item=>item.name===claim.name)
       const label=claim.name+(siblings.length>1?' ('+(siblings.findIndex(item=>item.id===claim.id)+1)+')':'')
@@ -52,8 +52,8 @@ export function CrewTools({ values, change, canManage }: {
       </div>
     })}</div>
     {claims.filter(row=>!choices.claims.some(item=>item.id===row.catalogId)).map(row=><div key={row.catalogId}><p>Previous crew claim: {row.catalogId}</p>{canManage&&<button type="button" onClick={()=>change('claims',claims.filter(item=>item.catalogId!==row.catalogId))}>Remove previous claim {row.catalogId}</button>}</div>)}
-    <h3>Cohorts</h3><p>Record current Quality and scale deliberately; Tier edits never silently change cohorts. Gang types: Eggheads, Hustlers, Runners, Infiltrators, Muscle. Expert types describe their expertise. Edges: Fearsome, Independent, Loyal, Resourceful, Tenacious, Vigilant. Flaws: Clumsy, Hedonistic, Panicky, Principled, Ruthless, Superstitious. Vehicle and ability exceptions can be recorded in notes.</p>
-    {cohorts.map((row,index)=><fieldset className="crew-cohort" key={row.id}><legend>Cohort {index+1}</legend><small>Reference: {row.id}</small><div className="crew-fields">
+    <h3>Cohorts</h3><details className="rules-reference"><summary>Cohort reference</summary><p>Gang types: Eggheads, Hustlers, Runners, Infiltrators, Muscle. Expert types describe their expertise. Edges: Fearsome, Independent, Loyal, Resourceful, Tenacious, Vigilant. Flaws: Clumsy, Hedonistic, Panicky, Principled, Ruthless, Superstitious. Vehicle and ability exceptions can be recorded in notes.</p></details>
+    {cohorts.map((row,index)=><fieldset className="crew-cohort" key={row.id}><legend>Cohort {index+1}</legend><div className="crew-fields">
       {text('Cohort name '+(index+1),row.name,value=>editCohort(index,{name:value}),100)}
       <label>Cohort kind {index+1}<select aria-label={'Cohort kind '+(index+1)} value={row.kind} onChange={e=>editCohort(index,{kind:e.target.value as CrewCohort['kind']})}><option value="gang">Gang</option><option value="expert">Expert</option><option value="vehicle">Vehicle (ability exception)</option></select></label>
       {(['types','edges','flaws','assignment','notes'] as const).map(field=>text('Cohort '+field+' '+(index+1),row[field],value=>editCohort(index,{[field]:value})))}
@@ -62,6 +62,6 @@ export function CrewTools({ values, change, canManage }: {
       <label>Cohort Armor {index+1}<select aria-label={'Cohort Armor '+(index+1)} value={row.armor} onChange={e=>editCohort(index,{armor:e.target.value as CrewCohort['armor']})}>{['none','available','totaled'].map(value=><option key={value}>{value}</option>)}</select></label>
     </div>{canManage && <button type="button" className="crew-secondary" onClick={()=>change('cohorts',cohorts.filter((_,i)=>i!==index))}>Remove cohort {index+1}</button>}</fieldset>)}
     {canManage && <button type="button" onClick={()=>change('cohorts',[...cohorts,{id:crypto.randomUUID(),name:'New cohort',kind:'gang',types:'',edges:'',flaws:'',quality:values.tier,scale:values.tier,condition:'healthy',armor:'none',assignment:'',notes:''}])}>Add cohort</button>}
-    <p><small>Sources: official crew sheets v6, six crew pages; Blades ’68 v1.0.1 pp. 91–95, 97–149. Reviewed Utopian Circles are enforced; advancement consequences and claim-map connections stay with the GM.</small></p>
+    <details className="rules-reference"><summary>Sources</summary><p><small>Sources: official crew sheets v6, six crew pages; Blades ’68 v1.0.1 pp. 91–95, 97–149.</small></p></details>
   </div>
 }

@@ -20,18 +20,18 @@ export function CrewBusiness({ values, change }: {
   return <div className="crew-business">
     {values.type === 'Dealers' && <section aria-label="Dealers business">
       <h3>Dealers business</h3>
-      <p className="crew-guidance">Record your product, available units and current business arrangements. Dealers begin with one Turf instead of hunting grounds; record its district in Distribution and sales territory. Review and record claims in Crew tools below.</p>
+      <details className="rules-reference"><summary>Rules reference</summary><p>Dealers begin with one Turf instead of hunting grounds; record its district in Distribution and sales territory.</p></details>
       <div className="crew-fields">
         <label>Product<textarea aria-label="Product" maxLength={5000} rows={2} value={business.product} onChange={event => editBusiness('product', event.target.value)} /></label>
-        <label>Product units<input aria-label="Product units" type="number" min={0} max={9999} step={1} required value={business.units} onChange={event => editBusiness('units', event.target.valueAsNumber)} /><small>Current recorded quantity; the sheet’s printed marks are a writing aid.</small></label>
+        <label>Product units<input aria-label="Product units" type="number" min={0} max={9999} step={1} required value={business.units} onChange={event => editBusiness('units', event.target.valueAsNumber)} /></label>
         {businessText.filter(([field]) => field !== 'product').map(([field, label]) => <label key={field}>{label}<textarea aria-label={label} maxLength={5000} rows={3} value={business[field]} onChange={event => editBusiness(field, event.target.value)} /></label>)}
       </div>
-      <p className="crew-guidance">Supply, demand, competitive advantages and distribution progress left to right on the published tracks. The second Demand claim needs the second Supply or second Competitive Advantage claim. Losing a link makes dependent claims unavailable until restored. The GM records availability here and confirms units, stacks, Heat and other consequences separately.</p>
-      <small>Sources: Blades ’68 v1.0.1, pp. 98–105; <a href={source} target="_blank" rel="noreferrer">official crew sheets v6, p. 1</a>. Save specialized edits before switching away; retained records stay available.</small>
+      <details className="rules-reference"><summary>Rules reference</summary><p className="crew-guidance">Supply, demand, competitive advantages and distribution progress left to right on the published tracks. The second Demand claim needs the second Supply or second Competitive Advantage claim. Losing a link makes dependent claims unavailable until restored.</p></details>
+      <details className="rules-reference"><summary>Sources</summary><small>Sources: Blades ’68 v1.0.1, pp. 98–105; <a href={source} target="_blank" rel="noreferrer">official crew sheets v6, p. 1</a>.</small></details>
     </section>}
     {values.type === 'Militants' && <section aria-label="Militants cause">
       <h3>Militants cause</h3>
-      <p className="crew-guidance">Define the cause and choose two Enemies of the Cause instead of hunting grounds. Preferred operations: Assassination, Demonstration, Sabotage or Battle. The GM reviews bonuses and free activities against those enemies separately.</p>
+      <details className="rules-reference"><summary>Rules reference</summary><p className="crew-guidance">Define the cause and choose two Enemies of the Cause instead of hunting grounds. Preferred operations: Assassination, Demonstration, Sabotage or Battle.</p></details>
       <div className="crew-fields">
         <label>Cause<textarea aria-label="Cause" maxLength={5000} rows={3} value={cause.cause} onChange={event => change('militantCause', { ...cause, cause: event.target.value })} /></label>
         {cause.enemies.map((enemy, index) => <label key={index}>Enemy of the Cause {index + 1}<textarea aria-label={`Enemy of the Cause ${index + 1}`} maxLength={5000} rows={3} value={enemy} onChange={event => {
@@ -40,7 +40,7 @@ export function CrewBusiness({ values, change }: {
           change('militantCause', { ...cause, enemies })
         }} /></label>)}
       </div>
-      <small>Sources: Blades ’68 v1.0.1, pp. 116–118; <a href={source} target="_blank" rel="noreferrer">official crew sheets v6, p. 3</a>. Partial entries can be saved and corrected. Save specialized edits before switching away.</small>
+      <details className="rules-reference"><summary>Sources</summary><small>Sources: Blades ’68 v1.0.1, pp. 116–118; <a href={source} target="_blank" rel="noreferrer">official crew sheets v6, p. 3</a>.</small></details>
     </section>}
     {values.type !== 'Dealers' && hasBusiness && <details className="crew-retained">
       <summary>Retained Dealers business (inactive)</summary>

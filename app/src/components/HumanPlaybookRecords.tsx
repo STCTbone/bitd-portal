@@ -33,8 +33,7 @@ export function HumanPlaybookRecords({ data, editable, patch }: { data: Characte
   const check = (label: string, value: boolean, save: (value: boolean) => void) => <label key={label} className="dossier-check"><input aria-label={label} type="checkbox" checked={value} onChange={e => save(e.target.checked)} />{label}</label>
   return <section aria-label="Playbook records" className="condition-records">
     <h4>{data.playbook} / specialized records</h4>
-    <p className="dossier-source">{data.sheet.source}. Record table-approved outcomes explicitly. Drafts stay local until reviewed and confirmed.</p>
-    <details className="condition-saved"><summary>Saved playbook records</summary><p>{describe(data[field])}</p></details>
+    <details className="condition-saved"><summary>Saved playbook records</summary></details>
     <fieldset disabled={!editable || busy}><legend>Playbook record draft</legend>
       {field === 'operative' && <>
         <h5>Cover, Control & operations</h5>
@@ -47,7 +46,6 @@ export function HumanPlaybookRecords({ data, editable, patch }: { data: Characte
           {check('Dead Drop free asset activity used', operative.dropAssetUsed, dropAssetUsed => change({ operative: { dropAssetUsed } }))}
           {check('Sleeper Agents used this score', operative.sleeperUsed, sleeperUsed => change({ operative: { sleeperUsed } }))}
         </div>
-        <p>Starting backing and Double Agent obligations are recorded in Backing factions above.</p>
       </>}
       {field === 'radical' && <>
         <div className="dossier-grid">
@@ -57,10 +55,10 @@ export function HumanPlaybookRecords({ data, editable, patch }: { data: Characte
           {text('Praxis next Personal Business', radical.praxis, praxis => change({ radical: { praxis } }), true)}
           {text('Total Dedication decisions', radical.dedication, dedication => change({ radical: { dedication } }), true)}
         </div>
-        <h5>Explosive bandoliers · three slots each</h5><p>Record explosives used from each bandolier. Each bandolier costs 1 load; mark it carried in equipment. Fine explosives have crew Tier +1 Quality; scale depends on the fiction. Refill during downtime when you have reasonable access to your supplier, recording the reset deliberately. Explosives add +1 Heat in Aftermath; record the agreed change separately.</p>
-        <p>Suggestions: {data.sheet.explosives?.join(' · ')}. Custom explosives remain editable.</p>
+        <h5>Explosive bandoliers · three slots each</h5><details className="rules-reference"><summary>Rules reference</summary><p>Record explosives used from each bandolier. Each bandolier costs 1 load; mark it carried in equipment. Fine explosives have crew Tier +1 Quality; scale depends on the fiction. Refill during downtime when you have reasonable access to your supplier. Explosives add +1 Heat in Aftermath.</p></details>
+        <p>Suggestions: {data.sheet.explosives?.join(' · ')}.</p>
         <div className="dossier-grid">{radical.bandoliers.map((slots, i) => slots.map((slot, j) => text(`Bandolier ${i + 1} slot ${j + 1}`, slot, value => change({ radical: { bandoliers: radical.bandoliers.map((s, n) => n === i ? s.map((v, m) => m === j ? value : v) : s) } }))))}</div>
-        <h5>Revolutionary works</h5><p>Pamphleteer uses four-segment projects. At most four completed works circulate effectively. Coordinate same-list edits. Record each work’s contribution to revolutionary projects in Personal Business; a work cannot write another work.</p>
+        <h5>Revolutionary works</h5><details className="rules-reference"><summary>Rules reference</summary><p>Pamphleteer uses four-segment projects. At most four completed works circulate effectively. Record each work’s contribution to revolutionary projects in Personal Business; a work cannot write another work.</p></details>
         {radical.works.map((work, i) => {
           const save = (changes: Partial<typeof work>) => change({ radical: { works: radical.works.map((w, n) => n === i ? { ...w, ...changes } : w) } })
           return <div key={i} className="dossier-grid dossier-row">
@@ -75,7 +73,7 @@ export function HumanPlaybookRecords({ data, editable, patch }: { data: Characte
         {editable && <button disabled={radical.works.length >= 30} onClick={() => change({ radical: { works: [...radical.works, { name: '', progress: 0, circulating: false, contribution: '', notes: '' }] } })}>Add revolutionary work</button>}
       </>}
       {field === 'veteran' && <>
-        <p>You start with one deadlocked Key; name it and its former Key in Condition records. Permanent service damage is separate from temporary Harm. Something that helps and assistance record your own circumstances; no automatic penalty is imposed. Creative Community’s hobby vice and civilian relationships stay separate from your ordinary vice.</p>
+        <details className="rules-reference"><summary>Rules reference</summary><p>You start with one deadlocked Key; name it and its former Key in Condition records. Permanent service damage is separate from temporary Harm. Something that helps and assistance record your own circumstances. Creative Community’s hobby vice and civilian relationships stay separate from your ordinary vice.</p></details>
         <div className="dossier-grid">
           {text('Tours of duty', veteran.tours, tours => change({ veteran: { tours } }), false, data.sheet.backgroundSuggestions)}
           {text('Permanent damage', veteran.damage, damage => change({ veteran: { damage } }), true)}
@@ -88,7 +86,7 @@ export function HumanPlaybookRecords({ data, editable, patch }: { data: Characte
     </fieldset>
     {editable && Object.keys(draft).length > 0 && <>
       {!review && <button disabled={busy} onClick={() => setReview(true)}>Review playbook records</button>}
-      {review && <div className="condition-review" role="region" aria-label="Review playbook records"><h5>Review entered changes</h5><p>Only changed subfields below will be saved. Check consequences with your table. Bandoliers and works are each saved as a complete list; coordinate edits to the same list.</p><dl>{Object.entries(draft).map(([key, value]) => <div key={key}><dt>{data.playbook}</dt><dd>Saved: {describe(data[key as keyof HumanPlaybookPatch])}<br />Proposed: {describe(value)}</dd></div>)}</dl><button disabled={busy} onClick={() => void confirm()}>{busy ? 'Saving playbook records…' : error ? 'Retry playbook records' : 'Confirm playbook records'}</button><button disabled={busy} onClick={() => setReview(false)}>Keep editing playbook records</button></div>}
+      {review && <div className="condition-review" role="region" aria-label="Review playbook records"><h5>Review entered changes</h5><dl>{Object.entries(draft).map(([key, value]) => <div key={key}><dt>{data.playbook}</dt><dd>Saved: {describe(data[key as keyof HumanPlaybookPatch])}<br />Proposed: {describe(value)}</dd></div>)}</dl><button disabled={busy} onClick={() => void confirm()}>{busy ? 'Saving playbook records…' : error ? 'Retry playbook records' : 'Confirm playbook records'}</button><button disabled={busy} onClick={() => setReview(false)}>Keep editing playbook records</button></div>}
       <button disabled={busy} onClick={() => { setDraft({}); setReview(false); setError('') }}>Discard playbook records</button>
     </>}
     {error && <p role="alert" className="dossier-error">{error}</p>}

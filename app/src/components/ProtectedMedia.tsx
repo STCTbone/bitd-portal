@@ -59,7 +59,7 @@ function AssetUpload({ kind, characterId = null, name, onSaved }: { kind?: 'port
 export function CharacterMedia({ character, editable }: { character: CharacterRecord; editable: boolean }) {
   const library = useMedia()
   const [error, setError] = useState('')
-  return <section aria-label="Character art" className="character-media"><h4>Portrait & avatar</h4><p>Campaign members can view saved art. PNG, JPEG, WebP or GIF; maximum 10 MiB.</p>
+  return <section aria-label="Character art" className="character-media"><h4>Portrait & avatar</h4>
     {error && <p role="alert">{error}</p>}
     <div className="character-media-grid">{(['portrait', 'avatar'] as const).map(kind => {
       const selected = library.art.find(s => s.character_id === character.id && s.kind === kind)

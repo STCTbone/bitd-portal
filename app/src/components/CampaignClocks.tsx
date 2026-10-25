@@ -19,7 +19,7 @@ function Clocks({ campaign, canManage }: { campaign: string; canManage: boolean 
     finally { setBusy(false) }
   }
   return <section className="campaign-clocks" id="campaign-clocks" tabIndex={-1} aria-label="Campaign clocks">
-    <header><p className="clock-kicker">SITUATIONS / PROGRESS / CONSEQUENCES</p><h2>Campaign clocks</h2><p>{canManage ? 'New clocks start hidden. Share only the names and notes you want players to receive.' : 'Clocks deliberately shared by your Game Master.'}</p></header>
+    <header><p className="clock-kicker">SITUATIONS / PROGRESS / CONSEQUENCES</p><h2>Campaign clocks</h2></header>
     {state.error && <div role="alert"><p>{state.error}</p><button onClick={() => { void state.refresh() }}>Retry clock refresh</button></div>}
     {!state.hasSnapshot && !state.error && <p role="status">Loading clocks…</p>}
     {state.hasSnapshot && state.clocks.length === 0 && <p>{canManage ? 'No clocks have been created.' : 'No clocks are shared with you.'}</p>}
@@ -30,7 +30,6 @@ function Clocks({ campaign, canManage }: { campaign: string; canManage: boolean 
       <button disabled={busy} type="submit">Create clock</button>
     </form>}
     {error && <p role="alert">{error}</p>}
-    <footer>Blades ’68 v1.0.1, pp. 166, 173, 191: negotiated projects and 4 / 6 / 8 / 10 / 12-segment examples. Progress is a manual record. Completing a clock applies no campaign consequences. Score clocks can be linked from the score workspace when available.</footer>
   </section>
 }
 function ClockCard({ row, canManage, unavailable, onSaved, onRemoved, refresh }: {

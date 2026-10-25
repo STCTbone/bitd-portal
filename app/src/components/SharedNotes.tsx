@@ -18,7 +18,7 @@ function Notes({ campaign }: { campaign: string }) {
     finally { setBusy(false) }
   }
   return <section className="shared-notes" id="campaign-notes" tabIndex={-1} aria-label="Shared campaign notes">
-    <header><p className="note-kicker">PEOPLE / PLACES / ITEMS / FACTIONS / LORE</p><h2>Shared campaign notes</h2><p>The table’s collective reference. Everyone in this campaign can read, edit and remove these notes.</p></header>
+    <header><p className="note-kicker">PEOPLE / PLACES / ITEMS / FACTIONS / LORE</p><h2>Shared campaign notes</h2></header>
     {state.error && <div role="alert"><p>{state.error}</p><button onClick={() => { void state.refresh() }}>Retry note refresh</button></div>}
     {!state.ready && !state.error && <p role="status">Loading shared notes…</p>}
     {state.ready && <>

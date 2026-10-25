@@ -35,7 +35,6 @@ function Editor({ faction, isGM, saved }: { faction: FactionRecord; isGM: boolea
   return <article className="faction-editor" aria-label="Faction dossier">
     <h3>{faction.name}</h3>
     {faction.source && <p className="faction-source">{faction.source}. <a href="https://evilhat.com/wp-content/uploads/2026/06/b68_playergazette_v4.pdf" target="_blank" rel="noreferrer">Published reference</a></p>}
-    <p>Tier, Hold and status are editable campaign records. Status describes the crew’s relationship; backing factions belong to individual characters.</p>
     <label>Name<input disabled={!isGM || saving} value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} /></label>
     <label>Description<textarea aria-label="Description" disabled={!isGM || saving} value={draft.description} onChange={e => setDraft({ ...draft, description: e.target.value })} /></label>
     <div className="faction-columns">
@@ -101,8 +100,7 @@ export function FactionDossier() {
   }
   return <section className="access-panel factions" id="campaign-factions" tabIndex={-1} aria-label="Factions">
     <p className="access-kicker">DOSKVOL / FACTION ROLODEX</p><h2>Factions</h2>
-    <p>Public dossiers are visible to campaign members. GMs manage the faction roster and public facts; every participant can edit shared notes.</p>
-    {!factions.length ? <><p>No factions have been added.</p>{session.role === 'gm' && <><p>Optionally add the current 56-faction Player Gazette v4 roster. This adds public reference descriptions, Tier and Hold, with neutral crew status. It does not create character backing relationships or add GM secrets.</p><button disabled={busy} onClick={initialize}>Add Blades ’68 Gazette factions</button></>}</> : <>
+    {!factions.length ? <><p>No factions have been added.</p>{session.role === 'gm' && <><p>Add the 56-faction Player Gazette roster with neutral crew status.</p><button disabled={busy} onClick={initialize}>Add Blades ’68 Gazette factions</button></>}</> : <>
       <p>{factions.length} factions</p>
       <label>Find a faction<input type="search" value={search} onChange={e => setSearch(e.target.value)} /></label>
       <div className="faction-layout"><nav aria-label="Faction list">{factions.filter(f => f.name.toLowerCase().includes(search.toLowerCase())).map(f => <button key={f.id} aria-pressed={selected === f.id} onClick={() => setSelected(f.id)}>{f.name}</button>)}</nav>

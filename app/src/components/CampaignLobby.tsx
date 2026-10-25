@@ -84,19 +84,17 @@ export function CampaignLobby() {
     {panel('campaign-account', <><AccountPanel />
     <section className="access-panel" aria-label="Campaign overview">
       <p className="access-kicker">CAMPAIGN ACCESS</p><h2>Your campaign workspace</h2>
-      <p>Fresh campaigns start without sample characters, crew, factions, or clocks.</p>
       {session.role === 'gm' && invitations && <div className="invitation-list">
         <label htmlFor="player-invite">Player invitation</label>
         <input id="player-invite" readOnly value={invitations.player} onFocus={event => event.target.select()} />
-        <small>Share this with your players.</small>
         <label htmlFor="gm-invite">Secret GM invitation</label>
         <input id="gm-invite" readOnly value={invitations.gm} onFocus={event => event.target.select()} />
-        <small>Grants full GM authority. Share only with another GM.</small>
+        <small>For other GMs only.</small>
       </div>}
       <label htmlFor="participant-id">Your participant ID</label>
       <input id="participant-id" readOnly value={session.userId} onFocus={event => event.target.select()} />
-      <small>For character recovery, send this ID to your GM after rejoining. It identifies this browser identity; it grants no access by itself.</small>
-      <details><summary>Recover campaign or character access</summary><p>After linking Google, sign in with the same Google account on another device and open My campaigns. Switching campaigns keeps your identity. If an unlinked guest loses browser access, rejoin with an invitation and ask the GM to assign the character to the new participant ID. Your previous identity keeps ownership until that transfer is confirmed. Lost guest GM access needs the secret GM invitation or another GM.</p></details>
+      <small>Use this ID for character recovery.</small>
+      <details><summary>Recover campaign or character access</summary><p>Sign in with the same Google account and open My campaigns. If you lose an unlinked guest account, rejoin with an invitation and ask your GM to transfer your character using your new participant ID. To recover guest GM access, use the secret GM invitation or ask another GM.</p></details>
       {error && <p role="alert" className="access-error">{error}</p>}
       <button className="access-secondary" onClick={leaveCampaign}>Switch campaign</button>
     </section></>)}

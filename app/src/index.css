@@ -215,3 +215,26 @@
 }
 .access-page section[tabindex="-1"] { scroll-margin-top:1rem; }
 .access-page section[tabindex="-1"]:focus { outline:3px solid #e9be65; outline-offset:4px; }
+
+.rules-reference {
+  margin: .75rem 0;
+  padding: .25rem .8rem;
+  color: #172e36;
+  background: #ede8d5;
+  border: 1px solid #8aaba1;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+.rules-reference > summary {
+  min-height: 40px;
+  align-content: center;
+  cursor: pointer;
+  font-weight: 700;
+}
+.rules-reference > summary:focus-visible {
+  outline: 3px solid #cf4e2d;
+  outline-offset: 3px;
+}
+.rules-reference .dossier-source { padding: 0; background: transparent; }
+.character-dossier > .rules-reference { margin: 1rem; }

@@ -39,7 +39,7 @@ export function CompanionRecords({ data, editable, patch }: { data: CharacterDos
   const operationsField = field === 'sparkmind' ? 'intellectual' : field === 'resonanceEntity' ? 'paranormalist' : 'swinger'
   return <section aria-label="Companion records" className="condition-records">
     <h4>{title}</h4>
-    <p>Expert playbook cohort. Quality is crew Tier +1 when its expertise applies. It can act, join group actions and help during downtime; it cannot perform secondary scores. Conditions, recovery and outcomes are recorded deliberately with the table.</p>
+    <details className="rules-reference"><summary>Rules reference</summary><p>Expert playbook cohort. Quality is crew Tier +1 when its expertise applies. It can act, join group actions and help during downtime; it cannot perform secondary scores.</p></details>
     <p>Accepted companion: {data[field]?.name || '(unnamed)'} · {data[field]?.impaired ? 'Impaired' : data[field]?.broken ? 'Broken' : data[field]?.weak ? 'Weak' : 'No conditions marked'}. {data[field]?.notes}</p>
     <fieldset disabled={!editable || busy}>
       <div className="dossier-grid">
@@ -50,7 +50,7 @@ export function CompanionRecords({ data, editable, patch }: { data: CharacterDos
       </div>
       <div className="dossier-options">{(['weak', 'impaired', 'broken'] as const).map(condition => check(`Companion ${condition}`, companion[condition], value => change({ [field]: { [condition]: value } })))}</div>
       {field === 'sparkmind' && <>
-        <p>Research gathers information; Analysis covers study and invention; Ingress covers system hacking. Small housing is portable but less powerful; Large is room-sized, stronger and immobile. Choose one initial expertise. Each Advanced Sparkmind selection adds a type or edge or removes a flaw, up to two selections. Edit edges/flaws above to record the result.</p>
+        <details className="rules-reference"><summary>Rules reference</summary><p>Research gathers information; Analysis covers study and invention; Ingress covers system hacking. Small housing is portable but less powerful; Large is room-sized, stronger and immobile. Choose one initial expertise. Each Advanced Sparkmind selection adds a type or edge or removes a flaw, up to two selections.</p></details>
         <div className="dossier-grid">
           {text('Fields of study', intellectual.fieldsOfStudy, fieldsOfStudy => change({ intellectual: { fieldsOfStudy } }), false, data.sheet.backgroundSuggestions)}
           {select('Sparkmind housing', sparkmind.housing, ['', 'Small', 'Large'], housing => change({ sparkmind: { housing: housing as Sparkmind['housing'] } }))}
@@ -63,7 +63,7 @@ export function CompanionRecords({ data, editable, patch }: { data: CharacterDos
         {text('Gadget load and crafting decisions', intellectual.gadgetDecisions, gadgetDecisions => change({ intellectual: { gadgetDecisions } }), true)}
       </>}
       {field === 'resonanceEntity' && <>
-        <p>Expert: Paranormal Assistant — research, equipment handling, field support and similar agreed help; fighting is outside its ordinary expertise. The entity inhabits the resonance field and may manifest weakly in the physical world. It is vulnerable to paranormal and electroplasmic effects. Its Armor below is separate from your own Armor and Echo Projection.</p>
+        <details className="rules-reference"><summary>Rules reference</summary><p>Expert: Paranormal Assistant — research, equipment handling, field support and similar agreed help; fighting is outside its ordinary expertise. The entity inhabits the resonance field and may manifest weakly in the physical world. It is vulnerable to paranormal and electroplasmic effects. Its Armor below is separate from your own Armor and Echo Projection.</p></details>
         <div className="dossier-grid">
           {text('Entity form', entity.kind, kind => change({ resonanceEntity: { kind } }))}
           {text('Entity abilities', entity.abilities, abilities => change({ resonanceEntity: { abilities } }), true)}
@@ -74,7 +74,7 @@ export function CompanionRecords({ data, editable, patch }: { data: CharacterDos
         {text('Paranormal experiments and preparation', paranormalist.experiments, experiments => change({ paranormalist: { experiments } }), true)}
       </>}
       {field === 'autopod' && <>
-        <p>Two seats. Racing is built for speed; Impressing helps when showing it off; Surprising has hidden gadgets. Record the chosen gadget fiction in the notes. Fine clothes worn cost 0 load; carrying a second outfit costs 2 — adjust the equipment record deliberately. Echo Twin has no mechanical Stress or Harm track.</p>
+        <details className="rules-reference"><summary>Rules reference</summary><p>Two seats. Racing is built for speed; Impressing helps when showing it off; Surprising has hidden gadgets. Record the chosen gadget fiction in the notes. Fine clothes worn cost 0 load; carrying a second outfit costs 2.  Echo Twin has no mechanical Stress or Harm track.</p></details>
         <div className="dossier-grid">
           {select('Autopod type', autopod.type, ['', 'Racing', 'Impressing', 'Surprising'], type => change({ autopod: { type: type as Autopod['type'] } }))}
           {text('Autopod style', autopod.style, style => change({ autopod: { style } }))}
@@ -93,7 +93,7 @@ export function CompanionRecords({ data, editable, patch }: { data: CharacterDos
     </fieldset>
     {editable && Object.keys(draft).length > 0 && <>
       {!review && <button disabled={busy} onClick={() => setReview(true)}>Review companion records</button>}
-      {review && <div className="condition-review" role="region" aria-label="Review companion records"><h5>Review companion changes</h5><p>Only changed subfields below will be saved. Expertise, improvement and twin-feature lists each save as a complete list; coordinate edits to the same list. Check consequences with your table.</p><dl>{Object.entries(draft).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>Saved: {describe(data[key as keyof CompanionPatch])}<br />Proposed: {describe(value)}</dd></div>)}</dl><button disabled={busy} onClick={() => void confirm()}>{busy ? 'Saving companion records…' : error ? 'Retry companion records' : 'Confirm companion records'}</button><button disabled={busy} onClick={() => setReview(false)}>Keep editing companion records</button></div>}
+      {review && <div className="condition-review" role="region" aria-label="Review companion records"><h5>Review companion changes</h5><dl>{Object.entries(draft).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>Saved: {describe(data[key as keyof CompanionPatch])}<br />Proposed: {describe(value)}</dd></div>)}</dl><button disabled={busy} onClick={() => void confirm()}>{busy ? 'Saving companion records…' : error ? 'Retry companion records' : 'Confirm companion records'}</button><button disabled={busy} onClick={() => setReview(false)}>Keep editing companion records</button></div>}
       <button disabled={busy} onClick={() => { setDraft({}); setReview(false); setError('') }}>Discard companion records</button>
     </>}
     {error && <p role="alert" className="dossier-error">{error}</p>}
