@@ -4,6 +4,7 @@ import { confirmAftermath, proposeAftermath, saveAftermathManual, useAftermath }
 import type { AftermathEffect, AftermathManual, EffectKind } from '../lib/aftermath'
 import { planningError } from '../lib/planning'
 import type { usePlanning } from '../lib/planning'
+import { AftermathChecklist } from './AftermathChecklist'
 const fields: Record<EffectKind, string[]> = { crew: ['stacks', 'rep', 'heat', 'wanted', 'anger'], character: ['wealth.stacks', 'wealth.bank', 'stress', 'harm.passing', 'harm.major', 'harm.critical', 'harm.mortal', 'healing.progress'], faction: ['status'] }
 const fieldLabels: Record<string, string> = { stacks: 'Crew stacks', rep: 'Rep', heat: 'Heat', wanted: 'Wanted', anger: 'Ward-boss Anger', 'wealth.stacks': 'Personal stacks', 'wealth.bank': 'Bank', stress: 'Stress', 'harm.passing': 'Passing Harm', 'harm.major': 'Major Harm', 'harm.critical': 'Critical Harm', 'harm.mortal': 'Mortal Harm', 'healing.progress': 'Healing progress', status: 'Faction status' }
 const display = (value: unknown) => Array.isArray(value) ? value.map(item => item || 'empty slot').join(' / ') : String(value)
@@ -14,18 +15,9 @@ export function CampaignAftermath({ campaign, gm, planning }: { campaign: string
  const score = completed.find(row => row.id === scoreId) ?? completed[0]
  return <section className="aftermath-panel" aria-label="Aftermath review"><h3>Aftermath review</h3>
   {state.error && <p role="alert">{state.error}<button onClick={() => { void state.refresh() }}>Retry Aftermath refresh</button></p>}
-  <details className="planning-guidance"><summary>Published Aftermath reference and manual procedures</summary>
-   <p>Blades ’68 v1.0.1 pp. 190–195, Trouble Engine pp. 197–203; recovery pp. 169–170; Wanted pp. 216–217. Baseline excludes Deep Cuts. Payout, Rep and faction status use the table’s recorded negotiated outcomes. No payout, XP advance, load or Armor reset is automatic.</p>
-   <p>Tithe applies where there is a ward boss: crew Tier + 1 stacks. If unpaid, add one tick to four-segment Anger; each fill loses one boss status and may bring reprisals. New Horizon has no ward boss. Record applicability, payment and any wrap/status changes explicitly.</p>
-   <p>Heat exposure: 0 smooth/quiet, 2 contained, 4 loud/chaotic, 6 devastating. Judge target prominence (examples +1/+3), hostile turf +1, war +1, killing +2, explosives +1, military weapons +1, and any claims/abilities. Loud loadout informs judgment. At 9 Heat, review Wanted +1 and Heat clearing explicitly; record any interrogation/arrest Trouble or the decision to skip it.</p>
-   <p>Harm Complications: roll dice equal to the sum of Harm levels and use the highest Harm table; Hull has a separate table (pp. 192–193). Record roll, table, result, next-score/next-recharge effect and whether consumed. Temporary penalties do not permanently remove action dots.</p>
-   <p>Unwind: a player chooses the group scene; each participating PC clears 1 Stress. Quarters also clears passing Harm. Select participants and propose their actual resulting values; this never clears all Stress by default.</p>
-   <p>Recover: roll marks 1/2/3/5 and clears passing Harm; a filled four-clock lowers remaining Harm one level, with excess rolling over. Hospitals and Hull repair differ; consult pp. 169–170 and edit the reviewed results deliberately. Mortal survival needs adjudication.</p>
-   <p>Trouble can be skipped or run flexibly between cycles. Preserve faction updates, Crew Trouble, Local Trouble, ongoing Trouble and escalation in manual records. Do not escalate a newly introduced Trouble immediately. Mandates and GM notes stay private until you deliberately share a manual record; they are never copied into a receipt.</p>
-  </details>
   {score ? <><label>Aftermath score<select aria-label="Aftermath score" value={score.id} onChange={event => setScoreId(event.target.value)}>{completed.map(row => <option key={row.id} value={row.id}>{row.data.name}</option>)}</select></label>
    <Review key={score.id} score={score.id} gm={gm} planning={planning} state={state} />
-  </> : <p>Complete a primary score to review Aftermath.</p>}
+  </> : <><p>Complete a primary score to review Aftermath.</p><AftermathChecklist canReview={false} /></>}
  </section>
 }
 function Review({ score, gm, planning, state }: { score: string; gm: boolean; planning: ReturnType<typeof usePlanning>; state: ReturnType<typeof useAftermath> }) {
@@ -54,6 +46,7 @@ function Review({ score, gm, planning, state }: { score: string; gm: boolean; pl
   add({ kind, id: record.id, field, expected: currentValue, value: field.startsWith('harm.') ? value.split('\n') : Number(value) }); setValue('')
  }
  return <div>
+  <AftermathChecklist key={correction ?? score} canReview={gm && (!latest || Boolean(correction))} />
   {gm && (!latest || correction) && <div className="planning-card"><h4>{correction ? 'Prepare an explicit correction' : 'Prepare Aftermath proposal'}</h4>
    <form onSubmit={addEffect}><fieldset disabled={busy}><legend>Add an intended change</legend><div className="planning-fields">
     <label>Effect record type<select aria-label="Effect record type" value={kind} onChange={event => { const next = event.target.value as EffectKind; setKind(next); setTarget(''); setField(fields[next][0]); setValue('') }}>{Object.keys(fields).map(key => <option key={key} value={key}>{key[0].toUpperCase() + key.slice(1)}</option>)}</select></label>
