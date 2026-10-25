@@ -39,12 +39,12 @@ test('sample setup is explicit, current-GM only, atomic and exactly once without
   expect((await player.rpc('claim_character', { p_character: characters[0].id })).error).toBeNull()
   expect((await gm.rpc('preview_campaign_setup', { p_campaign: campaign, p_action: 'sample' })).error).not.toBeNull()
   expect((await player.from('crews').select('*').eq('campaign_id', campaign)).data).toHaveLength(1)
-  expect((await player.from('faction_records').select('*').eq('campaign_id', campaign)).data).toHaveLength(2)
+  expect((await player.from('faction_records').select('*').eq('campaign_id', campaign)).data).toHaveLength(58)
   expect((await player.from('clocks').select('*').eq('campaign_id', campaign)).data).toHaveLength(1)
   expect((await player.from('codex').select('*').eq('campaign_id', campaign)).data).toHaveLength(2)
 })
 
-test('empty loads never seed; a GM deliberately reviews sample and scoped clear while two players converge', async ({ browser }) => {
+test('fresh campaigns include setting factions without sample content; a GM deliberately reviews sample and scoped clear while two players converge', async ({ browser }) => {
   const contexts = await Promise.all([browser.newContext(), browser.newContext(), browser.newContext()])
   const [gm, one, two] = await Promise.all(contexts.map(context => context.newPage()))
   await gm.goto('/'); await gm.getByLabel('Campaign name', { exact: true }).fill('Night Wire table')

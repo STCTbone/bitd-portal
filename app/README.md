@@ -23,9 +23,9 @@ npm run backend:stop
 
 The preview serves the built static frontend and still requires its configured Supabase backend. Restart/rebuild after changing build-time environment variables.
 
-## Empty campaigns, sample fiction and resets
+## Campaign defaults, sample fiction and resets
 
-Creating or opening a campaign never seeds game content. A GM can **Review optional sample**, inspect the proposed fiction and enter `LOAD SAMPLE` to apply it to an empty campaign. It adds two unclaimed Hounds, a Shadows crew, invented factions, clocks and shared notes using ordinary protected APIs. Players deliberately claim characters; sample fiction is labeled and adds no automatic rewards or artwork.
+New campaigns include the 56 public Gazette factions with published Tier/Hold and neutral crew status. Characters, crews and sample fiction start empty. Opening a campaign preserves faction edits and deletions. A GM can **Review optional sample**, inspect the proposed fiction and enter `LOAD SAMPLE` to apply it to an otherwise unused campaign; untouched Gazette reference factions are allowed. It adds two unclaimed Hounds, a Shadows crew, invented factions, clocks and shared notes using ordinary protected APIs. Players deliberately claim characters; sample fiction is labeled and adds no automatic rewards or artwork.
 
 **Review clocks, notes and markers clear** requires `CLEAR WORKSPACE`. It removes standalone campaign/score clocks (including hidden clocks), shared notes and durable/transient map markers in the selected campaign. It preserves every character/crew/faction sheet value and owner, embedded healing/backing tracks, backing records, private faction notes, planning/score/cycle records, Aftermath receipts/history/corrections, uploaded files, selected map, settings, identity, invitations and members. The preview lists exact counts and scope. Changed saved content makes an unaccepted review stale; retrying an accepted request returns its original result once. Cancel makes no game changes. Create another empty campaign for a fresh start.
 

@@ -15,7 +15,7 @@ npm run backend:start
 npm run dev -- --host 127.0.0.1
 ```
 
-Open **http://127.0.0.1:5173**. Create a campaign as GM; use its player invitation in two separate browser profiles for independent players. Fresh campaigns start empty. The GM may review optional sample fiction or a precisely scoped workspace clear.
+Open **http://127.0.0.1:5173**. Create a campaign as GM; use its player invitation in two separate browser profiles for independent players. Fresh campaigns include the 56 published Gazette factions with neutral crew status. Characters, crews, scores and sample fiction start empty. The GM may review optional sample fiction or a precisely scoped workspace clear.
 
 See [the development and deployment guide](app/README.md) for setup, identity recovery, safe resets, testing, troubleshooting and the reviewed future hosting path. No live hosting or paid service has been provisioned by this implementation.
 

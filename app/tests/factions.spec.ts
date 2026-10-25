@@ -6,15 +6,14 @@ const url = process.env.VITE_SUPABASE_URL!
 const key = process.env.VITE_SUPABASE_ANON_KEY!
 const client = () => createClient(url, key, { db: { schema: 'bitd' }, auth: { persistSession: false, autoRefreshToken: false } })
 
-test('GM deliberately initializes the current Gazette factions; players see the shared dossier', async ({ browser }) => {
+test('new campaigns include the Gazette factions by default; players see campaign edits', async ({ browser }) => {
   const gmContext = await browser.newContext(), playerContext = await browser.newContext()
   const gm = await gmContext.newPage(), player = await playerContext.newPage()
   await gm.goto('/')
   await gm.getByLabel('Campaign name').fill('Gazette campaign')
   await gm.getByRole('button', { name: 'Create campaign', exact: true }).click().then(() => gm.getByRole('tab', { name: 'Factions', exact: true }).click())
   const invitation = await gm.getByLabel('Player invitation').inputValue()
-  await expect(gm.getByText('No factions have been added.')).toBeVisible()
-  await gm.getByRole('button', { name: 'Add Blades ’68 Gazette factions' }).click()
+  await expect(gm.getByRole('button', { name: 'Add Blades ’68 Gazette factions' })).toHaveCount(0)
   await expect(gm.getByText('56 factions')).toBeVisible()
   await gm.getByRole('button', { name: 'The Unseen', exact: true }).click()
   await expect(gm.getByLabel('Tier', { exact: true })).toHaveValue('6')
@@ -80,7 +79,7 @@ async function factionFixture() {
   const second = (await otherGM.rpc('create_campaign', { p_name: 'Second faction campaign' })).data.id as string
   const invitations = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data
   await player.rpc('join_campaign', { p_invitation: invitations.player })
-  expect((await gm.rpc('initialize_gazette_factions', { p_campaign: campaign })).data).toBe(56)
+  expect((await gm.rpc('initialize_gazette_factions', { p_campaign: campaign })).data).toBe(0)
   await otherGM.rpc('initialize_gazette_factions', { p_campaign: second })
   const faction = (await gm.from('faction_records').select('*').eq('campaign_id', campaign).eq('name', 'The Unseen').single()).data!
   const otherFaction = (await otherGM.from('faction_records').select('*').eq('campaign_id', second).eq('name', 'The Unseen').single()).data!
@@ -122,7 +121,7 @@ test('public faction API permits shared notes while protecting facts, private no
   for (const p_patch of [{ secret: 'no' }, { tier: '3' }, { tier: 2.5 }, { tier: -1 }, { tier: 7 }, { status: 4 }, { hold: 'fixed' }]) {
     expect((await gm.rpc('patch_faction', { p_id: faction.id, p_patch, p_expected_version: version })).error).not.toBeNull()
   }
-  expect((await gm.rpc('initialize_gazette_factions', { p_campaign: campaign })).error).not.toBeNull()
+  expect((await gm.rpc('initialize_gazette_factions', { p_campaign: campaign })).data).toBe(0)
   expect((await gm.rpc('patch_faction', { p_id: faction.id, p_patch: { status: -1 }, p_expected_version: faction.version })).error).not.toBeNull()
   const final = await gm.rpc('patch_faction', { p_id: faction.id, p_patch: { status: -1 }, p_expected_version: version })
   expect(final.error).toBeNull()
@@ -216,4 +215,38 @@ test('stale faction saves are rejected visibly, and a demoted GM loses the priva
   await page.getByRole('button', { name: 'The Unseen', exact: true }).click()
   await expect(page.getByLabel('GM-private notes', { exact: true })).toHaveCount(0)
   await context.close()
+})
+
+test('default world factions keep campaign edits and deletions across retries without exposing seeding authority', async () => {
+  const gm = client(), player = client(), outsider = client()
+  for (const identity of [gm, player, outsider]) expect((await identity.auth.signInAnonymously()).error).toBeNull()
+  const campaign = (await gm.rpc('create_campaign', { p_name: 'World faction defaults' })).data.id
+  const invite = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data.player
+  expect((await player.rpc('join_campaign', { p_invitation: invite })).error).toBeNull()
+  const roster = (await player.from('faction_records').select('*').eq('campaign_id', campaign)).data!
+  expect(roster).toHaveLength(56)
+  expect(new Set(roster.map(row => row.name)).size).toBe(56)
+  expect(roster.every(row => row.status === 0 && row.known_information === '' && row.shared_notes === '')).toBe(true)
+  expect(roster.find(row => row.name === 'The Unseen')).toMatchObject({ tier: 6, hold: 'strong' })
+  expect(roster.find(row => row.name === 'Section 6')).toMatchObject({ tier: 5, hold: 'strong' })
+  const unseen = roster.find(row => row.name === 'The Unseen')!, bluecoats = roster.find(row => row.name === 'Bluecoats')!
+  expect((await gm.rpc('patch_faction', { p_id: unseen.id, p_expected_version: unseen.version, p_patch: { name: 'Midnight Network', status: 2, shared_notes: 'Our alliance' } })).error).toBeNull()
+  expect((await gm.rpc('delete_faction', { p_id: bluecoats.id, p_expected_version: bluecoats.version })).error).toBeNull()
+  for (const response of await Promise.all([1, 2, 3].map(() => gm.rpc('initialize_gazette_factions', { p_campaign: campaign })))) {
+    expect(response.error).toBeNull(); expect(response.data).toBe(0)
+  }
+  const saved = (await player.from('faction_records').select('*').eq('campaign_id', campaign)).data!
+  expect(saved).toHaveLength(55)
+  expect(saved.find(row => row.id === unseen.id)).toMatchObject({ name: 'Midnight Network', status: 2, shared_notes: 'Our alliance' })
+  expect(saved.some(row => row.name === 'Bluecoats' || row.name === 'The Unseen')).toBe(false)
+  for (const identity of [gm, player, outsider]) {
+    expect((await identity.rpc('seed_gazette_factions', { p_campaign: campaign })).error).not.toBeNull()
+    expect((await identity.rpc('gazette_faction_defaults')).error).not.toBeNull()
+  }
+  for (const identity of [player, outsider]) expect((await identity.rpc('initialize_gazette_factions', { p_campaign: campaign })).error).not.toBeNull()
+  expect((await gm.from('campaigns').update({ gazette_seeded: false }).eq('id', campaign)).error).not.toBeNull()
+  expect((await gm.rpc('preview_campaign_setup', { p_campaign: campaign, p_action: 'sample' })).error).not.toBeNull()
+  for (const row of saved) expect((await gm.rpc('delete_faction', { p_id: row.id, p_expected_version: row.version })).error).toBeNull()
+  expect((await gm.rpc('initialize_gazette_factions', { p_campaign: campaign })).data).toBe(0)
+  expect((await gm.from('faction_records').select('id').eq('campaign_id', campaign)).data).toEqual([])
 })

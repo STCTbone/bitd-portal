@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSession } from '@/lib/session'
-import { initializeFactions, loadFactions, patchFaction, createFaction, deleteFaction, type FactionRecord } from '@/lib/factions/api'
+import { loadFactions, patchFaction, createFaction, deleteFaction, type FactionRecord } from '@/lib/factions/api'
 import './FactionDossier.css'
 import { FactionPrivateNotes } from './FactionPrivateNotes'
 
@@ -59,6 +59,7 @@ export function FactionDossier() {
   const { session } = useSession()
   const campaignId = session?.campaignId
   const [factions, setFactions] = useState<FactionRecord[]>([])
+  const [loaded, setLoaded] = useState(false)
   const [selected, setSelected] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -74,8 +75,8 @@ export function FactionDossier() {
     const load = async () => {
       try {
         const data = await loadFactions(campaignId)
-        if (active) { setFactions(data); setError('') }
-      } catch (error) { if (active) { setFactions([]); setError(`Could not load factions: ${(error as Error).message}`) } }
+        if (active) { setFactions(data); setLoaded(true); setError('') }
+      } catch (error) { if (active) { setFactions([]); setLoaded(true); setError(`Could not load factions: ${(error as Error).message}`) } }
     }
     void load()
     // Authoritative replacement catches deletions and lost membership without exposing old rows.
@@ -86,12 +87,6 @@ export function FactionDossier() {
   }, [campaignId])
   if (!session) return null
   const current = factions.find(f => f.id === selected)
-  async function initialize() {
-    setBusy(true); setError('')
-    try { await initializeFactions(session!.campaignId); await refresh() }
-    catch (error) { setError(`Could not initialize factions: ${(error as Error).message}`) }
-    finally { setBusy(false) }
-  }
   async function create() {
     setBusy(true); setError('')
     try { const faction = await createFaction(session!.campaignId, newName); setNewName(''); await refresh(); setSelected(faction.id) }
@@ -100,7 +95,7 @@ export function FactionDossier() {
   }
   return <section className="access-panel factions" id="campaign-factions" tabIndex={-1} aria-label="Factions">
     <p className="access-kicker">DOSKVOL / FACTION ROLODEX</p><h2>Factions</h2>
-    {!factions.length ? <><p>No factions have been added.</p>{session.role === 'gm' && <><p>Add the 56-faction Player Gazette roster with neutral crew status.</p><button disabled={busy} onClick={initialize}>Add Blades ’68 Gazette factions</button></>}</> : <>
+    {!loaded ? <p role="status">Loading factions…</p> : !factions.length ? <p>No factions in this campaign.</p> : <>
       <p>{factions.length} factions</p>
       <label>Find a faction<input type="search" value={search} onChange={e => setSearch(e.target.value)} /></label>
       <div className="faction-layout"><nav aria-label="Faction list">{factions.filter(f => f.name.toLowerCase().includes(search.toLowerCase())).map(f => <button key={f.id} aria-pressed={selected === f.id} onClick={() => setSelected(f.id)}>{f.name}</button>)}</nav>

@@ -21,10 +21,6 @@ export async function loadFactions(campaignId: string): Promise<FactionRecord[]>
   if (error) throw error
   return data ?? []
 }
-export async function initializeFactions(campaignId: string) {
-  const { error } = await supabase.rpc('initialize_gazette_factions', { p_campaign: campaignId })
-  if (error) throw error
-}
 export async function patchFaction(faction: FactionRecord, patch: FactionPatch): Promise<FactionRecord> {
   const { data, error } = await supabase.rpc('patch_faction', { p_id: faction.id, p_patch: patch, p_expected_version: faction.version })
   if (error) throw error

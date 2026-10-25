@@ -19,7 +19,7 @@ Tests use authenticated API, Storage and Realtime boundaries and real browsers a
 | Keys/Deadlocks, Stress/native conditions, Harm/recovery and source-whitespace rejection | `character-condition.spec.ts`, `character-grants.spec.ts` |
 | Load/protection, stacks/bank, XP and explicit adjustments | `character-equipment.spec.ts` |
 | All six crews, abilities/upgrades/claims/cohorts and special records | `crew-dossier.spec.ts`, `crew-tools.spec.ts`, `crew-business.spec.ts`, `crew-circles.spec.ts` |
-| Gazette factions, separate GM notes, disclosure and conflicts | `factions.spec.ts` |
+| Default Gazette roster, retained edits/deletions, separate GM notes, disclosure and conflicts | `factions.spec.ts` |
 | Private/shared backing, obligations, Failure and eligibility | `backing-records.spec.ts`, `character-grants.spec.ts` |
 | Shared/hidden clocks, scope and stale/deleted updates | `clock-records.spec.ts`, `campaign-setup.spec.ts` |
 | Personal Business, Planning Meeting, concurrent plans and selected opportunities | `planning-cycle.spec.ts` |
