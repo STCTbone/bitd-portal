@@ -168,6 +168,7 @@ test('reviewed Aftermath uses canonical Hull Drain and rejects incompatible mort
   const context = await browser.newContext(), page = await context.newPage()
   await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
   await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
+  await page.getByRole('tab', { name: 'Cycle', exact: true }).click()
   const panel = page.getByRole('region', { name: 'Aftermath review', exact: true })
   await panel.getByLabel('Effect record type', { exact: true }).selectOption('character')
   await expect(panel.getByLabel('Effect field', { exact: true }).getByRole('option', { name: 'Mortal Harm', exact: true })).toHaveCount(0)

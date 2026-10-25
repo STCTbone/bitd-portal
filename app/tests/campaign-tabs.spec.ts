@@ -14,7 +14,9 @@ test('campaign tabs show one workspace, retain drafts and open overview dossiers
     await expect(page.locator('[role="tabpanel"]:visible')).toHaveCount(1)
   }
   await page.getByLabel('New note title', { exact: true }).fill('Keep this draft')
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
   await tabs.getByRole('tab', { name: 'Crew', exact: true }).click()
+  expect(await page.evaluate(() => window.scrollY)).toBe(0)
   await tabs.getByRole('tab', { name: 'Notes', exact: true }).click()
   await expect(page.getByLabel('New note title', { exact: true })).toHaveValue('Keep this draft')
   await tabs.getByRole('tab', { name: 'Characters', exact: true }).click()
@@ -32,6 +34,7 @@ test('campaign tabs show one workspace, retain drafts and open overview dossiers
   await page.screenshot({ path: 'test-results/tabs-desktop.png' })
   await page.setViewportSize({ width: 390, height: 844 })
   await tabs.getByRole('tab', { name: 'Notes', exact: true }).click()
+  for (const tab of await tabs.getByRole('tab').all()) await expect(tab).toBeInViewport()
   await expect(page.getByLabel('New note title', { exact: true })).toHaveValue('Keep this draft')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: 'test-results/tabs-mobile.png' })

@@ -42,6 +42,7 @@ export function CampaignLobby() {
   function openSection(id: Section, focusPanel = false) {
     setActiveSection(id)
     if (window.location.hash !== `#${id}`) window.history.pushState(null, '', `#${id}`)
+    window.scrollTo(0, 0)
     if (focusPanel) requestAnimationFrame(() => document.getElementById(`panel-${id}`)?.focus({ preventScroll: true }))
   }
   // Keep editors mounted so switching tabs retains their drafts and selections.
