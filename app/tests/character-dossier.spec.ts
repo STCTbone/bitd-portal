@@ -124,15 +124,26 @@ test('GM and two players follow saved dossiers live, retain distinct edits, and 
   for (const context of contexts) await context.close()
 })
 
-test('a player claims only a deliberately available Hound and the GM retains edit authority', async ({ browser }) => {
+test('GM-created characters default to unclaimed, players can claim them, and the GM retains edit authority', async ({ browser }) => {
   const gm = client()
   await gm.auth.signInAnonymously()
   const campaign = (await gm.rpc('create_campaign', { p_name: 'Available dossiers' })).data.id
-  const invitation = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data.player
-  const available = (await gm.rpc('create_character', { p_campaign: campaign, p_name: 'Available', p_unclaimed: true })).data
+  const invitations = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data
+  const gmPage = await browser.newPage()
+  await gmPage.goto('/')
+  await gmPage.getByLabel('Invitation', { exact: true }).fill(invitations.gm)
+  await gmPage.getByRole('button', { name: 'Join campaign', exact: true }).click()
+  await gmPage.getByRole('tab', { name: 'Characters', exact: true }).click()
+  await expect(gmPage.locator('.dossier-create').getByRole('checkbox')).toHaveCount(0)
+  await gmPage.getByLabel('New character name', { exact: true }).fill('Available')
+  await gmPage.getByRole('button', { name: 'Create Hound', exact: true }).click()
+  await expect(gmPage.getByRole('button', { name: 'Open Available', exact: true })).toContainText('Unclaimed')
+  const available = (await gm.from('characters').select('id, owner_id').eq('campaign_id', campaign).single()).data!
+  expect(available.owner_id).toBeNull()
+  await expect(gmPage.getByLabel('Alias', { exact: true })).toBeEnabled()
   const page = await browser.newPage()
   await page.goto('/')
-  await page.getByLabel('Invitation', { exact: true }).fill(invitation)
+  await page.getByLabel('Invitation', { exact: true }).fill(invitations.player)
   await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Characters', exact: true }).click())
   await page.getByRole('button', { name: 'Open Available', exact: true }).click()
   await expect(page.getByLabel('Alias', { exact: true })).toBeDisabled()
@@ -149,4 +160,5 @@ test('a player claims only a deliberately available Hound and the GM retains edi
   await expect(page.getByLabel('Alias', { exact: true })).toBeEnabled()
   await expect(page.getByLabel('Alias', { exact: true })).toHaveValue('Mine now')
   await page.close()
+  await gmPage.close()
 })

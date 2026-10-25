@@ -29,7 +29,6 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
   const { entries: catalog, error: availabilityError, refresh: refreshAvailability } = useCampaignPlaybooks(session!.campaignId)
   const playbooks = catalog.filter(p => p.enabled).map(p => p.name)
   const [playbook, setPlaybook] = useState('Hound')
-  const [unclaimed, setUnclaimed] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -37,7 +36,7 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
   async function create(e: FormEvent) {
     e.preventDefault(); setBusy(true); setError('')
     try {
-      const created = await mutate('create_character', { p_campaign: session!.campaignId, p_name: name, p_unclaimed: unclaimed, p_playbook: playbook })
+      const created = await mutate('create_character', { p_campaign: session!.campaignId, p_name: name, p_unclaimed: session!.role === 'gm', p_playbook: playbook })
       setName(''); setSelected(created!.id)
     } catch (error) { setError(error instanceof Error ? error.message : 'Could not create character.') }
     finally { setBusy(false) }
@@ -63,7 +62,6 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
     <form className="dossier-create" onSubmit={e => void create(e)}>
       <label>New character name<input value={name} onChange={e => setName(e.target.value)} required maxLength={100} /></label>
       <label>Playbook<select aria-label="Playbook" value={playbook} onChange={e => setPlaybook(e.target.value)}>{!playbooks.includes(playbook) && <option value={playbook} disabled>{playbook} · unavailable</option>}{playbooks.map(p => <option key={p}>{p}</option>)}</select></label>
-      {session!.role === 'gm' && <label className="dossier-check"><input type="checkbox" checked={unclaimed} onChange={e => setUnclaimed(e.target.checked)} />Leave unclaimed for a player</label>}
       <button disabled={busy || !name.trim() || !playbooks.includes(playbook)}>Create {playbook}</button>
     </form>
     {character && <>
