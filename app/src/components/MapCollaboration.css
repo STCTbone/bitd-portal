@@ -1,0 +1,14 @@
+.live-map-overlay { position:absolute; inset:0; overflow:hidden; }
+.live-map-ping,.live-map-stroke { touch-action:none; cursor:crosshair; }
+.live-gesture { position:absolute; pointer-events:none; font-weight:800; text-shadow:0 0 3px white,0 0 3px white; }
+.live-gesture-symbol { font-size:26px; line-height:1; display:block; }
+.live-gesture-name { font-size:11px; white-space:nowrap; background:#fff9e9eb; border-radius:3px; padding:1px 3px; }
+.live-stroke { inset:0; }
+.live-stroke svg { width:100%; height:100%; overflow:visible; }
+.live-stroke-name { position:absolute; }
+.live-ping .live-gesture-symbol { transform:translate(-50%,-50%); font-size:38px; }
+.live-map-tools { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:.5rem; }
+.campaign-map .live-map-tools button { pointer-events:auto; margin:0; padding:.35rem .45rem; font-size:.75rem; min-height:44px; background:#fffaeaf5; }
+.campaign-map .live-map-tools button[aria-pressed=true] { background:#184f58; color:#fff9e9; }
+.live-map-status { position:absolute; bottom:3px; left:3px; font-size:10px; color:#173e46; background:#fff9e9ed; padding:1px 4px; pointer-events:none; }
+.live-cursor .live-gesture-name { position:absolute; left:0; bottom:100%; }
