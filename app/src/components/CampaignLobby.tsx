@@ -102,6 +102,5 @@ export function CampaignLobby() {
     </section></>)}
     {isGM && panel('campaign-setup', <CampaignSetup key={`setup:${session.campaignId}:${session.userId}:${session.role}`} />)}
     </CampaignMediaProvider>
-    <footer>Use the same Google account to return on another device. Unlinked guests need their invitation and GM-assisted character recovery after losing browser access.</footer>
   </main>
 }

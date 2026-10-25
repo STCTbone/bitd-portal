@@ -16,7 +16,7 @@ export function CampaignOverview({ openCharacter, openCrew }: { openCharacter: (
     return character.owner_id === session!.userId ? 'Yours' : character.owner_id ? 'Owned by another participant' : 'Unclaimed'
   }
   return <section className="campaign-summary" id="campaign-state-overview" tabIndex={-1} aria-label="Campaign state overview">
-    <header><p className="summary-kicker">THE TABLE / SAVED CAMPAIGN STATE</p><h2>Campaign at a glance</h2><p>Follow the current saved records. Open a dossier for details and permitted edits.</p></header>
+    <header><p className="summary-kicker">THE TABLE / SAVED CAMPAIGN STATE</p><h2>Campaign at a glance</h2></header>
     {overview.error && <div role="alert"><p>{overview.error}</p><button onClick={overview.retry}>Retry overview</button></div>}
     {!overview.snapshot && !overview.error && <p role="status">Loading campaign summary…</p>}
     {overview.snapshot && <>
@@ -33,14 +33,13 @@ export function CampaignOverview({ openCharacter, openCrew }: { openCharacter: (
       {characters.length === 0 && <p>No characters yet.</p>}
     </>}
     <section className="table-presence" aria-label="Online table">
-      <h3>Online table</h3><p>Roles come from current campaign membership. Character labels reflect current ownership.</p>
+      <h3>Online table</h3>
       {presence.error && <div role="alert"><p>{presence.error}</p><button onClick={presence.retry}>Retry presence</button></div>}
       {!presence.snapshot && !presence.error && <p role="status">Checking the table…</p>}
       {presence.snapshot && <><p role="status">{presence.snapshot.participants.length} online {joined ? '· You are at the table' : '· You have left the online table'}</p>
         <ul className="presence-list">{presence.snapshot.participants.map(person => <li key={person.actor} data-presence-actor={person.actor}><strong>{person.role === 'gm' ? 'Game Master' : 'Player'}</strong><span>Participant {person.actor.slice(0, 8)}{person.actor === session!.userId ? ' · You' : ''}</span><span>{characters.filter(character => character.owner_id === person.actor).map(character => character.alias || character.name).join(', ') || 'No character owned'}</span></li>)}</ul>
       </>}
       <button onClick={() => setJoined(value => !value)}>{joined ? 'Leave online table' : 'Join online table'}</button>
-      <small>Each browser tab joins separately. Lost connections expire on the server after 5 seconds; the table refreshes each second. Reconnecting verifies access again.</small>
     </section>
   </section>
 }
