@@ -32,8 +32,7 @@ export function CampaignSetup() {
   }
   return <section className="access-panel" id="campaign-setup" tabIndex={-1} aria-label="Campaign setup">
     <p className="access-kicker">GM CONTROLS</p><h2>Campaign setup</h2>
-    <p>Invented Night Wire sample: two unclaimed Hounds, a Shadows crew, factions, clocks and notes. Requires an empty campaign.</p>
-    <div className="setup-actions"><button disabled={busy || Boolean(preview)} onClick={() => void review('sample')}>Review optional sample</button><button className="access-secondary" disabled={busy || Boolean(preview)} onClick={() => void review('clear')}>Review clocks, notes and markers clear</button></div>
+    <div className="setup-actions"><button disabled={busy || Boolean(preview)} onClick={() => void review('sample')}>Review optional sample</button><button className="access-secondary" disabled={busy || Boolean(preview)} onClick={() => void review('clear')}>Clear clocks, notes and markers…</button></div>
     <p>Clear all clocks (including hidden ones), shared notes and map markers. Sheets, history and uploads are kept.</p>
     {preview && <div className="setup-review" role="region" aria-label="Review campaign setup">
       <h3>{preview.action === 'sample' ? 'Review optional sample setup' : 'Review clocks, notes and markers clear'}</h3>
