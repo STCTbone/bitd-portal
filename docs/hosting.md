@@ -14,6 +14,8 @@ Frontend source commit: `0579efc571b36b425b68d9a5677222ebe35d592e`; Sites versio
 
 The hosted smoke check passed 60 assertions using independent GM, two-player and outsider identities: invitations, ownership, all faction defaults, GM privacy, concurrent edits, private/shared/revoked uploads, token authority, presence and exactly-once Aftermath. All synthetic identities, records and uploaded bytes were removed; the real campaign was preserved. Twelve stale-write paths returned HTTP 409 with `PT409` in 63–84 ms and retained accepted data.
 
+A separate hosted map-activity exchange verified GM pings and player drawing strokes reaching their peers, outsider send/receive denial, and immediate denial in both directions after revoking the test player's membership. Its geometry also disappeared from peer snapshots. This uses the authenticated RPC transport from ADR 0004, not WebSockets; all fixtures were removed afterward.
+
 The follow-up migration `202610310033_business_conflict_http409.sql` brings the deployed total to 30 migrations. It changes intentional business-conflict codes in 27 functions because [managed PostgREST 14 can retry custom `40001` errors indefinitely](https://supabase.com/kb/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions). Before/after checks confirmed that all 136 application function definitions match after normalizing only that code, with owners, ACLs, OIDs and search-path settings preserved. Use `PT409` for future stale-record checks; reserve serialization failure codes for actual database transaction failures.
 
 ## Complete the first launch
