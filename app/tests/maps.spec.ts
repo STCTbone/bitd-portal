@@ -22,7 +22,7 @@ test('saved token authority follows current character ownership and explicit GM 
   const move = (person: ReturnType<typeof client>, revision = token.revision) => person.rpc('move_map_token', { p_token: token.id, p_x: 25, p_y: 75, p_revision: revision })
   for (const person of [b, outsider]) expect((await move(person)).error).not.toBeNull()
   const moved = await move(a); expect(moved.error).toBeNull(); expect(moved.data.x).toBe(25)
-  expect((await move(a)).error?.code).toBe('40001')
+  expect((await move(a)).error?.code).toBe('PT409')
   const bId = (await b.auth.getUser()).data.user!.id
   expect((await gm.rpc('assign_character_owner', { p_character: character.id, p_owner: bId, p_expected_owner: character.owner_id })).error).toBeNull()
   expect((await move(a, moved.data.revision)).error?.code).toBe('42501')
@@ -120,10 +120,10 @@ test('map selection validates shared campaign assets, detects races, and rejects
   for (const id of [foreign.id, privateImage.id, crypto.randomUUID()]) expect((await select(gm, id)).error).not.toBeNull()
   const race = await Promise.all([select(gm, asset.id), select(gm, asset.id)])
   expect(race.filter(result => !result.error)).toHaveLength(1)
-  expect(race.find(result => result.error)?.error?.code).toBe('40001')
+  expect(race.find(result => result.error)?.error?.code).toBe('PT409')
   const saved = race.find(result => !result.error)!.data
   expect(saved.asset_id).toBe(asset.id)
-  expect((await select(gm, null)).error?.code).toBe('40001')
+  expect((await select(gm, null)).error?.code).toBe('PT409')
   expect((await a.rpc('get_map_state', { p_campaign: campaign })).data.map.asset_id).toBe(asset.id)
   for (const person of [gm, a]) {
     expect((await person.from('campaign_maps').update({ asset_id: foreign.id }).eq('campaign_id', campaign)).error).not.toBeNull()
@@ -144,7 +144,7 @@ test('different tokens save concurrently, same token revisions conflict, and onl
   expect(independent.every(result => !result.error)).toBe(true)
   const race = await Promise.all([move(a, token.id, 2, 30), move(gm, token.id, 2, 70)])
   expect(race.filter(result => !result.error)).toHaveLength(1)
-  expect(race.find(result => result.error)?.error?.code).toBe('40001')
+  expect(race.find(result => result.error)?.error?.code).toBe('PT409')
   let current = race.find(result => !result.error)!.data
   for (const x of [-1, 101, null]) expect((await gm.rpc('move_map_token', { p_token: token.id, p_x: x, p_y: 50, p_revision: current.revision })).error).not.toBeNull()
   const manage = (person: ReturnType<typeof client>, controller = ids[1], characterId: string | null = null) => person.rpc('manage_map_token', { p_token: token.id, p_label: 'Assigned', p_character: characterId, p_controller: controller, p_revision: current.revision })
@@ -160,7 +160,7 @@ test('different tokens save concurrently, same token revisions conflict, and onl
   const assigned = await manage(gm); expect(assigned.error).toBeNull(); current = assigned.data
   expect((await move(a, token.id, current.revision, 60)).error?.code).toBe('42501')
   const accepted = await move(b, token.id, current.revision, 60); expect(accepted.error).toBeNull()
-  expect((await gm.rpc('remove_map_token', { p_token: token.id, p_revision: current.revision })).error?.code).toBe('40001')
+  expect((await gm.rpc('remove_map_token', { p_token: token.id, p_revision: current.revision })).error?.code).toBe('PT409')
   expect((await gm.rpc('remove_map_token', { p_token: token.id, p_revision: accepted.data.revision })).error).toBeNull()
   const state = (await a.rpc('get_map_state', { p_campaign: campaign })).data
   expect(state.tokens.map((value: { id: string }) => value.id)).toEqual([peerToken.id])

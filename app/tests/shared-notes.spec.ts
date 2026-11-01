@@ -22,8 +22,14 @@ test('members share distinct notes and merge disjoint fields while same-field co
   ])
   for (const result of updates) expect(result.error).toBeNull()
   expect((await player.from('codex').select('*').eq('id', id).single()).data.data).toMatchObject({ title: 'Station keeper', body: 'Owes us a favor.', category: 'people' })
-  expect((await player.rpc('update_shared_note', { p_note: id, p_patch: { body: 'Stale recollection' }, p_expected: { body: 'Met at the station.' } })).error?.code).toBe('40001')
-  expect((await player.rpc('delete_shared_note', { p_note: id, p_revision: 1 })).error?.code).toBe('40001')
+  const accepted = (await player.from('codex').select('*').eq('id', id).single()).data
+  // Managed PostgREST 14 retries serialization_failure forever: business conflicts
+  // must finish as HTTP 409 without changing the accepted row.
+  const staleEdit = await player.rpc('update_shared_note', { p_note: id, p_patch: { body: 'Stale recollection' }, p_expected: { body: 'Met at the station.' } }).abortSignal(AbortSignal.timeout(5000))
+  expect(staleEdit.status).toBe(409); expect(staleEdit.error?.code).toBe('PT409')
+  const staleRemoval = await player.rpc('delete_shared_note', { p_note: id, p_revision: 1 }).abortSignal(AbortSignal.timeout(5000))
+  expect(staleRemoval.status).toBe(409); expect(staleRemoval.error?.code).toBe('PT409')
+  expect((await player.from('codex').select('*').eq('id', id).single()).data).toEqual(accepted)
   for (const identity of [outsider, other]) {
     expect((await identity.from('codex').select('*').eq('campaign_id', campaign)).data).toEqual([])
     expect((await identity.rpc('create_shared_note', { p_campaign: campaign, p_data: { title: 'forged' } })).error?.code).toBe('42501')

@@ -203,16 +203,16 @@ test('stale setup and clear reviews never discard intervening records; independe
   const { gm, player, campaign } = await fixture()
   const sample = await gm.rpc('preview_campaign_setup', { p_campaign: campaign, p_action: 'sample' })
   const note = await player.rpc('create_shared_note', { p_campaign: campaign, p_data: { title: 'Intervening player record' } }); expect(note.error).toBeNull()
-  expect((await gm.rpc('apply_campaign_setup', { p_request: sample.data.id, p_confirmation: 'LOAD SAMPLE' })).error?.code).toBe('40001')
+  expect((await gm.rpc('apply_campaign_setup', { p_request: sample.data.id, p_confirmation: 'LOAD SAMPLE' })).error?.code).toBe('PT409')
   expect((await gm.from('characters').select('*').eq('campaign_id', campaign)).data).toEqual([])
   const review = await gm.rpc('preview_campaign_setup', { p_campaign: campaign, p_action: 'clear' })
   expect((await player.rpc('update_shared_note', { p_note: note.data.id, p_patch: { body: 'Late edit' }, p_expected: { body: '' } })).error).toBeNull()
-  expect((await gm.rpc('apply_campaign_setup', { p_request: review.data.id, p_confirmation: 'CLEAR WORKSPACE' })).error?.code).toBe('40001')
+  expect((await gm.rpc('apply_campaign_setup', { p_request: review.data.id, p_confirmation: 'CLEAR WORKSPACE' })).error?.code).toBe('PT409')
   expect((await player.from('codex').select('*').eq('id', note.data.id)).data![0].data.body).toBe('Late edit')
   const previews = await Promise.all([1, 2].map(() => gm.rpc('preview_campaign_setup', { p_campaign: campaign, p_action: 'clear' })))
   const clears = await Promise.all(previews.map(result => gm.rpc('apply_campaign_setup', { p_request: result.data.id, p_confirmation: 'CLEAR WORKSPACE' })))
   expect(clears.filter(result => !result.error)).toHaveLength(1)
-  expect(clears.find(result => result.error)?.error?.code).toBe('40001')
+  expect(clears.find(result => result.error)?.error?.code).toBe('PT409')
 })
 
 test('delayed accepted clock saves and older reads cannot restore clocks or notes after the confirmed clear', async ({ browser }) => {
@@ -278,7 +278,7 @@ test('writes racing an in-progress clear are rejected without deadlock, and late
   try {
     const clearing = Promise.resolve(gm.rpc('apply_campaign_setup', { p_request: preview.data.id, p_confirmation: 'CLEAR WORKSPACE' }))
     await expect.poll(() => Number(sql("select count(*) from pg_stat_activity where wait_event='PgSleep' and query like '%apply_campaign_setup%';"))).toBe(1)
-    expect((await player.rpc('create_shared_note', { p_campaign: campaign, p_data: { title: 'Racing insertion' } })).error?.code).toBe('40001')
+    expect((await player.rpc('create_shared_note', { p_campaign: campaign, p_data: { title: 'Racing insertion' } })).error?.code).toBe('PT409')
     expect((await clearing).error).toBeNull()
     expect((await player.from('codex').select('*').eq('campaign_id', campaign)).data).toEqual([])
   } finally { sql('drop trigger test26_delay_clear on bitd.clocks; drop function bitd.test26_delay_clear();') }
@@ -294,7 +294,7 @@ test('current GM authority is checked even for accepted retries and expired prev
   expect((await player.from('characters').select('*').eq('campaign_id', campaign)).data).toEqual([])
   expect((await admin().from('campaign_members').update({ role: 'gm' }).eq('campaign_id', campaign).eq('user_id', user)).error).toBeNull()
   sql(`update bitd.campaign_setup_requests set created_at=clock_timestamp()-interval '16 minutes' where id='${preview.data.id}'::uuid;`)
-  expect((await gm.rpc('apply_campaign_setup', { p_request: preview.data.id, p_confirmation: 'LOAD SAMPLE' })).error?.code).toBe('40001')
+  expect((await gm.rpc('apply_campaign_setup', { p_request: preview.data.id, p_confirmation: 'LOAD SAMPLE' })).error?.code).toBe('PT409')
   const fresh = await gm.rpc('preview_campaign_setup', { p_campaign: campaign, p_action: 'sample' })
   expect((await gm.rpc('apply_campaign_setup', { p_request: fresh.data.id, p_confirmation: 'LOAD SAMPLE' })).error).toBeNull()
   expect((await admin().from('campaign_members').update({ role: 'player' }).eq('campaign_id', campaign).eq('user_id', user)).error).toBeNull()

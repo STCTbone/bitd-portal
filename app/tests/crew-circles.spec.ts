@@ -199,6 +199,6 @@ test('ability writes check the current saved Circle after a peer correction',asy
  const circle1={...circle2,circle:1}
  expect((await peer.rpc('update_crew',{p_campaign:campaign,p_patch:{utopianVision:circle1},p_expected:{utopianVision:circle2}})).error).toBeNull()
  expect((await gm.rpc('update_crew',{p_campaign:campaign,p_patch:{abilities:[ability('utopians-true-believers')]},p_expected:{abilities:[]}})).error?.code).toBe('P0001')
- expect((await gm.rpc('update_crew',{p_campaign:campaign,p_patch:{utopianVision:{...circle2,vision:'Stale review'}},p_expected:{utopianVision:circle2}})).error?.code).toBe('40001')
+ expect((await gm.rpc('update_crew',{p_campaign:campaign,p_patch:{utopianVision:{...circle2,vision:'Stale review'}},p_expected:{utopianVision:circle2}})).error?.code).toBe('PT409')
  expect((await gm.from('crews').select('data').eq('campaign_id',campaign).single()).data?.data).toMatchObject({utopianVision:circle1,abilities:[]})
 })

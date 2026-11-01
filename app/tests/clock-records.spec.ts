@@ -168,8 +168,8 @@ test('clock boundaries support verified sizes, disjoint GM edits, and reject sta
     coGM.rpc('update_clock', { p_clock: id, p_patch: { progress: 3 }, p_expected: { progress: 0 } }),
   ])
   for (const result of results) expect(result.error).toBeNull()
-  expect((await gm.rpc('update_clock', { p_clock: id, p_patch: { notes: 'Stale decision' }, p_expected: { notes: '' } })).error?.code).toBe('40001')
-  expect((await gm.rpc('delete_clock', { p_clock: id, p_revision: 1 })).error?.code).toBe('40001')
+  expect((await gm.rpc('update_clock', { p_clock: id, p_patch: { notes: 'Stale decision' }, p_expected: { notes: '' } })).error?.code).toBe('PT409')
+  expect((await gm.rpc('delete_clock', { p_clock: id, p_revision: 1 })).error?.code).toBe('PT409')
   expect((await gm.rpc('update_clock', { p_clock: id, p_patch: { name: 'Should not change', progress: 5 }, p_expected: { name: 'Size 4', progress: 3 } })).error?.message).toContain('Progress cannot exceed')
   const row = (await coGM.from('clocks').select('*').eq('id', id).single()).data!
   expect(row.data).toMatchObject({ name: 'Size 4', notes: 'Agreed situation', progress: 3 })

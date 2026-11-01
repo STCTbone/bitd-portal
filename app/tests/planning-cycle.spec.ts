@@ -25,7 +25,7 @@ test('individual Personal Business records persist under current character owner
     gm.rpc('update_personal_business', { p_record: id, p_patch: { helper: 'Our rival' }, p_expected: { helper: '' } }),
   ])
   for (const result of results) expect(result.error).toBeNull()
-  expect((await player.rpc('update_personal_business', { p_record: id, p_patch: { outcome: 'stale' }, p_expected: { outcome: '' } })).error?.code).toBe('40001')
+  expect((await player.rpc('update_personal_business', { p_record: id, p_patch: { outcome: 'stale' }, p_expected: { outcome: '' } })).error?.code).toBe('PT409')
   expect((await peer.from('personal_business').select('*').eq('id', id)).data?.[0].data).toMatchObject({ outcome: 'Two segments agreed', helper: 'Our rival' })
   for (const identity of [peer, outsider]) {
     expect((await identity.rpc('create_personal_business', { p_character: character.id, p_data: { activity: 'Recover' } })).error?.code).toBe('42501')
@@ -60,7 +60,7 @@ test('flexible planning preserves distinct opportunities and selected score with
   expect((await gm.rpc('set_campaign_phase', { p_campaign: campaign, p_phase: 'score', p_revision: 3 })).error).toBeNull()
   expect((await gm.rpc('set_campaign_phase', { p_campaign: campaign, p_phase: 'aftermath', p_revision: 4 })).error).toBeNull()
   expect((await gm.rpc('set_campaign_phase', { p_campaign: campaign, p_phase: 'planning_meeting', p_revision: 5 })).error).toBeNull()
-  expect((await gm.rpc('set_campaign_phase', { p_campaign: campaign, p_phase: 'score', p_revision: 1 })).error?.code).toBe('40001')
+  expect((await gm.rpc('set_campaign_phase', { p_campaign: campaign, p_phase: 'score', p_revision: 1 })).error?.code).toBe('PT409')
   const ids: string[] = []
   for (const sketch of [{ client: 'SCORPION' }, { target: 'Fireworks factory' }, { operation: 'Specialist fence claim' }]) {
     const created = await player.rpc('create_opportunity', { p_campaign: campaign, p_data: sketch })
@@ -100,7 +100,7 @@ test('flexible planning preserves distinct opportunities and selected score with
   }
   for (const patch of [{ approach: 'Occult' }, { approach: 'Transport' }, { loadout: 'Heavy' }, { status: 'completed' }, { opportunity: {} }, { campaign_id: crypto.randomUUID() }]) expect((await gm.rpc('update_score_plan', { p_score: score.id, p_patch: patch, p_expected: {} })).error?.code).toBe('P0001')
   expect((await outsider.rpc('update_score_plan', { p_score: score.id, p_patch: {}, p_expected: {} })).error?.code).toBe('42501')
-  expect((await player.rpc('update_score_plan', { p_score: score.id, p_patch: { loadout: 'Loud' }, p_expected: { loadout: '' } })).error?.code).toBe('40001')
+  expect((await player.rpc('update_score_plan', { p_score: score.id, p_patch: { loadout: 'Loud' }, p_expected: { loadout: '' } })).error?.code).toBe('PT409')
   for (const tableName of ['campaign_cycles', 'opportunities', 'scores']) {
     expect((await outsider.from(tableName).select('*').eq('campaign_id', campaign)).data).toEqual([])
     for (const identity of [gm, player]) {

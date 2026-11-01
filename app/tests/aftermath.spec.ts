@@ -44,7 +44,7 @@ test('reviewed Aftermath confirms atomically once across duplicate and competing
  const confirmations = await Promise.all([gm, gm].map(identity => identity.rpc('confirm_aftermath', { p_proposal: proposal.data.id })))
  for (const receipt of confirmations) expect(receipt.error).toBeNull()
  expect(confirmations[0].data).toEqual(confirmations[1].data)
- expect((await gm.rpc('confirm_aftermath', { p_proposal: competing.data.id })).error?.code).toBe('40001')
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: competing.data.id })).error?.code).toBe('PT409')
  expect((await player.from('crews').select('*').eq('id', crew.id)).data![0].data).toMatchObject({ stacks: 4, heat: 2, rep: 0 })
  expect((await player.from('characters').select('*').eq('id', character.id)).data![0].data.wealth.stacks).toBe(2)
  expect((await player.from('faction_records').select('*').eq('id', faction.id)).data![0].status).toBe(1)
@@ -62,11 +62,11 @@ test('late invalid effects roll back, stale reviews fail, corrections preserve r
  expect((await gm.from('aftermath_receipts').select('*').eq('score_id', score.id)).data).toEqual([])
  const staleScore = await propose([])
  expect((await gm.rpc('update_score_record', { p_score: score.id, p_patch: { recap: 'Intervening score correction' }, p_expected: { recap: '' } })).error).toBeNull()
- expect((await gm.rpc('confirm_aftermath', { p_proposal: staleScore.data.id })).error?.code).toBe('40001')
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: staleScore.data.id })).error?.code).toBe('PT409')
  const effect = { kind: 'crew', id: crew.id, field: 'heat', expected: 0, value: 2 }
  const review = await propose([effect]); expect(review.error).toBeNull()
  expect((await gm.rpc('update_crew', { p_campaign: campaign, p_patch: { heat: 1 }, p_expected: { heat: 0 } })).error).toBeNull()
- expect((await gm.rpc('confirm_aftermath', { p_proposal: review.data.id })).error?.code).toBe('40001')
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: review.data.id })).error?.code).toBe('PT409')
  expect((await gm.rpc('update_crew', { p_campaign: campaign, p_patch: { heat: 0 }, p_expected: { heat: 1 } })).error).toBeNull()
  const first = await gm.rpc('confirm_aftermath', { p_proposal: review.data.id }); expect(first.error).toBeNull()
  expect((await propose([{ ...effect, expected: 2, value: 1 }], first.data.id)).error?.message).toContain('reason')
@@ -76,7 +76,7 @@ test('late invalid effects roll back, stale reviews fail, corrections preserve r
  expect(corrected[0].error).toBeNull(); expect(corrected[0].data).toEqual(corrected[1].data)
  expect((await gm.from('aftermath_receipts').select('*').eq('score_id', score.id)).data).toHaveLength(2)
  const secondCorrection = await propose([], first.data.id, 'Competing correction')
- expect((await gm.rpc('confirm_aftermath', { p_proposal: secondCorrection.data.id })).error?.code).toBe('40001')
+ expect((await gm.rpc('confirm_aftermath', { p_proposal: secondCorrection.data.id })).error?.code).toBe('PT409')
  const manualArgs = { p_score: score.id, p_id: null, p_revision: 0, p_kind: 'Mandate', p_title: 'PRIVATE mandate', p_notes: 'PRIVATE Trouble roll, next recharge penalty', p_shared: false }
  const secret = await gm.rpc('save_aftermath_manual', manualArgs); expect(secret.error).toBeNull()
  expect((await player.from('aftermath_manual').select('*').eq('score_id', score.id)).data).toEqual([])
@@ -84,7 +84,7 @@ test('late invalid effects roll back, stale reviews fail, corrections preserve r
  expect((await player.rpc('save_aftermath_manual', { ...manualArgs, p_id: secret.data.id, p_revision: 1 })).error?.code).toBe('42501')
  expect((await gm.rpc('save_aftermath_manual', { ...manualArgs, p_id: secret.data.id, p_revision: 1, p_title: 'Known investigation', p_notes: 'Shared after reveal', p_shared: true })).error).toBeNull()
  expect((await player.from('aftermath_manual').select('*').eq('score_id', score.id)).data![0].notes).toBe('Shared after reveal')
- expect((await gm.rpc('save_aftermath_manual', { ...manualArgs, p_id: secret.data.id, p_revision: 1 })).error?.code).toBe('40001')
+ expect((await gm.rpc('save_aftermath_manual', { ...manualArgs, p_id: secret.data.id, p_revision: 1 })).error?.code).toBe('PT409')
  const foreignCampaign = (await outsider.rpc('create_campaign', { p_name: 'Foreign' })).data.id
  const foreignCrew = (await outsider.rpc('create_crew', { p_campaign: foreignCampaign, p_name: 'Foreign crew', p_type: 'Shadows' })).data
  const foreign = await propose([{ kind: 'crew', id: foreignCrew.id, field: 'stacks', expected: 2, value: 3 }], corrected[0].data.id, 'Cross campaign denied')
@@ -208,7 +208,7 @@ test('competing GMs and different scores cannot double-pay or overwrite reviewed
  const proposals = await Promise.all([gm, secondGM].map(identity => identity.rpc('propose_aftermath', args)))
  const results = await Promise.all(proposals.map((proposal, index) => [gm, secondGM][index].rpc('confirm_aftermath', { p_proposal: proposal.data.id })))
  expect(results.filter(result => result.error === null)).toHaveLength(1)
- expect(results.filter(result => result.error?.code === '40001')).toHaveLength(1)
+ expect(results.filter(result => result.error?.code === 'PT409')).toHaveLength(1)
  expect((await gm.from('crews').select('*').eq('id', crew.id)).data![0].data.stacks).toBe(3)
  const winner = results.find(result => result.data)!.data
  expect((await secondGM.rpc('confirm_aftermath', { p_proposal: winner.proposal_id })).data).toEqual(winner)
@@ -221,7 +221,7 @@ test('competing GMs and different scores cannot double-pay or overwrite reviewed
  const correction = await secondGM.rpc('propose_aftermath', { ...args, p_effects: [{ ...args.p_effects[0], expected: 3, value: 2 }], p_correction_of: winner.id, p_reason: 'Correct prior payout' })
  const deltas = await Promise.all([gm.rpc('confirm_aftermath', { p_proposal: next.data.id }), secondGM.rpc('confirm_aftermath', { p_proposal: correction.data.id })])
  expect(deltas.filter(result => !result.error)).toHaveLength(1)
- expect(deltas.filter(result => result.error?.code === '40001')).toHaveLength(1)
+ expect(deltas.filter(result => result.error?.code === 'PT409')).toHaveLength(1)
  expect((await player.rpc('propose_aftermath', args)).error?.code).toBe('42501')
  const status = JSON.parse(execFileSync('node_modules/.bin/supabase', ['status', '-o', 'json'], { encoding: 'utf8' }))
  const admin = createClient(url, status.SERVICE_ROLE_KEY, { db: { schema: 'bitd' }, auth: { persistSession: false } })

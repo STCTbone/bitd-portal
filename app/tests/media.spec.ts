@@ -156,7 +156,7 @@ test('GM media lifecycle protects private bytes, rejects URL/metadata bypasses a
   expect(downloaded.error).toBeNull(); expect(Buffer.from(await downloaded.data!.arrayBuffer())).toEqual(png)
   expect((await player.storage.from('campaign-assets').list(`${campaign}/${asset.id}`)).data).toHaveLength(1)
   for (const identity of [outsider, other]) expect((await identity.storage.from('campaign-assets').download(asset.object_path)).error).not.toBeNull()
-  expect((await gm.rpc('update_asset', { p_asset: asset.id, p_title: 'Stale', p_annotation: '', p_shared: true, p_revision: finished.data.revision })).error?.code).toBe('40001')
+  expect((await gm.rpc('update_asset', { p_asset: asset.id, p_title: 'Stale', p_annotation: '', p_shared: true, p_revision: finished.data.revision })).error?.code).toBe('PT409')
   const hidden = await gm.rpc('update_asset', { p_asset: asset.id, p_title: 'SECRET updated plan', p_annotation: 'SECRET new target', p_shared: false, p_revision: shared.data.revision })
   expect(hidden.error).toBeNull()
   expect((await player.storage.from('campaign-assets').download(asset.object_path)).error).not.toBeNull()

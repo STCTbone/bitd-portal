@@ -102,7 +102,7 @@ test('crew API supports all published types and rejects forged management, inval
   ])
   for (const result of concurrent) expect(result.error).toBeNull()
   const stale = await coGM.rpc('update_crew', { p_campaign: campaign, p_patch: { rep: 1 }, p_expected: { rep: 0 } })
-  expect(stale.error?.code).toBe('40001')
+  expect(stale.error?.code).toBe('PT409')
   const shared = await player.from('crews').select('*').eq('campaign_id', campaign).single()
   expect(shared.error).toBeNull()
   expect(shared.data!.data).toMatchObject({ rep: 11, base: 'Converted station', stacks: 2, tier: 0, anger: 0 })

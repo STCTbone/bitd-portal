@@ -138,7 +138,7 @@ test('specialized public API enforces current GM membership, exact shapes, final
     coGM.rpc('update_crew', { p_campaign: campaign, p_patch: { base: 'Canal station' }, p_expected: { base: '' } }),
   ])
   for (const result of parallel) expect(result.error).toBeNull()
-  expect((await coGM.rpc('update_crew', { p_campaign: campaign, p_patch: { dealerBusiness: { ...business, units: 0 } }, p_expected: { dealerBusiness: original } })).error?.code).toBe('40001')
+  expect((await coGM.rpc('update_crew', { p_campaign: campaign, p_patch: { dealerBusiness: { ...business, units: 0 } }, p_expected: { dealerBusiness: original } })).error?.code).toBe('PT409')
   for (const invalid of [null, [], {}, { ...business, units: -1 }, { ...business, units: 1.5 }, { ...business, units: '1' }, { ...business, units: 10000 }, { ...business, supply: null }, { ...business, demand: 'x'.repeat(5001) }, { ...business, owner: 'gm' }]) {
     expect((await gm.rpc('update_crew', { p_campaign: campaign, p_patch: { base: 'Atomic rejection', dealerBusiness: invalid }, p_expected: { base: 'Canal station', dealerBusiness: business } })).error?.code, JSON.stringify(invalid)).toBe('P0001')
   }
@@ -152,7 +152,7 @@ test('specialized public API enforces current GM membership, exact shapes, final
   for (const invalid of [null, [], {}, { ...cause, enemies: [] }, { ...cause, enemies: ['One'] }, { ...cause, enemies: ['One', 'Two', 'Three'] }, { ...cause, enemies: ['One', null] }, { ...cause, cause: 5 }, { ...cause, enemies: ['One', 'x'.repeat(5001)] }, { ...cause, bonus: 1 }]) {
     expect((await gm.rpc('update_crew', { p_campaign: campaign, p_patch: { militantCause: invalid }, p_expected: { militantCause: cause } })).error?.code, JSON.stringify(invalid)).toBe('P0001')
   }
-  expect((await coGM.rpc('update_crew', { p_campaign: campaign, p_patch: { militantCause: { ...cause, cause: 'Stale' } }, p_expected: { militantCause: initial.data.militantCause } })).error?.code).toBe('40001')
+  expect((await coGM.rpc('update_crew', { p_campaign: campaign, p_patch: { militantCause: { ...cause, cause: 'Stale' } }, p_expected: { militantCause: initial.data.militantCause } })).error?.code).toBe('PT409')
   const preserved = (await player.from('crews').select('data').eq('id', initial.id).single()).data!.data
   expect(preserved).toMatchObject({ dealerBusiness: business, militantCause: cause, base: 'Canal station', stacks: 2, heat: 0, tier: 0, xp: 0, abilities: [], upgrades: [], claims: [], cohorts: [] })
   // Business-specific helpers and the retained dispatcher are private, too.

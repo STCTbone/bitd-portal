@@ -136,7 +136,7 @@ test('backing limits, current ownership, public linkage and strict cycle records
   first = (await gm.from('backing_records').select('*').eq('id', first.id).single()).data
   expect(first.active).toBe(true) // Filled Failure remains a record until deliberately adjudicated.
   expect((await owner.from('faction_records').select('status').eq('id', first.faction_id).single()).data!.status).toBe(0)
-  expect((await patch(first, { notes: 'Stale overwrite' }, owner, 1)).error?.code).toBe('40001')
+  expect((await patch(first, { notes: 'Stale overwrite' }, owner, 1)).error?.code).toBe('PT409')
   const oldOwner = (await owner.auth.getUser()).data.user!.id, newOwner = (await peer.auth.getUser()).data.user!.id
   expect((await gm.rpc('assign_character_owner', { p_character: character.id, p_owner: newOwner, p_expected_owner: oldOwner })).error).toBeNull()
   expect((await patch(first, { notes: 'Old owner stale save' })).error?.code).toBe('42501')

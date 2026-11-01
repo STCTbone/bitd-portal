@@ -2,6 +2,10 @@
 
 Active Blades ’68 feature contracts. Setup and verification commands live in [the development guide](../app/README.md). Backend permissions derive from current membership and ownership, never a browser seat.
 
+## Conflict responses
+
+Deliberate stale-record and review conflicts return SQLSTATE `PT409` / HTTP 409 with their existing application messages. Reserve `40001` for genuine database serialization failures: managed PostgREST 14 can retry it indefinitely. Migration `202610310033_business_conflict_http409.sql` changes only the explicit conflict literals in the 27 reviewed functions, checks every expected replacement and preserves function metadata and grants. Existing UI error paths retain drafts and show the returned message; they do not depend on either conflict code. Shared-note regression checks bound stale update/delete requests to five seconds and verify HTTP 409 plus unchanged saved state. See [Supabase’s retry guidance](https://supabase.com/kb/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions).
+
 ## Faction dossiers
 
 Campaign creation atomically adds the 56-faction **Blades ’68 Player Gazette v4 (June 2026)** roster. Defaults preserve that source's Tier/Hold, provide brief original reference summaries, and start crew status at neutral. A backend marker makes initialization once-only: editing, renaming or deleting factions never causes reloads or retries to restore defaults. Migration `202610240032_default_world_factions.sql` adds the roster to older campaigns that have never imported it, preserving matching custom names, existing records and private notes. Campaigns already containing Gazette records retain their edited roster. The legacy GM-only initialization RPC is idempotent; seeding helpers have no client execution grants. The Gazette and full-book faction lists differ in places; this roster explicitly uses the current player reference. Campaign edits are records of table decisions, with no automatic change to character backing relationships.

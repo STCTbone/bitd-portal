@@ -132,7 +132,7 @@ test('verified catalogs allow each crew, repeatable choices and full Mastery whi
     coGM.rpc('update_crew',{p_campaign:campaign,p_patch:{base:'Canal station'},p_expected:{base:''}}),
   ])
   for(const update of updates)expect(update.error).toBeNull()
-  expect((await coGM.rpc('update_crew',{p_campaign:campaign,p_patch:{cohorts:[]},p_expected:{cohorts:[]}})).error?.code).toBe('40001')
+  expect((await coGM.rpc('update_crew',{p_campaign:campaign,p_patch:{cohorts:[]},p_expected:{cohorts:[]}})).error?.code).toBe('PT409')
   const beforeInvalid = (await gm.from('crews').select('data').eq('id',crewId).single()).data!.data
   for(const invalid of [
     {cohorts:[{...cohort,owner_id:crypto.randomUUID()}]}, {cohorts:[{...cohort,condition:'unbreakable'}]},
