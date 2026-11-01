@@ -4,7 +4,7 @@ The portal supports Google sign-in through Supabase, using PKCE. Google login is
 
 ## Configure local development
 
-1. In [Google Auth Platform](https://console.cloud.google.com/auth/overview), select the project for this portal. Configure its Branding, Audience and Data Access. Request only `openid`, email and profile. If its audience is in Testing, add the gaming group's Google accounts as test users.
+1. In [Google Auth Platform](https://console.cloud.google.com/auth/overview), select the project for this portal. Configure its Branding, Audience and Data Access. Request only `openid`, email and profile. For this basic sign-in scope set, [Google documents an exception](https://support.google.com/cloud/answer/15549945) to Testing user-list restrictions and seven-day authorization expiry. If additional OAuth scopes are requested later, review the audience and verification requirements again.
 2. In Clients, create an OAuth client with application type **Web application**. Add authorized JavaScript origin `http://127.0.0.1:5173` and authorized redirect URI `http://127.0.0.1:54321/auth/v1/callback`. The redirect URI is the Supabase backend, not the frontend. Other local worktrees require their corresponding API/frontend ports.
 3. Save the client ID and secret to ignored `app/.env`:
 
@@ -20,6 +20,8 @@ The portal supports Google sign-in through Supabase, using PKCE. Google login is
 If Google reports an existing identity conflict, the guest's identity is retained. Choose another Google account or use invitation/GM-assisted recovery to move character ownership deliberately. The portal does not merge accounts by email or transfer GM authority based on a Google profile.
 
 ## Hosted configuration
+
+The current website and project-specific launch steps are recorded in the [hosting runbook](hosting.md).
 
 In the reviewed Supabase project's Authentication provider settings, enable Google with the web client ID/secret and enable manual identity linking. Configure the production frontend origin and exact allowed return URL in Supabase. Add the hosted Supabase callback URI shown in the Google provider settings to the Google web client. Keep credentials backend-only and keep the existing RLS, private Storage and transport restrictions. Configure staging separately; localhost settings do not activate a hosted project.
 

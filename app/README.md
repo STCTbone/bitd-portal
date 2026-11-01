@@ -45,7 +45,7 @@ Editors retain their drafts and selections while switching tabs. Use each editor
 
 ## Design studio
 
-Open **Design studio** at the top of the page to compare four book-inspired schemes: **Paperback ’68**, **Signal Orange**, **Blue Hour** and **Midnight Broadcast**. The schemes also change composition: an editorial crew/profile spread, a circular crew dial with capsule profiles, a desktop navigation rail with flowing rows, or a wide broadcast console above porthole profiles. Curved framing and controls carry into the workspaces. Layouts stack on phones, and the desktop rail supports Up/Down as well as Left/Right keyboard navigation. The appearance choice is saved only in this browser; it does not change campaign records or another participant’s view. Switching preserves the current tab, selections and unsaved editor drafts. Fonts are bundled locally, and uploaded artwork and maps retain their original colors.
+**Signal Orange** is the default for new visitors and unavailable or invalid appearance preferences. Open **Design studio** at the top of the page to compare four book-inspired schemes: **Paperback ’68**, **Signal Orange**, **Blue Hour** and **Midnight Broadcast**. The schemes also change composition: an editorial crew/profile spread, a circular crew dial with capsule profiles, a desktop navigation rail with flowing rows, or a wide broadcast console above porthole profiles. Curved framing and controls carry into the workspaces. Layouts stack on phones, and the desktop rail supports Up/Down as well as Left/Right keyboard navigation. The appearance choice is saved only in this browser; it does not change campaign records or another participant’s view. Switching preserves the current tab, selections and unsaved editor drafts. Fonts are bundled locally, and uploaded artwork and maps retain their original colors.
 
 ## Identity, authorization and synchronization
 
@@ -90,9 +90,11 @@ Install independent dependencies with `npm ci`. Give each isolated worktree a un
 | Browser tests cannot bind preview | Stop the interactive preview or set an unused `PORTAL_PORT`. Do not reuse the development server. |
 | Reset fails midway | Read the first migration error, fix it and rerun local reset; a frontend build does not prove schema setup. |
 
-## Future static frontend + hosted Supabase deployment
+## Hosted deployment
 
-This is a reviewed plan, **not a claim of hosted validation or authorization to provision**. Local CLI configuration does not automatically configure a hosted project. Before spending or publishing, review host/region, auth abuse controls, polling cost, Storage limits, backup/retention and the application's confidentiality checks on staging.
+The portal is deployed through Sites with hosted Supabase. See [the deployment record and update runbook](../docs/hosting.md) for its address, project identity, launch checks and publishing procedure. The initial private deployment is not proof of live Google sign-in or player access.
+
+The following remains the general setup procedure for a separate hosted environment. Local CLI configuration does not automatically configure a hosted project. Before spending or publishing, review host/region, auth abuse controls, polling cost, Storage limits, backup/retention and the application's confidentiality checks on staging.
 
 1. Use a fresh dedicated Supabase project; preserve the migration ordering and application grants. From `app`, authenticate the CLI, run `npx supabase link --project-ref <reviewed-project-ref>`, inspect `npx supabase db push --dry-run`, then apply `npx supabase db push` only to that reviewed target. Never use local reset as a hosted migration command. The local Docker-only configurator is not a hosted setup script.
 2. In hosted API settings expose the **bitd** schema. The migrations supply narrow schema/function/table privileges; do **not** copy broad `GRANT ALL` examples from generic schema tutorials. Enable anonymous sign-ins in Auth, set the deployed Site URL/allowed redirects, and review rate limits and CAPTCHA requirements before public traffic. The present UI has no CAPTCHA token flow, so a deployment requiring CAPTCHA needs that integration before launch. Keep email signup disabled if retaining the no-email experience.

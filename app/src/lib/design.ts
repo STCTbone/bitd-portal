@@ -7,7 +7,8 @@ export const designSchemes = [
   { id: 'midnight', name: 'Midnight Broadcast', description: 'A wide broadcast console with porthole profiles and pill tabs' },
 ] as const
 export type DesignScheme = typeof designSchemes[number]['id']
-export const DesignContext = createContext<DesignScheme>('paperback')
+export const defaultDesignScheme: DesignScheme = 'signal'
+export const DesignContext = createContext<DesignScheme>(defaultDesignScheme)
 export const designStorageKey = 'bitd.design'
 export function isDesignScheme(value: unknown): value is DesignScheme {
   return designSchemes.some(scheme => scheme.id === value)
@@ -15,6 +16,6 @@ export function isDesignScheme(value: unknown): value is DesignScheme {
 export function readDesignScheme(): DesignScheme {
   try {
     const saved = localStorage.getItem(designStorageKey)
-    return isDesignScheme(saved) ? saved : 'paperback'
-  } catch { return 'paperback' }
+    return isDesignScheme(saved) ? saved : defaultDesignScheme
+  } catch { return defaultDesignScheme }
 }

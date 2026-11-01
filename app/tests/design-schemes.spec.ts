@@ -65,7 +65,7 @@ async function expectSummaryContentFits(page: Page) {
 
 test('all four design schemes can be selected before sign-in and survive reload', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('html')).toHaveAttribute('data-design', 'paperback')
+  await expect(page.locator('html')).toHaveAttribute('data-design', 'signal')
   for (const [id, name] of schemes) {
     await chooseDesign(page, id, name)
     expect(await page.evaluate(() => localStorage.getItem('bitd.design'))).toBe(id)
@@ -80,7 +80,7 @@ test('all four design schemes can be selected before sign-in and survive reload'
 test('an invalid saved design falls back safely, supports keyboard selection and keeps empty rosters readable', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('bitd.design', 'unknown-design'))
   await page.goto('/')
-  await expect(page.locator('html')).toHaveAttribute('data-design', 'paperback')
+  await expect(page.locator('html')).toHaveAttribute('data-design', 'signal')
   const picker = await openDesigns(page)
   const blue = picker.getByRole('button', { name: 'Blue Hour', exact: true })
   await blue.focus(); await blue.press('Enter')
@@ -111,7 +111,7 @@ test('live design selection still works when appearance preference storage is bl
     }
   })
   await page.goto('/')
-  await expect(page.locator('html')).toHaveAttribute('data-design', 'paperback')
+  await expect(page.locator('html')).toHaveAttribute('data-design', 'signal')
   for (const [id, name] of schemes) await chooseDesign(page, id, name)
   await expect(page.getByLabel('Campaign name', { exact: true })).toBeVisible()
 })
