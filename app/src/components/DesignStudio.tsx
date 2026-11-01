@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { designSchemes, designStorageKey, readDesignScheme, type DesignScheme } from '@/lib/design'
+import { DesignContext, designSchemes, designStorageKey, readDesignScheme, type DesignScheme } from '@/lib/design'
 
 /** Appearance stays outside campaign state, so switching schemes retains every editor. */
 export function DesignProvider({ children }: { children: ReactNode }) {
@@ -16,7 +16,7 @@ export function DesignProvider({ children }: { children: ReactNode }) {
     setDesign(next)
     try { localStorage.setItem(designStorageKey, next) } catch { /* The live choice still works when storage is unavailable. */ }
   }
-  return <><DesignSwitcher design={design} choose={choose} />{children}</>
+  return <DesignContext.Provider value={design}><DesignSwitcher design={design} choose={choose} />{children}</DesignContext.Provider>
 }
 
 function DesignSwitcher({ design, choose }: { design: DesignScheme; choose: (design: DesignScheme) => void }) {

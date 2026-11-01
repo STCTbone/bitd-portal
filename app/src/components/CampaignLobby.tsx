@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useContext, useEffect, useState, type ReactNode } from 'react'
 import { useSession } from '@/lib/session'
 import { supabase } from '@/lib/supabase'
 import { CampaignPlanning } from './CampaignPlanning'
@@ -12,6 +12,7 @@ import { CampaignMap } from './CampaignMap'
 import { CampaignOverview } from './CampaignOverview'
 import { CharacterDossiers } from './CharacterDossiers'
 import { AccountPanel } from './AccountPanel'
+import { DesignContext } from '@/lib/design'
 
 const sections = [
   ['campaign-state-overview', 'Overview'], ['character-dossiers', 'Characters'],
@@ -28,6 +29,14 @@ function sectionFromAddress(isGM: boolean): Section {
 /** Authenticated campaign landing. Features enter here only after their backend contract is migrated. */
 export function CampaignLobby() {
   const { session, leaveCampaign } = useSession()
+  const design = useContext(DesignContext)
+  const [wideNavigation, setWideNavigation] = useState(() => window.matchMedia('(min-width:1001px)').matches)
+  useEffect(() => {
+    const query = window.matchMedia('(min-width:1001px)')
+    const followWidth = () => setWideNavigation(query.matches)
+    query.addEventListener('change', followWidth)
+    return () => query.removeEventListener('change', followWidth)
+  }, [])
   const [invitations, setInvitations] = useState<{ player: string; gm: string } | null>(null)
   const [error, setError] = useState('')
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
@@ -65,8 +74,8 @@ export function CampaignLobby() {
   return <main className="access-page campaign-page">
     <div className="access-brand"><span>BLADES ’68 / CAMPAIGN DOSSIER</span><h1>{session.campaignName}</h1><p data-testid="campaign-role">{session.role === 'gm' ? 'Game Master' : 'Player'}</p></div>
     <nav className="campaign-sections" aria-label="Campaign sections">
-      <div role="tablist" aria-label="Campaign sections">{tabs.map(([id, label], index) => <button key={id} type="button" role="tab" id={`tab-${id}`} aria-controls={`panel-${id}`} aria-selected={activeSection === id} tabIndex={activeSection === id ? 0 : -1} onClick={() => openSection(id)} onKeyDown={event => {
-        const next = event.key === 'ArrowRight' ? (index + 1) % tabs.length : event.key === 'ArrowLeft' ? (index - 1 + tabs.length) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : null
+      <div role="tablist" aria-label="Campaign sections" aria-orientation={design === 'blue-hour' && wideNavigation ? 'vertical' : 'horizontal'}>{tabs.map(([id, label], index) => <button key={id} type="button" role="tab" id={`tab-${id}`} aria-controls={`panel-${id}`} aria-selected={activeSection === id} tabIndex={activeSection === id ? 0 : -1} onClick={() => openSection(id)} onKeyDown={event => {
+        const next = ['ArrowRight', 'ArrowDown'].includes(event.key) ? (index + 1) % tabs.length : ['ArrowLeft', 'ArrowUp'].includes(event.key) ? (index - 1 + tabs.length) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : null
         if (next === null) return
         event.preventDefault(); openSection(tabs[next][0]); document.getElementById(`tab-${tabs[next][0]}`)?.focus()
       }}>{label}</button>)}</div>

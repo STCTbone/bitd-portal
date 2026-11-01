@@ -3,6 +3,7 @@ import { useSession } from '@/lib/session'
 import { useCampaignOverview, useCampaignPresence, type CharacterSummary } from '@/lib/overview'
 import './CampaignOverview.css'
 
+const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(word => Array.from(word)[0]).join('').toUpperCase()
 const resourceLabel = (kind: string | null) => kind === 'hull' || kind === 'ghost' ? 'Drain' : kind === 'future' || kind === 'past' ? 'Instability' : 'Stress'
 
 export function CampaignOverview({ openCharacter, openCrew }: { openCharacter: (id: string) => void; openCrew: () => void }) {
@@ -21,14 +22,14 @@ export function CampaignOverview({ openCharacter, openCrew }: { openCharacter: (
     {!overview.snapshot && !overview.error && <p role="status">Loading campaign summary…</p>}
     {overview.snapshot && <>
       <div className="summary-cards">
-        {crew ? <article aria-label="Crew summary" className="summary-crew"><p className="summary-kicker">{crew.type} / CREW</p><h3 aria-label={`${crew.name} crew summary`}>{crew.name}</h3>{crew.reputation && <p>{crew.reputation}</p>}
+        {crew ? <article aria-label="Crew summary" className="summary-crew"><span className="summary-monogram" aria-hidden="true">{initials(crew.name)}</span><div className="summary-identity"><p className="summary-kicker">{crew.type} / CREW</p><h3 aria-label={`${crew.name} crew summary`}>{crew.name}</h3>{crew.reputation && <p>{crew.reputation}</p>}</div>
           <ul className="summary-tracks"><li>Tier {crew.tier} · {crew.hold} Hold</li><li>Rep {crew.rep}</li><li>Heat {crew.heat}</li><li>Wanted {crew.wanted}</li><li>Stacks {crew.stacks}</li><li>Crew XP {crew.xp}</li></ul><a href="#crew-dossier" onClick={event => { event.preventDefault(); openCrew() }}>Open crew dossier</a>
-        </article> : <article aria-label="Crew summary"><h3>Crew</h3><p>No crew yet.</p><a href="#crew-dossier" onClick={event => { event.preventDefault(); openCrew() }}>Open crew dossier</a></article>}
-        {characters.map(character => <article key={character.id} aria-label={`${character.name} summary`}><p className="summary-kicker">{character.playbook} / {ownership(character)}</p><h3>{character.alias || character.name}</h3>{character.alias && <p>{character.name}</p>}
+        </article> : <article aria-label="Crew summary" className="summary-crew"><div className="summary-identity"><h3>Crew</h3><p>No crew yet.</p></div><a href="#crew-dossier" onClick={event => { event.preventDefault(); openCrew() }}>Open crew dossier</a></article>}
+        <div className="summary-people">{characters.map(character => <article className="summary-character" key={character.id} aria-label={`${character.name} summary`}><span className="summary-monogram" aria-hidden="true">{initials(character.alias || character.name)}</span><div className="summary-identity"><p className="summary-kicker">{character.playbook} / {ownership(character)}</p><h3>{character.alias || character.name}</h3>{character.alias && <p>{character.name}</p>}</div>
           <ul className="summary-tracks"><li>{resourceLabel(character.condition_kind)} {character.stress}/{character.stress_capacity}</li><li>{character.load} load</li><li>Stacks {character.stacks}</li><li>Bank {character.bank}</li></ul>
-          <p>{character.condition_kind === 'hull' ? 'Damage' : 'Harm'}: {(['passing', 'major', 'critical', 'mortal'] as const).filter(kind => character.condition_kind !== 'hull' || kind !== 'mortal').map(kind => `${character.harm[kind]} ${kind}`).join(' · ')}</p>
+          <p className="summary-condition">{character.condition_kind === 'hull' ? 'Damage' : 'Harm'}: {(['passing', 'major', 'critical', 'mortal'] as const).filter(kind => character.condition_kind !== 'hull' || kind !== 'mortal').map(kind => `${character.harm[kind]} ${kind}`).join(' · ')}</p>
           <a href="#character-dossiers" onClick={event => { event.preventDefault(); openCharacter(character.id) }}>Open {character.name} dossier</a>
-        </article>)}
+        </article>)}</div>
       </div>
       {characters.length === 0 && <p>No characters yet.</p>}
     </>}

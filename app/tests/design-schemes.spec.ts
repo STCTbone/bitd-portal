@@ -40,6 +40,29 @@ async function textContrast(locator: Locator) {
   })
 }
 
+async function overviewGeometry(page: Page) {
+  return page.locator('.summary-cards').evaluate(container => {
+    const box = (element: Element) => {
+      const rect = element.getBoundingClientRect()
+      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height }
+    }
+    const crew = container.querySelector('.summary-crew')!
+    const characters = [...container.querySelectorAll('.summary-character')]
+    const tabs = [...document.querySelectorAll('.campaign-sections [role="tab"]')]
+    return { container: box(container), crew: { ...box(crew), radius: getComputedStyle(crew).borderTopLeftRadius }, characters: characters.map(box), tabs: tabs.slice(0, 2).map(box) }
+  })
+}
+async function expectSummaryContentFits(page: Page) {
+  const content = page.locator('.summary-cards article :is(h3,a)')
+  for (const item of await content.all()) {
+    await expect(item).toBeVisible()
+    expect(await item.evaluate(element => {
+      const bounds = element.getBoundingClientRect(), parent = element.closest('article')!.getBoundingClientRect()
+      return element.scrollWidth <= element.clientWidth + 1 && bounds.left >= parent.left - 1 && bounds.right <= parent.right + 1
+    }), 'summary names and actions fit inside their readable content area').toBe(true)
+  }
+}
+
 test('all four design schemes can be selected before sign-in and survive reload', async ({ page }) => {
   await page.goto('/')
   await expect(page.locator('html')).toHaveAttribute('data-design', 'paperback')
@@ -93,7 +116,7 @@ test('live design selection still works when appearance preference storage is bl
   await expect(page.getByLabel('Campaign name', { exact: true })).toBeVisible()
 })
 
-test('design changes preserve the current tab and unsaved notes, with readable controls and phone layouts', async ({ page }) => {
+test('design changes preserve drafts and data while providing four distinct readable desktop and phone layouts', async ({ page }) => {
   const url = process.env.VITE_SUPABASE_URL!, key = process.env.VITE_SUPABASE_ANON_KEY!
   if (!['localhost', '127.0.0.1'].includes(new URL(url).hostname)) throw new Error('Local backend required')
   const gm = createClient(url, key, { db: { schema: 'bitd' }, auth: { persistSession: false, autoRefreshToken: false } })
@@ -102,8 +125,9 @@ test('design changes preserve the current tab and unsaved notes, with readable c
   expect(created.error).toBeNull()
   const campaign = created.data.id
   const invitation = (await gm.rpc('get_campaign_invitations', { p_campaign: campaign })).data.gm
-  for (const name of ['Mara Vey', 'Len Rook']) expect((await gm.rpc('create_character', { p_campaign: campaign, p_name: name, p_unclaimed: true })).error).toBeNull()
-  expect((await gm.rpc('create_crew', { p_campaign: campaign, p_name: 'Night Wire', p_type: 'Shadows' })).error).toBeNull()
+  const longName = 'Seraphina Vale of the Last Midnight Broadcast and the Northern Transmission Guild'
+  for (const name of ['Mara Vey', 'Len Rook', longName]) expect((await gm.rpc('create_character', { p_campaign: campaign, p_name: name, p_unclaimed: true })).error).toBeNull()
+  expect((await gm.rpc('create_crew', { p_campaign: campaign, p_name: 'Night Wire and the Midnight Frequency Collective', p_type: 'Shadows' })).error).toBeNull()
   const note = await gm.rpc('create_shared_note', { p_campaign: campaign, p_data: { title: 'The midnight broadcast', category: 'lore', body: 'Saved campaign record.' } })
   expect(note.error).toBeNull()
   const saved = await Promise.all(['characters', 'crews', 'codex'].map(table => gm.from(table).select('*').eq('campaign_id', campaign).order('id')))
@@ -116,10 +140,17 @@ test('design changes preserve the current tab and unsaved notes, with readable c
   const editor = page.getByRole('article', { name: 'The midnight broadcast', exact: true })
   await editor.getByRole('button', { name: 'Edit note', exact: true }).click()
   await editor.getByLabel('Note body', { exact: true }).fill('Keep this unsaved transmission.')
-  const colors = new Set<string>()
+  const colors = new Set<string>(), layouts = new Set<string>()
   for (const [id, name] of schemes) {
     await page.setViewportSize({ width: 1280, height: 960 })
     await chooseDesign(page, id, name)
+    const tabList = page.getByRole('tablist', { name: 'Campaign sections', exact: true })
+    await expect(tabList).toHaveAttribute('aria-orientation', id === 'blue-hour' ? 'vertical' : 'horizontal')
+    if (id === 'blue-hour') {
+      await tab('Notes').press('ArrowDown')
+      await expect(tab('Media')).toHaveAttribute('aria-selected', 'true')
+      await tab('Media').press('ArrowUp')
+    }
     await expect(tab('Notes')).toHaveAttribute('aria-selected', 'true')
     await expect(page).toHaveURL(/#campaign-notes$/)
     await expect(editor.getByLabel('Note body', { exact: true })).toHaveValue('Keep this unsaved transmission.')
@@ -140,17 +171,47 @@ test('design changes preserve the current tab and unsaved notes, with readable c
     expect(await textContrast(payoutRule), `${name}: Aftermath rule contrast`).toBeGreaterThanOrEqual(4.5)
     await tab('Overview').click()
     await expect(page.getByRole('link', { name: 'Open Mara Vey dossier', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: longName, exact: true })).toBeVisible()
+    await expectSummaryContentFits(page)
+    const geometry = await overviewGeometry(page), [first, second] = geometry.characters
+    const verticalNavigation = geometry.tabs[1].top > geometry.tabs[0].bottom - 1 && Math.abs(geometry.tabs[1].left - geometry.tabs[0].left) < 4
+    expect(verticalNavigation, `${name}: desktop navigation orientation`).toBe(id === 'blue-hour')
+    if (id === 'paperback') {
+      expect(geometry.crew.right, 'editorial crew column stays left of the profiles').toBeLessThanOrEqual(first.left + 1)
+      expect(Math.abs(first.left - second.left), 'editorial profiles share a column').toBeLessThan(4)
+      expect(second.top, 'editorial profiles form readable stacked rows').toBeGreaterThanOrEqual(first.bottom - 1)
+    } else if (id === 'signal') {
+      expect(geometry.crew.radius).toMatch(/%/)
+      expect(parseFloat(geometry.crew.radius), 'the crew dial has an elliptical outline').toBeGreaterThanOrEqual(40)
+      expect(geometry.crew.height / geometry.crew.width).toBeGreaterThan(.75)
+      expect(geometry.crew.height / geometry.crew.width).toBeLessThan(1.6)
+    } else if (id === 'midnight') {
+      expect(geometry.crew.width, 'the crew screen spans the profile row').toBeGreaterThan(first.width * 1.8)
+      expect(geometry.crew.bottom).toBeLessThanOrEqual(Math.min(...geometry.characters.map(card => card.top)) + 1)
+    }
+    layouts.add(JSON.stringify([verticalNavigation, Math.round(geometry.crew.width / geometry.container.width * 10), Math.round((first.left - geometry.crew.left) / geometry.container.width * 10), Math.round((first.top - geometry.crew.top) / geometry.container.width * 10), geometry.crew.radius]))
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name}: desktop layout fits`).toBe(true)
     await page.screenshot({ path: `test-results/design-${id}-desktop.png` })
+    if (id === 'signal') await page.locator('.summary-crew').screenshot({ path: 'test-results/layout-signal-long-crew-desktop.png' })
     await page.setViewportSize({ width: 390, height: 844 })
     await chooseDesign(page, id, name)
+    await expect(page.getByRole('tablist', { name: 'Campaign sections', exact: true })).toHaveAttribute('aria-orientation', 'horizontal')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name}: open chooser fits phone`).toBe(true)
     await page.getByText('Design studio', { exact: true }).click()
+    await expectSummaryContentFits(page)
+    const phone = await overviewGeometry(page)
+    expect(phone.crew.right).toBeLessThanOrEqual(390)
+    for (let index = 1; index < phone.characters.length; index++) {
+      expect(phone.characters[index].top, `${name}: profiles stack without overlap on phones`).toBeGreaterThanOrEqual(phone.characters[index - 1].bottom - 1)
+    }
     await page.screenshot({ path: `test-results/design-${id}-mobile.png` })
+    if (id === 'signal') await page.locator('.summary-crew').screenshot({ path: 'test-results/layout-signal-long-crew-mobile.png' })
     await tab('Notes').click()
     await expect(editor.getByLabel('Note body', { exact: true })).toHaveValue('Keep this unsaved transmission.')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name}: editor fits phone`).toBe(true)
   }
   expect(colors.size).toBe(4)
+  expect(layouts.size, 'all four schemes have different structural compositions').toBe(4)
   for (const [index, table] of ['characters', 'crews', 'codex'].entries()) {
     const after = await gm.from(table).select('*').eq('campaign_id', campaign).order('id')
     expect(after.error).toBeNull(); expect(after.data).toEqual(saved[index].data)

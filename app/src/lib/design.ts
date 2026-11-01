@@ -1,10 +1,13 @@
+import { createContext } from 'react'
+
 export const designSchemes = [
-  { id: 'paperback', name: 'Paperback ’68', description: 'Book-white pages, black ink, orange chapter marks' },
-  { id: 'signal', name: 'Signal Orange', description: 'Cover-inspired amber, burnt orange and bold display type' },
-  { id: 'blue-hour', name: 'Blue Hour', description: 'Rainy Doskvol blues, pale mint and clean editorial grids' },
-  { id: 'midnight', name: 'Midnight Broadcast', description: 'Ink-dark screens, electric blue and warm signal lights' },
+  { id: 'paperback', name: 'Paperback ’68', description: 'An editorial spread with open profiles and chapter indexing' },
+  { id: 'signal', name: 'Signal Orange', description: 'A circular crew dial, capsule profiles and poster typography' },
+  { id: 'blue-hour', name: 'Blue Hour', description: 'Sidebar navigation, flowing profiles and curved paper' },
+  { id: 'midnight', name: 'Midnight Broadcast', description: 'A wide broadcast console with porthole profiles and pill tabs' },
 ] as const
 export type DesignScheme = typeof designSchemes[number]['id']
+export const DesignContext = createContext<DesignScheme>('paperback')
 export const designStorageKey = 'bitd.design'
 export function isDesignScheme(value: unknown): value is DesignScheme {
   return designSchemes.some(scheme => scheme.id === value)

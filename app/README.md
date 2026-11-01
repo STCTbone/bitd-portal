@@ -45,7 +45,7 @@ Editors retain their drafts and selections while switching tabs. Use each editor
 
 ## Design studio
 
-Open **Design studio** at the top of the page to compare four book-inspired schemes: **Paperback ’68**, **Signal Orange**, **Blue Hour** and **Midnight Broadcast**. Each changes typography, surfaces, navigation and controls throughout the portal. The appearance choice is saved only in this browser; it does not change campaign records or another participant’s view. Switching preserves the current tab, selections and unsaved editor drafts. Fonts are bundled locally, and uploaded artwork and maps retain their original colors.
+Open **Design studio** at the top of the page to compare four book-inspired schemes: **Paperback ’68**, **Signal Orange**, **Blue Hour** and **Midnight Broadcast**. The schemes also change composition: an editorial crew/profile spread, a circular crew dial with capsule profiles, a desktop navigation rail with flowing rows, or a wide broadcast console above porthole profiles. Curved framing and controls carry into the workspaces. Layouts stack on phones, and the desktop rail supports Up/Down as well as Left/Right keyboard navigation. The appearance choice is saved only in this browser; it does not change campaign records or another participant’s view. Switching preserves the current tab, selections and unsaved editor drafts. Fonts are bundled locally, and uploaded artwork and maps retain their original colors.
 
 ## Identity, authorization and synchronization
 

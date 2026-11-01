@@ -1,0 +1,150 @@
+/* Composition is independent from the palette: the four editions have different silhouettes. */
+html[data-design] .campaign-summary { background:transparent; border:0; box-shadow:none; padding:0; }
+html[data-design] .campaign-summary>header { padding:.25rem 0 1rem; margin-bottom:1.5rem; }
+html[data-design] .summary-people { display:grid; min-width:0; gap:1.5rem; }
+html[data-design] .summary-identity { min-width:0; }
+html[data-design] .summary-monogram { display:none; }
+html[data-design] .summary-cards article { min-width:0; overflow-wrap:anywhere; }
+html[data-design] .summary-cards a { margin-top:1rem; max-width:100%; text-align:center; overflow-wrap:anywhere; }
+html[data-design] .summary-identity h3 { overflow-wrap:anywhere; }
+html[data-design] .table-presence { padding-top:1.5rem; margin-top:2.5rem; }
+html[data-design] .presence-list li { border-radius:2rem; padding:1rem 1.4rem; }
+
+/* 01 / An editorial spread: lead story at left, open profile rows at right. */
+html[data-design='paperback'] .summary-cards { grid-template-columns:minmax(15rem,1fr) minmax(0,1.7fr); gap:2.5rem; align-items:start; }
+html[data-design='paperback'] .summary-people { gap:0; counter-reset:profile; }
+html[data-design='paperback'] .summary-people .summary-character { position:relative; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:1.5rem; row-gap:.6rem; background:transparent; border:0; border-top:1px solid var(--design-rule); border-radius:0; padding:1.5rem 0 1.5rem 2.8rem; }
+html[data-design='paperback'] .summary-character::before { counter-increment:profile; content:counter(profile,decimal-leading-zero); position:absolute; left:0; top:1.5rem; font:700 1.15rem/1 var(--design-heading); color:var(--design-accent-text); }
+html[data-design='paperback'] .summary-character .summary-identity { grid-column:1; grid-row:1 / span 2; }
+html[data-design='paperback'] .summary-character .summary-tracks { grid-column:2; grid-row:1; margin:0; align-content:start; }
+html[data-design='paperback'] .summary-character .summary-condition { grid-column:2; grid-row:2; font-size:.85rem; color:var(--design-muted); margin:0; }
+html[data-design='paperback'] .summary-character>a { grid-column:1 / -1; justify-self:start; padding:.4rem 0; min-height:44px; margin:0; background:transparent; color:var(--design-ink); border:0; border-bottom:1px solid var(--design-accent); text-align:left; }
+html[data-design='paperback'] .summary-cards .summary-crew { padding:2rem; border-radius:0 0 3.5rem 0; }
+html[data-design='paperback'] .summary-crew .summary-identity h3 { font-size:3rem; }
+html[data-design='paperback'] .summary-crew .summary-tracks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; gap:.4rem 1rem; }
+html[data-design='paperback'] .summary-crew .summary-tracks li { background:transparent; color:var(--design-cover-ink); border-bottom:1px solid #ffffff40; padding:.5rem 0; }
+html[data-design='paperback'] :is(.note-card,.planning-card) { background:transparent; border:0; border-top:1px solid var(--design-rule); border-radius:0; padding:1.5rem 0; }
+html[data-design='paperback'] .dossier-roster-card { background:transparent; border:0; border-top:2px solid var(--design-ink); padding:.5rem 0; }
+
+/* 02 / Cover orbits: a generous crew dial and independent capsule profiles. */
+html[data-design='signal'] .campaign-page>.access-brand { border-radius:5rem .75rem 5rem .75rem; padding:2.5rem 3rem; }
+html[data-design='signal'] .campaign-page>.access-brand::after { width:11rem; height:11rem; display:grid; place-items:center; border:2px solid currentColor; border-radius:50%; right:1rem; top:.3rem; font-size:8rem; }
+html[data-design='signal'] .campaign-sections { border-radius:3rem; padding:.5rem .8rem; }
+html[data-design='signal'] .campaign-sections [role='tab'] { border-radius:999px; }
+html[data-design='signal'] .summary-cards { grid-template-columns:minmax(20rem,1fr) minmax(0,1.25fr); gap:3rem; align-items:center; }
+html[data-design='signal'] .summary-cards .summary-crew { position:relative; display:flex; flex-direction:column; justify-content:center; align-items:center; align-self:start; margin-top:.8rem; min-height:25rem; padding:3.25rem 2.75rem; text-align:center; border-radius:50%; border:3px solid var(--design-ink); box-shadow:7px 9px 0 var(--design-ink); }
+html[data-design='signal'] .summary-crew::before { content:''; position:absolute; inset:-.7rem; border:1px solid var(--design-ink); border-radius:50%; pointer-events:none; }
+html[data-design='signal'] .summary-crew .summary-kicker { margin:0 0 .8rem; }
+html[data-design='signal'] .summary-crew h3 { font-size:clamp(2.4rem,4vw,3.5rem); margin:.3rem 0; }
+html[data-design='signal'] .summary-crew .summary-tracks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; margin:1rem 0; }
+html[data-design='signal'] .summary-crew .summary-tracks li { border-radius:999px; font-size:.8rem; }
+html[data-design='signal'] .summary-crew>a { margin:.5rem 0 0; border-radius:999px; }
+html[data-design='signal'] .summary-people { gap:1.4rem; }
+html[data-design='signal'] .summary-people .summary-character { position:relative; display:grid; grid-template-columns:4rem minmax(0,1fr); column-gap:1.2rem; padding:1.4rem 1.8rem; border-radius:3rem .7rem 3rem .7rem; border:2px solid var(--design-ink); box-shadow:4px 4px 0 var(--design-cover); }
+html[data-design='signal'] .summary-character .summary-monogram { display:grid; place-items:center; width:4rem; height:4rem; border-radius:50%; border:2px solid var(--design-ink); background:var(--design-page); color:var(--design-ink); font:800 1.8rem/1 var(--design-heading); grid-column:1; grid-row:1 / span 2; }
+html[data-design='signal'] .summary-character .summary-identity { grid-column:2; }
+html[data-design='signal'] .summary-character h3 { font-size:2rem; margin:.25rem 0; }
+html[data-design='signal'] .summary-character :is(.summary-tracks,.summary-condition) { grid-column:2; margin:.4rem 0; }
+html[data-design='signal'] .summary-character .summary-condition { font-size:.85rem; }
+html[data-design='signal'] .summary-character>a { grid-column:2; justify-self:start; margin:.5rem 0 0; border-radius:999px; }
+html[data-design='signal'] .access-page :where(button,.summary-cards a) { border-radius:999px; }
+html[data-design='signal'] :is(.planning-card,.note-card,.clock-card,.dossier-roster-card) { border-radius:2.5rem .7rem 2.5rem .7rem; }
+html[data-design='signal'] .dossier-title { border-radius:3rem .7rem 3rem .7rem; }
+html[data-design='signal'] .access-page :where(input:not([type='checkbox']):not([type='range']),select) { border-radius:999px; }
+html[data-design='signal'] .access-page textarea { border-radius:1.2rem; }
+html[data-design='signal'] .crew-dossier .claim-node { border-radius:2px; }
+
+/* 03 / A city guide: a navigation rail and flowing, asymmetric profile rows. */
+@media (min-width:1001px) {
+  html[data-design='blue-hour'] .campaign-page { display:grid; grid-template-columns:10.5rem minmax(0,1fr); column-gap:2.5rem; align-items:start; max-width:86rem; margin:0 auto; }
+  html[data-design='blue-hour'] .campaign-page>.access-brand { grid-column:2; grid-row:1; width:100%; max-width:none; margin:0; }
+  html[data-design='blue-hour'] .campaign-sections { grid-column:1; grid-row:1 / span 2; position:sticky; top:1.5rem; align-self:start; width:100%; margin:1.5rem 0 0; padding:0 1rem 0 0; background:transparent; border:0; border-right:1px solid var(--design-rule); border-radius:0; box-shadow:none; backdrop-filter:none; }
+  html[data-design='blue-hour'] .campaign-sections [role='tablist'] { flex-direction:column; flex-wrap:nowrap; gap:.35rem; }
+  html[data-design='blue-hour'] .campaign-sections [role='tab'] { width:100%; text-align:left; padding:.8rem 1rem; border-radius:999px; }
+  html[data-design='blue-hour'] .campaign-tab-panel { grid-column:2; grid-row:2; width:100%; max-width:none; margin:0; }
+}
+html[data-design='blue-hour'] .summary-cards { grid-template-columns:1fr; gap:2rem; }
+html[data-design='blue-hour'] .summary-cards .summary-crew { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:.6rem 2rem; padding:2.25rem 3rem; margin-right:6%; border-radius:5rem .5rem 5rem .5rem; }
+html[data-design='blue-hour'] .summary-crew .summary-identity { grid-column:1; grid-row:1 / span 2; align-self:center; }
+html[data-design='blue-hour'] .summary-crew .summary-tracks { grid-column:2; margin:0; }
+html[data-design='blue-hour'] .summary-crew>a { grid-column:2; justify-self:start; align-self:start; margin:.5rem 0 0; border-radius:999px; }
+html[data-design='blue-hour'] .summary-people { gap:0; padding-left:5%; }
+html[data-design='blue-hour'] .summary-people .summary-character { display:grid; grid-template-columns:4rem minmax(0,1fr) minmax(0,1fr); gap:.5rem 1.3rem; border:0; border-bottom:1px solid var(--design-rule); padding:1.5rem 0; background:transparent; border-radius:0; }
+html[data-design='blue-hour'] .summary-character .summary-monogram { display:grid; place-items:center; width:4rem; height:4rem; grid-column:1; grid-row:1 / span 2; border-radius:50%; color:var(--design-action); background:var(--design-surface); border:1px solid var(--design-rule); font-size:1.2rem; font-weight:600; }
+html[data-design='blue-hour'] .summary-character .summary-identity { grid-column:2; grid-row:1 / span 2; align-self:center; }
+html[data-design='blue-hour'] .summary-character .summary-tracks { grid-column:3; grid-row:1; margin:0; }
+html[data-design='blue-hour'] .summary-character .summary-condition { grid-column:3; grid-row:2; margin:0; font-size:.85rem; color:var(--design-muted); }
+html[data-design='blue-hour'] .summary-character>a { grid-column:2 / -1; justify-self:start; background:transparent; color:var(--design-action); border:0; border-bottom:1px solid var(--design-rule); border-radius:0; padding:.5rem 0; margin:0; }
+html[data-design='blue-hour'] .dossier-title { border-radius:4rem .5rem 4rem .5rem; }
+html[data-design='blue-hour'] .note-card { border:0; border-left:3px solid var(--design-rule); border-radius:0; background:transparent; }
+html[data-design='blue-hour'] .note-card:nth-child(even) { margin-left:3rem; }
+html[data-design='blue-hour'] .access-page :where(button,.summary-cards a) { border-radius:999px; }
+html[data-design='blue-hour'] .crew-dossier .claim-node { border-radius:2px; }
+
+/* 04 / An analog console: a wide crew screen with porthole profiles underneath. */
+html[data-design='midnight'] .campaign-page>.access-brand { text-align:center; padding:1.25rem 0 2.5rem; border:0; }
+html[data-design='midnight'] .campaign-page>.access-brand h1 { font-size:clamp(2.8rem,6vw,5.2rem); }
+html[data-design='midnight'] .campaign-sections { width:fit-content; max-width:76rem; margin-left:auto; margin-right:auto; border-radius:999px; padding:.5rem .8rem; }
+html[data-design='midnight'] .campaign-sections [role='tablist'] { justify-content:center; }
+html[data-design='midnight'] .campaign-sections [role='tab'] { border-radius:999px; }
+html[data-design='midnight'] .campaign-summary>header { text-align:center; }
+html[data-design='midnight'] .summary-cards { grid-template-columns:1fr; gap:2rem; }
+html[data-design='midnight'] .summary-cards .summary-crew { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:.75rem 3rem; padding:2.25rem 3rem; border:2px solid var(--design-action); border-radius:4.5rem / 3.5rem; background:radial-gradient(ellipse at center,#244b55,var(--design-surface)); box-shadow:0 0 0 .4rem var(--design-inset),0 16px 40px #0004; }
+html[data-design='midnight'] .summary-crew .summary-identity { grid-column:1; grid-row:1 / span 2; align-self:center; }
+html[data-design='midnight'] .summary-crew h3 { font-size:3.5rem; }
+html[data-design='midnight'] .summary-crew .summary-tracks { grid-column:2; margin:0; align-content:start; }
+html[data-design='midnight'] .summary-crew>a { grid-column:2; justify-self:start; margin:.3rem 0 0; border-radius:999px; }
+html[data-design='midnight'] .summary-people { grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap:1.5rem; }
+html[data-design='midnight'] .summary-people .summary-character { display:flex; flex-direction:column; align-items:center; text-align:center; padding:2rem 1.5rem 1.5rem; border-radius:50% 50% 1.75rem 1.75rem / 3.5rem 3.5rem 1.75rem 1.75rem; }
+html[data-design='midnight'] .summary-character .summary-monogram { display:grid; place-items:center; width:4.5rem; height:4.5rem; flex:none; border-radius:50%; border:1px solid var(--design-action); box-shadow:inset 0 0 0 .35rem var(--design-input); background:var(--design-inset); color:var(--design-action); font:700 2rem/1 var(--design-heading); margin-bottom:1rem; }
+html[data-design='midnight'] .summary-character .summary-tracks { justify-content:center; }
+html[data-design='midnight'] .summary-character>a { border-radius:999px; margin-top:auto; }
+html[data-design='midnight'] :is(.planning-card,.clock-card,.note-card,.dossier-roster-card) { border-radius:2.25rem; }
+html[data-design='midnight'] .access-page :where(button,.summary-cards a) { border-radius:999px; }
+html[data-design='midnight'] .crew-dossier .claim-node { border-radius:2px; }
+
+/* Miniatures communicate composition before a scheme is selected. */
+.design-option-preview { align-items:center; }
+.design-option-swatches { position:relative; width:4.5rem; height:3rem; align-items:stretch; gap:.25rem; }
+.design-option-swatches i { opacity:1; border-radius:0; width:1.3rem; height:100%; }
+.design-option-swatches i:nth-child(2) { opacity:.5; width:1.4rem; height:1.4rem; align-self:start; }
+.design-option-swatches i:nth-child(3) { opacity:.3; width:1.4rem; height:1.4rem; align-self:end; margin-left:-1.65rem; }
+.design-option[data-scheme='signal'] .design-option-swatches i:first-child { width:3rem; border-radius:50%; }
+.design-option[data-scheme='signal'] .design-option-swatches i:not(:first-child) { width:1.2rem; border-radius:999px; }
+.design-option[data-scheme='blue-hour'] .design-option-swatches i:first-child { width:.5rem; }
+.design-option[data-scheme='blue-hour'] .design-option-swatches i:nth-child(2) { width:3rem; border-radius:1rem .1rem; }
+.design-option[data-scheme='blue-hour'] .design-option-swatches i:nth-child(3) { width:3rem; border-radius:0; margin-left:-3.25rem; height:.8rem; }
+.design-option[data-scheme='midnight'] .design-option-swatches i:first-child { width:4.5rem; height:1.1rem; border-radius:999px; }
+.design-option[data-scheme='midnight'] .design-option-swatches i:not(:first-child) { position:absolute; bottom:0; width:1.5rem; height:1.5rem; border-radius:50%; margin:0; }
+.design-option[data-scheme='midnight'] .design-option-swatches i:nth-child(2) { left:.5rem; }.design-option[data-scheme='midnight'] .design-option-swatches i:nth-child(3) { right:.5rem; }
+
+/* Keep reading/keyboard order unchanged; only the composition and framing change. */
+@media (max-width:1000px) {
+  html[data-design='blue-hour'] .campaign-sections { border-radius:2rem; }
+  html[data-design='blue-hour'] .summary-people { padding-left:0; }
+  html[data-design='signal'] .summary-cards { gap:2rem; grid-template-columns:minmax(16rem,1fr) minmax(0,1.2fr); }
+  html[data-design='signal'] .summary-cards .summary-crew { padding:2.5rem 2rem; min-height:23rem; }
+  html[data-design='signal'] .summary-people .summary-character { grid-template-columns:1fr; padding:1.5rem; }
+  html[data-design='signal'] .summary-character .summary-monogram { display:none; }
+  html[data-design='signal'] .summary-character :is(.summary-identity,.summary-tracks,.summary-condition),html[data-design='signal'] .summary-character>a { grid-column:1; }
+}
+@media (max-width:700px) {
+  html[data-design] .summary-cards { grid-template-columns:1fr; gap:1.75rem; }
+  html[data-design] .summary-people { grid-template-columns:1fr; gap:1.25rem; }
+  html[data-design] .summary-cards .summary-crew { margin:0; }
+  html[data-design='paperback'] .summary-people .summary-character { grid-template-columns:1fr; padding:1.25rem 0 1.25rem 2.25rem; }
+  html[data-design='paperback'] .summary-character :is(.summary-identity,.summary-tracks,.summary-condition),html[data-design='paperback'] .summary-character>a { grid-column:1; grid-row:auto; }
+  html[data-design='signal'] .campaign-page>.access-brand { border-radius:3rem .5rem 3rem .5rem; padding:1.75rem 1.25rem; }
+  html[data-design='signal'] .campaign-page>.access-brand::after { width:7rem; height:7rem; font-size:5rem; }
+  html[data-design='signal'] .summary-cards .summary-crew { margin:.7rem; padding:2.5rem 2rem; min-height:22rem; }
+  html[data-design='signal'] .summary-people .summary-character { border-radius:2rem .5rem 2rem .5rem; }
+  html[data-design='blue-hour'] .summary-cards .summary-crew,html[data-design='midnight'] .summary-cards .summary-crew { grid-template-columns:1fr; padding:2rem 1.5rem; border-radius:3rem .5rem 3rem .5rem; }
+  html[data-design='blue-hour'] .summary-crew :is(.summary-identity,.summary-tracks),html[data-design='blue-hour'] .summary-crew>a,html[data-design='midnight'] .summary-crew :is(.summary-identity,.summary-tracks),html[data-design='midnight'] .summary-crew>a { grid-column:1; grid-row:auto; }
+  html[data-design='midnight'] .summary-cards .summary-crew { border-radius:3rem / 2rem; }
+  html[data-design='blue-hour'] .summary-people .summary-character { grid-template-columns:3rem minmax(0,1fr); gap:.5rem 1rem; }
+  html[data-design='blue-hour'] .summary-character .summary-monogram { width:3rem; height:3rem; }
+  html[data-design='blue-hour'] .summary-character :is(.summary-identity,.summary-tracks,.summary-condition),html[data-design='blue-hour'] .summary-character>a { grid-column:2; grid-row:auto; }
+  html[data-design='blue-hour'] .note-card:nth-child(even) { margin-left:0; }
+  html[data-design='midnight'] .campaign-sections { border-radius:2rem; }
+  html[data-design] .summary-character>a { min-height:44px; }
+}
