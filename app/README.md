@@ -43,6 +43,10 @@ The campaign opens in Overview. Tabs show one workspace at a time; overview doss
 
 Editors retain their drafts and selections while switching tabs. Use each editor's normal save/review controls. Switching campaign, signing out or changing identity/role discards the previous workspace as before.
 
+## Design studio
+
+Open **Design studio** at the top of the page to compare four book-inspired schemes: **Paperback ’68**, **Signal Orange**, **Blue Hour** and **Midnight Broadcast**. Each changes typography, surfaces, navigation and controls throughout the portal. The appearance choice is saved only in this browser; it does not change campaign records or another participant’s view. Switching preserves the current tab, selections and unsaved editor drafts. Fonts are bundled locally, and uploaded artwork and maps retain their original colors.
+
 ## Identity, authorization and synchronization
 
 **Google login:** follow the [Google setup guide](../docs/google-login.md) to create a web OAuth client and configure its backend-only credentials. Google is the primary recoverable account option; local guest campaigns still work before provider configuration. Link an existing guest before leaving its browser to retain the participant ID and owned characters. After signing in on another device, **My campaigns** lists server-authorized memberships; opening one rechecks its current role. **Switch campaign** keeps the account; **Sign out** removes access from this browser and its tabs. Google profile/email never grants a GM role. A Google account already linked to another participant cannot be silently merged with a guest; use another account or explicit GM-assisted recovery.
