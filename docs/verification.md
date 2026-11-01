@@ -73,3 +73,15 @@ Read-only GitHub inspection found [PR #28](https://github.com/STCTbone/bitd-port
 Read-only Supabase project metadata reported `rmwthxkqxyhmzjzfloxl` **ACTIVE_HEALTHY**, region `us-east-1`. It did not expose the plan or backup restore points; actual provider backup retention remains unverified. The [recovery runbook](recovery.md) records the proposed retention policy and the pending destination/operator decision. Historical launch smoke results above were not rerun against production.
 
 After verification, the disposable stack and its volumes were removed with `supabase stop --workdir /tmp/bitd-recovery-validation --no-backup`; only the original `bitd-portal` containers remained running. Synthetic bundles, the temporary native-client harness and the isolated source copy were deleted. No privileged credentials or fixture data were added to Git.
+
+
+## Managed Auth history correction and complete reruns
+
+Independent review identified that the original restore cleared `auth.schema_migrations` even though both capture modes excluded it. A new real local regression failed against the original implementation: the target's initialized history became `[]`. Immediate identity/RPC checks in the former 41-assertion drill did not catch this startup risk.
+
+Restore now preserves that managed table and rejects an uninitialized Auth target. Both export paths explicitly exclude it. The expanded committed `test:recovery:local` drill compares exact history rows before/after restore, restarts the actual disposable Auth container, checks health, signs in a new identity with no campaign membership, and exercises restored identities and privacy boundaries.
+
+- A complete archived-source browser run at `ec59153` passed **157/157 (9.2m)** using `PORTAL_PORT=55473 npm run test:e2e -- --output=/tmp/bitd-final-suite-results` in `/tmp/bitd-final-suite/app`. Source/config were frozen; project `bitd-recovery-final-suite`, API 55421, DB 55422, shadow 55420, preview 55473. No browser suite was running during subsequent restore/reset/restart checks.
+- Fixed CLI capture/restore: `PORTAL_RECOVERY_WORKDIR=/tmp/bitd-final-suite/app PORTAL_RECOVERY_BUNDLE_ROOT=/tmp/bitd-auth-history-bundles npm run test:recovery:local` passed **49 assertions (29.4s)**, including actual Auth restart and subsequent sign-in.
+- Fixed native-client capture/restore: a private synthetic harness verified exact managed Auth history through restore and actual Auth restart, all source identities/campaign/membership/faction/asset rows, both uploaded byte streams, and new sign-in without campaign membership. This mechanics check used plaintext only for the SSL-disabled owned local fixture; no hosted target was contacted. The native TLS enforcement check recorded above remains separate.
+- `npm run lint`, `npm run test:recovery` (**10 tests**) and diff checks pass after the correction. Capture-mode assertions cover the explicit Auth-history exclusion in both CLI and native command contracts; the real restart drill supplies the database regression seam.

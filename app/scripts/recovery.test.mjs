@@ -64,6 +64,7 @@ test('captures every nested file across a 100-entry page and restores exact byte
   assert.equal((await verify(directory)).objects.length, 103)
   assert(f.calls.some(call => call.args.includes('--role-only')))
   assert(f.calls.some(call => call.args.includes('--data-only') && call.args.includes('bitd,auth,public')))
+  assert(f.calls.some(call => call.args.includes('--data-only') && call.args.includes('--exclude') && call.args.includes('auth.schema_migrations')))
   f.bytes.clear()
   await restoreLocal({ directory, workdir: f.root, apiUrl: 'http://127.0.0.1:55421', storage: f.storage, execute: f.execute })
   assert.deepEqual(f.bytes, original)

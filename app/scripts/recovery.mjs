@@ -120,7 +120,7 @@ export async function backup({ directory, dbUrl, storage, source, quiesced, exec
     ['schema.sql', ['--schema', 'bitd,public']],
     // Restore managed auth tables on a migrated Supabase baseline, with original IDs.
     // Storage metadata/bytes are rebuilt through its API; migrations recreate policies.
-    ['data.sql', ['--data-only', '--use-copy', '--schema', 'bitd,auth,public']],
+    ['data.sql', ['--data-only', '--use-copy', '--schema', 'bitd,auth,public', '--exclude', 'auth.schema_migrations']],
     ['history.sql', ['--data-only', '--use-copy', '--schema', 'supabase_migrations']],
   ]) {
     const output = join(directory, name)
@@ -208,16 +208,22 @@ export async function restoreLocal({ directory, workdir, apiUrl, storage, execut
   const data = await readFile(join(directory, 'data.sql'), 'utf8')
   // This is deliberately not a general destructive restore. Existing identities or
   // campaigns reject the transaction. Migrations seed catalogs, cleared with data.
+  // Managed Auth migration history belongs to the initialized target, is excluded
+  // from both capture modes, and must survive so GoTrue does not replay its DDL.
   const sql = `BEGIN;
 DO $$ BEGIN
 IF EXISTS(SELECT 1 FROM auth.users) OR EXISTS(SELECT 1 FROM bitd.campaigns) THEN
   RAISE EXCEPTION 'Recovery target contains identities/campaigns';
 END IF;
+IF NOT EXISTS(SELECT 1 FROM auth.schema_migrations) THEN
+  RAISE EXCEPTION 'Recovery target Auth is not initialized';
+END IF;
 END $$;
 SET LOCAL session_replication_role = replica;
 DO $$ DECLARE targets text; BEGIN
 SELECT string_agg(format('%I.%I', schemaname, tablename), ', ') INTO targets
-FROM pg_tables WHERE schemaname IN ('bitd','auth','public');
+FROM pg_tables WHERE schemaname IN ('bitd','auth','public')
+AND NOT (schemaname = 'auth' AND tablename = 'schema_migrations');
 IF targets IS NOT NULL THEN EXECUTE 'TRUNCATE ' || targets || ' CASCADE'; END IF;
 END $$;
 ${data}

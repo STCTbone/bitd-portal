@@ -13,7 +13,8 @@
     "backend:reset": "supabase db reset && node scripts/configure-local.mjs",
     "test:e2e": "node --env-file=.env.local node_modules/@playwright/test/cli.js test",
     "recovery": "node scripts/recovery.mjs",
-    "test:recovery": "node --test scripts/recovery.test.mjs"
+    "test:recovery": "node --test scripts/recovery.test.mjs",
+    "test:recovery:local": "node scripts/recovery-drill.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

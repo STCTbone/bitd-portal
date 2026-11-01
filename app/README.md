@@ -74,7 +74,7 @@ Tests require the committed **local** backend. They use ordinary authenticated A
 
 ## Backup and recovery
 
-See [the recovery runbook](../docs/recovery.md) for database exports, private uploaded bytes, retention review and disposable local restore drills. `npm run recovery -- backup DIRECTORY` previews the capture without reading credentials or contacting a backend. `npm run test:recovery` checks packaging and failure guards with synthetic fixtures. Live scheduled backups and off-device retention remain unconfigured/unverified.
+See [the recovery runbook](../docs/recovery.md) for database exports, private uploaded bytes, retention review and disposable local restore drills. `npm run recovery -- backup DIRECTORY` previews the capture without reading credentials or contacting a backend. `npm run test:recovery` checks packaging and failure guards with synthetic fixtures. With an explicit disposable target, `npm run test:recovery:local` checks real restore, preserved Auth migration history and Auth restart/sign-in. Live scheduled backups and off-device retention remain unconfigured/unverified.
 
 ## Concurrent worktrees
 

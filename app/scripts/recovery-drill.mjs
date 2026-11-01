@@ -20,6 +20,9 @@ const status = JSON.parse(run(cli, ['status', '--workdir', workdir, '-o', 'json'
 assert.equal(new URL(status.API_URL).hostname, '127.0.0.1')
 const dockerArgs = ['exec', '-i', `supabase_db_${project}`, 'psql', '-X', '-U', 'supabase_admin', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-Atq']
 assert.equal(run('docker', dockerArgs, { input: 'select (select count(*) from bitd.campaigns) + (select count(*) from auth.users);\n' }).trim(), '0', 'Drill must start with no campaigns or identities')
+const authHistory = () => JSON.parse(run('docker', dockerArgs, { input: "select coalesce(json_agg(m order by version), '[]'::json) from auth.schema_migrations m;\n" }))
+const sourceAuthHistory = authHistory()
+assert(sourceAuthHistory.length > 0, 'Expected an initialized Auth migration history')
 const options = { db: { schema: 'bitd' }, auth: { persistSession: false, autoRefreshToken: false } }
 const makeClient = key => createClient(status.API_URL, key, options)
 const gm = makeClient(status.ANON_KEY), player = makeClient(status.ANON_KEY), outsider = makeClient(status.ANON_KEY)
@@ -46,9 +49,28 @@ const directory = join(output, `drill-${Date.now()}`)
 const started = Date.now()
 await backup({ directory, dbUrl: status.DB_URL, source: status.API_URL, storage: admin.storage, quiesced: true })
 equal((await verify(directory)).objects.length, 2)
+equal(/^COPY "?auth"?\."?schema_migrations"?[ (]/m.test(await readFile(join(directory, 'data.sql'), 'utf8')), false)
 // Only this already-checked disposable stack is reset, never app/supabase/config.toml.
 run(cli, ['db', 'reset', '--local', '--workdir', workdir, '--yes'])
+const targetAuthHistory = authHistory()
+equal(targetAuthHistory, sourceAuthHistory)
 await restoreLocal({ directory, workdir, apiUrl: status.API_URL, storage: admin.storage })
+equal(authHistory(), targetAuthHistory)
+// Immediate RPCs can pass while Auth's managed history is corrupt. Restart the
+// actual service so migration replay/startup and subsequent identity calls count.
+run('docker', ['restart', `supabase_auth_${project}`])
+let authReady = false
+const deadline = Date.now() + 30_000
+while (Date.now() < deadline) {
+  try { authReady = (await fetch(`${status.API_URL}/auth/v1/health`, { headers: { apikey: status.ANON_KEY } })).ok } catch { /* Still restarting. */ }
+  if (authReady) break
+  await new Promise(resolve => setTimeout(resolve, 500))
+}
+equal(authReady, true)
+equal(authHistory(), targetAuthHistory)
+const newcomer = makeClient(status.ANON_KEY)
+ok(await newcomer.auth.signInAnonymously())
+equal(ok(await newcomer.rpc('campaign_role', { p_campaign: campaign })), null)
 equal(ok(await gm.rpc('campaign_role', { p_campaign: campaign })), 'gm')
 equal(ok(await player.rpc('campaign_role', { p_campaign: campaign })), 'player')
 equal(ok(await outsider.rpc('campaign_role', { p_campaign: campaign })), null)
@@ -63,5 +85,5 @@ assert((await player.storage.from('campaign-assets').download(assets[0].object_p
 assert((await outsider.storage.from('campaign-assets').download(assets[1].object_path)).error); assertions++
 ok(await admin.from('campaign_members').delete().eq('campaign_id', campaign).eq('user_id', playerId))
 assert((await player.storage.from('campaign-assets').download(assets[1].object_path)).error); assertions++
-console.log(`Recovery drill passed ${assertions} assertions in ${((Date.now() - started) / 1000).toFixed(1)}s: real SQL export/reset/restore, identities, invitations, 56 factions, private/shared bytes, outsider denial and membership revocation.`)
+console.log(`Recovery drill passed ${assertions} assertions in ${((Date.now() - started) / 1000).toFixed(1)}s: real SQL export/reset/restore, preserved managed Auth history, Auth restart/new sign-in, restored identities, invitations, 56 factions, private/shared bytes, outsider denial and membership revocation.`)
 console.log('Only synthetic data was captured. Stop/remove the disposable stack and delete the private drill bundle after recording the result.')
