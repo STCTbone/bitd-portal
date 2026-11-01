@@ -1,4 +1,4 @@
-# Local portal assurance
+# Portal assurance
 
 The baseline is published Blades ’68 v6 playbook/crew sheets and the supplied v1.0.1 book. Full source PDFs/artwork and raw credential-bearing traces remain outside Git. Feature guidance records source discrepancies (including Hound radio load and relationship suggestions), native capacities, manual procedures and explicit house-rule/table-exception labels. Changing a track alone does not run original-game advancement, retirement, Heat rollover or resource expenditure.
 
@@ -40,6 +40,36 @@ Follow [the development guide](../app/README.md). `npm run test:e2e` builds and 
 
 Independent profiles matter: two tabs in one profile share one anonymous identity. Assertions observe authorized responses and saved user-visible results. Local service credentials appear only in runners for explicit fault/permission fixtures, never in browser configuration.
 
-Record exact commit, command, local project/ports, exit status, counts and screenshots in the implementation handoff. The integration runner owns broad combined verification; ticket #27 owns its focused journey and lint/build/visual checks. Raw traces can contain invitations/tokens; redact before sharing. Freeze app inputs during tests and retain failed-run evidence. Development hot reload previously reset editor selection; production-preview tests avoid that mechanism. A later isolated Hull-save occurrence has no established cause: preserve its regression and investigate any recurrence without weakening timeouts or treating a green retry as a fix.
+Record exact commit, command, local project/ports, exit status, counts and screenshots in the implementation handoff. The original handoff assigned broad combined verification to the integration runner and the focused journey plus lint/build/visual checks to ticket #27. Raw traces can contain invitations/tokens; redact before sharing. Freeze app inputs during tests and retain failed-run evidence. Development hot reload previously reset editor selection; production-preview tests avoid that mechanism. A later isolated Hull-save occurrence has no established cause: preserve its regression and investigate any recurrence without weakening timeouts or treating a green retry as a fix.
 
-Hosted provisioning and public staging validation remain unexecuted. The future deployment guide requires review and smoke checks; local guards intentionally prevent destructive fixture suites from targeting remote services.
+## Recorded hosted evidence
+
+The [hosting record](hosting.md) documents the 2026-10-31 public launch: native Sites frontend, 30 hosted migrations, real Google sign-in and a fresh campaign with 56 factions. Its 60-assertion smoke check used independent GM/two-player/outsider identities and covered authorization, ownership, concurrent writes, private/shared/revoked uploads and exactly-once Aftermath. A separate map exchange checked peer gestures, outsider denial and immediate membership revocation. Synthetic hosted fixtures were removed. These are recorded launch results; they do not imply a fresh hosted check or a full local regression run for subsequent changes. Local test guards continue to reject remote services.
+
+## Recovery coverage
+
+`npm run test:recovery` exercises synthetic export/restore orchestration, recursive Storage pagination, byte integrity, incomplete bundles, restore target guards and retention selection. The [recovery runbook](recovery.md) distinguishes fixture checks, a disposable real local recovery drill, and still-unverified live backup coverage. Recovery requires both database records and uploaded bytes; successful checksums alone are not proof of a usable database restore.
+
+
+## Launch follow-up (2026-11-01)
+
+The follow-up branch `followup/blades68-recovery` starts at `590bfdf46c075308ad8299823808002a2f677ed6`. It reconciles the launch documentation, repairs stale browser assertions and adds recovery operations without changing frontend feature code or migrations. The pre-existing local Google activation in `app/supabase/config.toml` is preserved and excluded from the change.
+
+- `npm run lint`: exit 0, including the new recovery scripts.
+- `npm run build`: exit 0, TypeScript plus production Vite build; the existing >500 kB chunk advisory remains.
+- `npm run test:recovery`: exit 0, 10 synthetic fixture tests (pagination, corruption/missing bytes, source/target guards, incomplete exports and retention).
+- `npm run recovery -- backup backups/plan-only`: exit 0; preview only, no credential reads or network/filesystem writes.
+- `PORTAL_PORT=55473 npm run test:e2e` in the isolated copy: **153 passed, 4 failed (9.5m)**. All four failures expected obsolete availability copy. A focused Ghost/Echo reproduction also failed and its snapshot showed the shorter current status correctly rendered. The assertion now checks that status and denies new creation; the journey still saves/reloads an existing dossier after disabling its playbook. The subsequent Ghost/Echo check exposed one other stale interaction: opening the collapsed Rules reference is required before asserting its paragraph is visible. Both corrections are test-only; no timing or permission checks were weakened.
+- `PORTAL_PORT=55473 npm run test:e2e -- tests/paranormal-playbooks.spec.ts --output=/tmp/bitd-paranormal-final-results`: **8 passed (38.3s)** after the assertion fixes, including all four previously failing journeys. The full 157-test invocation was not repeated after these test-only corrections; the 153 other passing results belong to the earlier broad run. Failed-run logs/traces were retained privately during diagnosis.
+- `PORTAL_RECOVERY_WORKDIR=/tmp/bitd-recovery-validation PORTAL_RECOVERY_BUNDLE_ROOT=/tmp/bitd-recovery-bundles node scripts/recovery-drill.mjs`: **41 assertions passed (28.7s)** with final source-history checks. Real SQL and private/shared bytes were exported, the disposable backend reset, and the restored identity IDs, invitations, roles, 56 factions, exact files, outsider denial and membership revocation verified. This is local recovery evidence, not production backup coverage.
+- Pinned CLI metadata-only export from the disposable stack: 30 applied migration records match the history parser.
+- Native-client fixture harness: all four SQL exports plus 30 migrations verified, followed by a real reset/restore with exact identity, campaign, membership, faction and asset rows plus both byte streams. This mechanics check used plaintext only for the owned SSL-disabled local fixture; the separate TLS-required check specifically received the PostgreSQL SSL-refusal error. No hosted success or production restore is claimed.
+- Native PostgreSQL hosted-export client: successful disposable metadata export, and explicit rejection of the same SSL-disabled server when TLS is required. The pinned Supabase CLI accepted that server even with `sslmode=verify-full`; hosted capture therefore uses the native client. No live hosted SQL/bytes were exported.
+
+The disposable project is `bitd-recovery-validation`, API **55421**, database **55422**, shadow **55420**, browser preview **55473**. Its config came from the committed baseline with Google disabled, and source/tests were copied into `/tmp` with separate local environment output. The canonical preview and hosted data were never reset or exported.
+
+Read-only GitHub inspection found [PR #28](https://github.com/STCTbone/bitd-portal/pull/28) **OPEN**, non-draft, **MERGEABLE/CLEAN**, head `590bfdf46c075308ad8299823808002a2f677ed6`, with no reported checks, reviews, review requests or comments. This is a point-in-time observation, not approval or proof that checks ran remotely. The follow-up is local and does not update that PR. No push, approval, merge or deployment was performed. The isolated Sites checkout remained clean at `0579efc`.
+
+Read-only Supabase project metadata reported `rmwthxkqxyhmzjzfloxl` **ACTIVE_HEALTHY**, region `us-east-1`. It did not expose the plan or backup restore points; actual provider backup retention remains unverified. The [recovery runbook](recovery.md) records the proposed retention policy and the pending destination/operator decision. Historical launch smoke results above were not rerun against production.
+
+After verification, the disposable stack and its volumes were removed with `supabase stop --workdir /tmp/bitd-recovery-validation --no-backup`; only the original `bitd-portal` containers remained running. Synthetic bundles, the temporary native-client harness and the isolated source copy were deleted. No privileged credentials or fixture data were added to Git.

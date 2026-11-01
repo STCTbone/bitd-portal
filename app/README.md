@@ -53,7 +53,7 @@ Editors retain their drafts and selections while switching tabs. Use each editor
 
 Guest sign-in creates a real authenticated identity without email. Its credentials remain in that browser's auth storage; `bitd.activeCampaign` stores only the selected campaign ID. Clearing browser data loses an unlinked guest identity: rejoin using an invitation and ask the GM to reassign your character. A Google-linked identity can sign in again instead. Reload verifies current identity and membership with the server. Browser storage remains a convenient session cache, rather than the only way to recover a linked identity.
 
-Current backend membership determines GM/player authority. Character owner/GM mutations, invitation reads, hidden clocks, private faction/backing/Aftermath records and assets have separate protected contracts. Generic entity upserts/merge and durable peer broadcasts stay denied. Public browser configuration contains only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (a publishable key can occupy the latter variable on a future host). Never place service-role/secret keys, database passwords, auth tokens or invitations in `VITE_*` variables.
+Current backend membership determines GM/player authority. Character owner/GM mutations, invitation reads, hidden clocks, private faction/backing/Aftermath records and assets have separate protected contracts. Generic entity upserts/merge and durable peer broadcasts stay denied. Public browser configuration contains only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (the hosted publishable key occupies the latter variable). Never place service-role/secret keys, database passwords, auth tokens or invitations in `VITE_*` variables.
 
 The static React workspace uses feature-specific authenticated API reads, version/expected-value conflicts and bounded polling, with focus/reconnect refreshes. Most durable snapshots refresh every 1–2 seconds; map gestures poll every 250ms and expire; online participants aggregate authenticated connection leases. Overview/presence and map transport use short access leases to discard stale responses. Snapshot failure conceals affected saved views and exposes recovery; changed drafts survive supported failed-save flows. Read each field's visible save status, retry or deliberately discard/reload a conflict. Suspended/offline browsers cannot promise instantaneous revocation; backend mutations always check current permission. Previously read information cannot be recalled.
 
@@ -71,6 +71,10 @@ npm run build
 Tests require the committed **local** backend. They use ordinary authenticated API/Storage/Realtime checks and independent real browser contexts; privileged local test setup never enters browser configuration. Playwright builds and launches its own production preview, refuses an existing server and runs one worker. Stop the interactive frontend on 5173 first, or choose `PORTAL_PORT=5273 npm run test:e2e`. Keep app source/config/docs frozen while tests run; retain traces/network evidence for a failure. Test output may contain credentials: keep `test-results/` and raw logs private and ignored.
 
 [The coverage matrix](../docs/verification.md) maps catalogs, confidentiality, concurrency and end-to-end journeys to existing tests. Focused examples: `npm run test:e2e -- tests/portal-handoff.spec.ts` and `npm run test:e2e -- tests/campaign-access.spec.ts`. Full lint includes active source and tests; no legacy baseline failures are accepted. Build includes TypeScript checking.
+
+## Backup and recovery
+
+See [the recovery runbook](../docs/recovery.md) for database exports, private uploaded bytes, retention review and disposable local restore drills. `npm run recovery -- backup DIRECTORY` previews the capture without reading credentials or contacting a backend. `npm run test:recovery` checks packaging and failure guards with synthetic fixtures. Live scheduled backups and off-device retention remain unconfigured/unverified.
 
 ## Concurrent worktrees
 
@@ -92,7 +96,7 @@ Install independent dependencies with `npm ci`. Give each isolated worktree a un
 
 ## Hosted deployment
 
-The portal is deployed through Sites with hosted Supabase. See [the deployment record and update runbook](../docs/hosting.md) for its address, project identity, launch checks and publishing procedure. The initial private deployment is not proof of live Google sign-in or player access.
+The portal is deployed through Sites with hosted Supabase. See [the deployment record and update runbook](../docs/hosting.md) for its address, project identity, launch checks and publishing procedure. The recorded public launch includes real Google sign-in and a 60-assertion GM/player/outsider smoke check; these are historical results, not an automatic check of a later release.
 
 The following remains the general setup procedure for a separate hosted environment. Local CLI configuration does not automatically configure a hosted project. Before spending or publishing, review host/region, auth abuse controls, polling cost, Storage limits, backup/retention and the application's confidentiality checks on staging.
 

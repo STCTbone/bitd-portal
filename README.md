@@ -1,6 +1,6 @@
 # Blades ’68 campaign portal
 
-A local, shared campaign dossier for fresh **Blades ’68** campaigns, adapted from [Doskvol Portal](https://github.com/bsxp/bitd-portal). React/TypeScript runs as a static frontend; Supabase supplies Google-linked and guest identities, PostgreSQL authorization and private file storage.
+A shared campaign dossier for fresh **Blades ’68** campaigns, adapted from [Doskvol Portal](https://github.com/bsxp/bitd-portal). React/TypeScript runs as a static frontend; Supabase supplies Google-linked and guest identities, PostgreSQL authorization and private file storage.
 
 The workspace includes all eight standard and four GM-enabled paranormal playbooks, all six crews, factions and backing, clocks, Personal Business, Planning Meeting, active scores, reviewed Aftermath and corrections, shared notes, art, media and collaborative maps. The landing overview shows saved sheet summaries and authenticated online participants. Current published v6 sheets are the baseline; verified procedures cite the supplied v1.0.1 book. Unverified procedures remain manual, with table exceptions and house rules labeled explicitly.
 
@@ -17,7 +17,7 @@ npm run dev -- --host 127.0.0.1
 
 Open **http://127.0.0.1:5173**. Create a campaign as GM; use its player invitation in two separate browser profiles for independent players. Fresh campaigns include the 56 published Gazette factions with neutral crew status. Characters, crews, scores and sample fiction start empty. The GM may review optional sample fiction or a precisely scoped workspace clear.
 
-See [the development and deployment guide](app/README.md) for setup, identity recovery, safe resets, testing, troubleshooting and the reviewed future hosting path. No live hosting or paid service has been provisioned by this implementation.
+The portal is live at **https://blades68-portal.deldir.chatgpt.site** with hosted Supabase and Google sign-in. See [the deployment record](docs/hosting.md) for recorded launch checks and the separate Sites publishing workflow; a GitHub push alone does not publish the frontend. See [the development guide](app/README.md) for local setup, identity recovery, safe resets and testing, and [backup and recovery](docs/recovery.md) for database plus uploaded-file coverage and the remaining live-operations decision.
 
 [Google login](docs/google-login.md) adds recoverable accounts and a signed-in campaign list. Link existing guests to Google to preserve character ownership. Google requires backend OAuth client configuration; the local guest preview remains available before that setup.
 

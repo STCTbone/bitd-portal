@@ -29,3 +29,6 @@ supabase/.temp/
 supabase/.branches/
 playwright-report/
 test-results/
+
+# Sensitive database exports and uploaded-file recovery bundles
+backups/

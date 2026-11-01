@@ -171,7 +171,8 @@ for (const playbook of books) test(`${playbook} owner edits native records, retr
   await gm.getByLabel(`Allow ${playbook}`, { exact: true }).uncheck()
   await gm.getByRole('button', { name: 'Review paranormal availability', exact: true }).click()
   await gm.getByRole('button', { name: 'Confirm paranormal availability', exact: true }).click()
-  await expect(owner.getByText('Unavailable for new characters. This existing dossier remains readable and editable.', { exact: true })).toBeVisible()
+  await expect(owner.getByRole('status').filter({ hasText: /^Unavailable for new characters\.$/ })).toBeVisible()
+  await expect(owner.getByRole('button', { name: `Create ${playbook}`, exact: true })).toBeDisabled()
   await owner.getByLabel(field, { exact: true }).fill('Still permitted after disable')
   await owner.getByRole('button', { name: 'Review paranormal records', exact: true }).click()
   await owner.getByRole('button', { name: 'Confirm paranormal records', exact: true }).click()
@@ -179,7 +180,11 @@ for (const playbook of books) test(`${playbook} owner edits native records, retr
   await owner.reload(); await owner.getByRole('button', { name: 'Open Anomaly', exact: true }).click()
   await expect(owner.getByLabel(field, { exact: true })).toHaveValue('Still permitted after disable')
   await expect(owner.getByLabel(`${resource} marked`, { exact: true })).toHaveValue(vampire ? '12' : '9')
-  if (ghost) await expect(owner.getByRole('region', { name: 'Paranormal records', exact: true }).getByText('You cannot turn Keys.', { exact: false })).toBeVisible()
+  if (ghost) {
+    const rules = owner.getByRole('region', { name: 'Paranormal records', exact: true }).locator('details').filter({ hasText: 'You cannot turn Keys.' })
+    await rules.locator('summary').click()
+    await expect(rules.getByText('You cannot turn Keys.', { exact: false })).toBeVisible()
+  }
   if (!ghost && !vampire) { await expect(owner.getByLabel('Alluvium remaining', { exact: true })).toHaveValue('3'); await expect(owner.getByLabel('Mission detail 1', { exact: true })).toHaveValue('The crew is essential') }
   for (const region of ['Paranormal records', 'Condition records']) await owner.getByRole('region', { name: region, exact: true }).screenshot({ path: `test-results/${playbook.replaceAll('/','-').replaceAll(' ','-')}-${region.split(' ')[0]}-desktop.png` })
   await owner.setViewportSize({ width: 390, height: 844 })

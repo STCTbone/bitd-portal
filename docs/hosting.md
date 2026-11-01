@@ -18,7 +18,9 @@ A separate hosted map-activity exchange verified GM pings and player drawing str
 
 The follow-up migration `202610310033_business_conflict_http409.sql` brings the deployed total to 30 migrations. It changes intentional business-conflict codes in 27 functions because [managed PostgREST 14 can retry custom `40001` errors indefinitely](https://supabase.com/kb/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions). Before/after checks confirmed that all 136 application function definitions match after normalizing only that code, with owners, ACLs, OIDs and search-path settings preserved. Use `PT409` for future stale-record checks; reserve serialization failure codes for actual database transaction failures.
 
-## Complete the first launch
+## Launch configuration and repeat checks
+
+The public launch above completed the initial configuration. Use this checklist when checking a new environment or changing identity/access settings; it does not imply that launch is still pending.
 
 1. In Supabase Auth, configure Google and manual identity linking. Set the Site URL and exact allowed return URL to `https://blades68-portal.deldir.chatgpt.site/`. In the existing Google web client, use the website origin and add `https://rmwthxkqxyhmzjzfloxl.supabase.co/auth/v1/callback` as an authorized redirect URI. Keep the client secret in backend provider settings.
 2. Confirm the hosted API exposes `bitd`, anonymous sign-in remains enabled for the existing guest flow, Realtime public access is disabled, and `campaign-assets` remains private. The committed migrations supply the application grants and Storage policies.
@@ -50,4 +52,4 @@ npx supabase db push
 
 Do not use `backend:reset`, the historical bootstrap SQL or the Docker-only local configurator against the host. Existing automated browser suites intentionally reject remote URLs and may alter their test backend; use separate local test campaigns and a bounded hosted smoke check.
 
-Configure database and uploaded-file backup/retention according to the selected Supabase plan. Database backups alone do not copy uploaded image/audio bytes. If the free project pauses after inactivity, restore it in the Supabase dashboard before the next session; monitor storage and bandwidth as the group adds media.
+[Backup and recovery](recovery.md) defines database plus uploaded-file capture, integrity validation, a disposable local restore drill, retention and the production activation decision. Live backup scheduling, off-device destination and actual provider retention have not been established by this follow-up. Database backups alone do not copy uploaded image/audio bytes. If the free project pauses after inactivity, restore it in the Supabase dashboard before the next session; monitor storage and bandwidth as the group adds media.
