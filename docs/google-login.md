@@ -31,4 +31,6 @@ Browser/API tests use real local Supabase Auth sessions and campaign RLS. They c
 
 A real Google consent and callback test requires the operator's client configuration. Do not report it as passed until that step is completed. Anonymous previews remain available while configuration is pending.
 
+On 2026-10-31, the configured hosted portal completed real Google sign-in and returned to the production origin. The operator created a fresh campaign with that Google identity as GM, and campaign access survived a page reload. See the [hosting runbook](hosting.md) for the deployed origin and backend.
+
 Sources checked 2026-10-21: [Google provider](https://supabase.com/docs/guides/auth/social-login/auth-google), [anonymous identity upgrades](https://supabase.com/docs/guides/auth/auth-anonymous), [manual identity linking](https://supabase.com/docs/reference/javascript/auth-linkidentity), [CLI config](https://supabase.com/docs/guides/local-development/cli/config).

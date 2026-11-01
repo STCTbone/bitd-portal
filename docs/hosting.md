@@ -8,7 +8,13 @@
 - Sites project: **appgprj_6ae6a26b0a4881918253f48977f778cc**
 - Signal Orange is the default; valid saved appearance choices remain available.
 
-The initial owner-private deployment succeeded on 2026-10-31 after applying 29 committed migrations to a fresh hosted database. The local preview and its records were retained. Site audience, live Google consent/callback and the player-join smoke check are separate launch checks; a successful static build or private deployment does not establish those results.
+The public deployment succeeded on 2026-10-31 after applying 29 committed migrations to a fresh hosted database. Anonymous visitors can reach the portal without a ChatGPT login; Google identity and campaign membership protect campaign access. Real Google sign-in returned successfully to the live website, and the operator's fresh **Blades ’68** campaign contains all 56 published factions and restores after reload. Its player invitation is available under **Account**. The local preview and its records were retained.
+
+Frontend source commit: `0579efc571b36b425b68d9a5677222ebe35d592e`; Sites version: **1**. Site access changes may need a short propagation period before new visits reflect them.
+
+The hosted smoke check passed 60 assertions using independent GM, two-player and outsider identities: invitations, ownership, all faction defaults, GM privacy, concurrent edits, private/shared/revoked uploads, token authority, presence and exactly-once Aftermath. All synthetic identities, records and uploaded bytes were removed; the real campaign was preserved. Twelve stale-write paths returned HTTP 409 with `PT409` in 63–84 ms and retained accepted data.
+
+The follow-up migration `202610310033_business_conflict_http409.sql` brings the deployed total to 30 migrations. It changes intentional business-conflict codes in 27 functions because [managed PostgREST 14 can retry custom `40001` errors indefinitely](https://supabase.com/kb/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions). Before/after checks confirmed that all 136 application function definitions match after normalizing only that code, with owners, ACLs, OIDs and search-path settings preserved. Use `PT409` for future stale-record checks; reserve serialization failure codes for actual database transaction failures.
 
 ## Complete the first launch
 
