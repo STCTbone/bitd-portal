@@ -6,10 +6,15 @@
 .dossier-workspace button { border:2px solid #173e46; padding:.7rem 1rem; background:#173e46; color:#fff9eb; font-weight:700; cursor:pointer; min-height:44px; }
 .dossier-workspace button:disabled { cursor:wait; opacity:.6; }
 .dossier-workspace button:focus-visible,.dossier-workspace input:focus-visible,.dossier-workspace textarea:focus-visible,.dossier-workspace select:focus-visible { outline:3px solid #cf4e2d; outline-offset:3px; }
-.dossier-roster { display:flex; flex-wrap:wrap; gap:.75rem; margin:1rem 0; color:#fff3d6; }
-.dossier-roster small { display:block; margin-top:.3rem; }
-.dossier-roster button { background:#f2ae54; color:#17333a; }
-.dossier-roster button[aria-pressed=true] { background:#a5ded3; }
+.dossier-roster { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,15rem),1fr)); gap:1rem; margin:1.25rem 0 1.5rem; color:#fff3d6; }
+.dossier-roster-card { display:flex; flex-direction:column; min-width:0; padding:.5rem; border:1px solid #628985; background:#fff4de; }
+.dossier-roster .dossier-roster-open { display:flex; flex:1; flex-direction:column; justify-content:center; align-items:flex-start; gap:.4rem; min-height:6rem; width:100%; padding:1rem; border-color:transparent; background:transparent; color:#17333a; text-align:left; overflow-wrap:anywhere; }
+.dossier-roster-open>span { font-size:1.1rem; }
+.dossier-roster small { font-size:.8rem; font-weight:400; line-height:1.4; }
+.dossier-roster .dossier-roster-open:hover { background:#e5eddf; }
+.dossier-roster .dossier-roster-open[aria-pressed=true] { background:#a5ded3; border-color:#173e46; }
+.dossier-roster .dossier-roster-claim { width:100%; margin-top:.5rem; padding:.6rem 1rem; background:transparent; color:#173e46; border-color:#628985; }
+.dossier-roster .dossier-roster-claim:hover:not(:disabled) { background:#173e46; color:#fff9eb; }
 .dossier-create { background:#a5ded3; padding:1rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:end; }
 .dossier-create>label:first-child { flex:1 1 14rem; font-weight:700; }
 .dossier-workspace input:not([type=checkbox]),.dossier-workspace textarea,.dossier-workspace select { display:block; width:100%; min-width:0; padding:.65rem; min-height:44px; background:#fffdf7; color:#17333a; border:2px solid #5f7475; border-radius:0; font:inherit; margin-top:.4rem; }

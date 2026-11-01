@@ -52,9 +52,9 @@ export function CharacterDossiers({ selectedCharacter, onSelectCharacter }: { se
     {syncError && <div role="alert" className="dossier-error">{syncError} <button onClick={() => void refresh()}>Retry character sync</button></div>}
     {error && <p role="alert" className="dossier-error">{error}</p>}
     <div className="dossier-roster">
-      {!loaded ? <p role="status">Loading characters…</p> : records.length === 0 ? <p>No characters yet. Create your first character.</p> : records.map(c => <div key={c.id}>
-        <button onClick={() => setSelected(c.id)} aria-pressed={selected === c.id} aria-label={`Open ${c.data.name}`}>{c.data.name} <small>{c.data.playbook} · {c.owner_id === session!.userId ? 'Yours' : c.owner_id ? 'Owned' : 'Unclaimed'}</small></button>
-        {c.owner_id === null && <button disabled={busy} onClick={() => { setSelected(c.id); void action('claim_character', c.id) }}>Claim {c.data.name}</button>}
+      {!loaded ? <p role="status">Loading characters…</p> : records.length === 0 ? <p>No characters yet. Create your first character.</p> : records.map(c => <div className="dossier-roster-card" key={c.id}>
+        <button className="dossier-roster-open" onClick={() => setSelected(c.id)} aria-pressed={selected === c.id} aria-label={`Open ${c.data.name}`}><span>{c.data.name}</span><small>{c.data.playbook} · {c.owner_id === session!.userId ? 'Yours' : c.owner_id ? 'Owned' : 'Unclaimed'}</small></button>
+        {c.owner_id === null && <button className="dossier-roster-claim" aria-label={`Claim ${c.data.name}`} disabled={busy} onClick={() => { setSelected(c.id); void action('claim_character', c.id) }}>Claim character</button>}
       </div>)}
     </div>
     {availabilityError && <p role="alert" className="dossier-error">{availabilityError} <button onClick={() => void refreshAvailability()}>Retry playbook availability</button></p>}
