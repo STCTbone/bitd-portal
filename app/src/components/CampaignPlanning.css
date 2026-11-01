@@ -85,3 +85,12 @@
 .aftermath-step-rule summary { min-height:32px; align-content:center; cursor:pointer; font-weight:700; }
 .aftermath-step-rule summary:focus-visible { outline:3px solid #c2422d; outline-offset:3px; }
 @media(max-width:600px) { .aftermath-checklist li { grid-template-columns:1fr; gap:.6rem; padding:.8rem; } }
+
+.personal-business-card .planning-fields>label:first-child { grid-column:1 / -1; max-width:22rem; }
+.activity-earlier-details { margin-top:1rem; border-top:1px solid #9caea2; padding-top:.75rem; }
+.activity-earlier-details summary { cursor:pointer; font-weight:700; min-height:32px; }
+.activity-earlier-details dl { margin:.5rem 0; }
+.activity-earlier-details dl>div { margin:.75rem 0; }
+.activity-earlier-details dt { font-weight:700; }
+.activity-earlier-details dd { margin:.25rem 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.activity-remove { margin-top:.65rem; }

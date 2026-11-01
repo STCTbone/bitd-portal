@@ -103,7 +103,7 @@ test('GM reviews concrete effects in browser, confirms, reloads recap and record
  await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invites.gm)
  await page.getByRole('button', { name: 'Join campaign', exact: true }).click().then(() => page.getByRole('tab', { name: 'Cycle', exact: true }).click())
  const cycle = page.getByRole('region', { name: 'Campaign cycle', exact: true })
- await cycle.getByLabel('Activity description', { exact: true }).fill('Recover between scores; roll and effects recorded manually')
+ await cycle.getByLabel('Scene', { exact: true }).fill('Recover between scores; roll and effects recorded manually')
  await cycle.getByRole('button', { name: 'Record activity', exact: true }).click()
  await expect(cycle.getByRole('article', { name: 'Free play · Moth', exact: true })).toBeVisible()
  await cycle.getByLabel('Campaign phase', { exact: true }).selectOption('planning_meeting')
@@ -160,10 +160,11 @@ test('GM reviews concrete effects in browser, confirms, reloads recap and record
  await expect(panel.getByText('Pending GM review', { exact: true })).toBeVisible()
  await panel.getByRole('article', { name: 'Pending Aftermath proposal', exact: true }).scrollIntoViewIfNeeded()
  await page.screenshot({ path: 'test-results/aftermath-review-desktop.png' })
- await context.setOffline(true)
+ // Fail the confirmation request without racing the separate access-refresh guard,
+ // which correctly hides saved reviews once a whole-browser disconnect is detected.
+ await page.route('**/rest/v1/rpc/confirm_aftermath', route => route.abort('failed'), { times: 1 })
  await panel.getByRole('button', { name: 'Confirm all reviewed changes', exact: true }).click()
  await expect(panel.getByRole('alert').filter({ hasText: 'Aftermath was not saved' })).toBeVisible()
- await context.setOffline(false)
  await expect(panel.getByRole('button', { name: 'Confirm all reviewed changes', exact: true })).toBeVisible()
  await page.route('**/rest/v1/rpc/confirm_aftermath', async route => { await route.fetch(); await route.abort('failed') }, { times: 1 })
  await panel.getByRole('button', { name: 'Confirm all reviewed changes', exact: true }).click()

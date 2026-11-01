@@ -55,7 +55,7 @@ test('GM and two players complete one keyboard-accessible cycle, recover a faile
 
     for (const page of [gm, one, two]) await page.getByRole('tab', { name: 'Cycle', exact: true }).click()
     await cycle(one).getByLabel('Activity character', { exact: true }).selectOption({ label: 'Moth' })
-    await cycle(one).getByLabel('Activity description', { exact: true }).fill('Visit our signal engineer; result stays manual')
+    await cycle(one).getByLabel('Scene', { exact: true }).fill('Visit our signal engineer; result stays manual')
     await cycle(one).getByRole('button', { name: 'Record activity', exact: true }).click()
     await expect(cycle(two).getByRole('article', { name: 'Free play · Moth', exact: true })).toBeVisible()
     await cycle(gm).getByLabel('Campaign phase', { exact: true }).selectOption('planning_meeting')

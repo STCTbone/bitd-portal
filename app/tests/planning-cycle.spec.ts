@@ -133,14 +133,13 @@ test('table records Personal Business, compares opportunities and reloads a shar
   await expect(own.getByText('Personal Business', { exact: true }).first()).toBeVisible()
   await own.getByLabel('Activity character', { exact: true }).selectOption({ label: 'Moth' })
   await own.getByLabel('New activity', { exact: true }).selectOption('Long-Term Project')
-  await own.getByLabel('Activity description', { exact: true }).fill('Build the jammer')
+  await own.getByLabel('Project', { exact: true }).fill('Build the jammer')
   await own.getByRole('button', { name: 'Record activity', exact: true }).click()
   const activity = own.getByRole('article', { name: 'Long-Term Project · Moth', exact: true })
-  await activity.getByLabel('Activity outcome', { exact: true }).fill('Two segments agreed')
-  await activity.getByLabel('Helper', { exact: true }).fill('Our rival')
+  await activity.getByLabel('Progress', { exact: true }).fill('Two segments agreed')
   await activity.getByRole('button', { name: 'Save activity', exact: true }).click()
   await expect(activity.getByRole('status')).toHaveText('Saved.')
-  await expect(shared.getByRole('article', { name: 'Long-Term Project · Moth', exact: true }).getByLabel('Activity outcome', { exact: true })).toHaveValue('Two segments agreed')
+  await expect(shared.getByRole('article', { name: 'Long-Term Project · Moth', exact: true }).getByLabel('Progress', { exact: true })).toHaveValue('Two segments agreed')
   await expect(own.getByRole('button', { name: 'Set phase', exact: true })).toHaveCount(0)
   await shared.getByLabel('Campaign phase', { exact: true }).selectOption('planning_meeting')
   await shared.getByRole('button', { name: 'Set phase', exact: true }).click()
@@ -245,4 +244,85 @@ test('a GM can correct the primary selection without duplicating selected score 
   expect(correction.data.id).toBe(selected.data.id)
   expect((await gm.from('campaign_cycles').select('*').eq('campaign_id', campaign)).data![0]).toMatchObject({ selected_score_id: selected.data.id, revision: 4 })
   expect((await gm.from('scores').select('*').eq('campaign_id', campaign)).data).toHaveLength(2)
+})
+
+test('downtime activities use three tailored inputs and preserve earlier details through conflicts and reloads', async ({ browser }) => {
+  const { gm, campaign, character, invites } = await table()
+  const beforeCharacter = (await gm.from('characters').select('*').eq('id', character.id)).data![0]
+  const earlier = { roll: '4, 5', helper: 'Rival', spend: '1 stack agreed', finalResult: 'Previous final result', proposedEffects: 'Previous proposed effects' }
+  const prompts = [
+    ['Free play', 'Scene', 'Outcome'],
+    ['Indulge Vice', 'Vice / contact', 'Stress cleared / overindulgence'],
+    ['Long-Term Project', 'Project', 'Progress'],
+    ['Recover', 'Treatment / healer', 'Healing / Harm changes'],
+    ['Reduce Heat', 'How you reduce Heat', 'Heat reduced'],
+    ['Acquire Asset', 'Asset', 'Quality / duration'],
+    ['Training Montage', 'Training focus', 'XP gained'],
+  ]
+  const ids = new Map<string, string>()
+  for (const [activity] of prompts) {
+    const created = await gm.rpc('create_personal_business', { p_character: character.id, p_data: { activity, description: `${activity} detail`, ...(activity === 'Indulge Vice' ? earlier : {}) } })
+    expect(created.error).toBeNull(); ids.set(activity, created.data.id)
+  }
+  const editorContext = await browser.newContext(), readerContext = await browser.newContext()
+  const editor = await editorContext.newPage(), reader = await readerContext.newPage()
+  try {
+    for (const [page, invitation] of [[editor, invites.gm], [reader, invites.player]] as const) {
+      await page.goto('/'); await page.getByLabel('Invitation', { exact: true }).fill(invitation)
+      await page.getByRole('button', { name: 'Join campaign', exact: true }).click()
+      await page.getByRole('tab', { name: 'Cycle', exact: true }).click()
+    }
+    const creation = editor.getByRole('group', { name: 'Record individual activity', exact: true })
+    await expect(creation.locator('input, select, textarea')).toHaveCount(3)
+    for (const [activity, detail, result] of prompts) {
+      await creation.getByLabel('New activity', { exact: true }).selectOption(activity)
+      await expect(creation.getByLabel(detail, { exact: true })).toBeVisible()
+      const card = editor.getByRole('article', { name: `${activity} · Moth`, exact: true })
+      await expect(card.locator('input, select, textarea')).toHaveCount(3)
+      await expect(card.getByLabel(detail, { exact: true })).toHaveValue(`${activity} detail`)
+      await card.getByLabel(result, { exact: true }).fill(`${activity} result`)
+      await card.getByRole('button', { name: 'Save activity', exact: true }).click()
+      await expect(card.getByRole('status')).toHaveText('Saved.')
+      const readOnly = reader.getByRole('article', { name: `${activity} · Moth`, exact: true })
+      await expect(readOnly.getByLabel(result, { exact: true })).toHaveValue(`${activity} result`)
+      await expect(readOnly.getByLabel(detail, { exact: true })).toBeDisabled()
+      await expect(readOnly.getByLabel('Activity', { exact: true })).toBeDisabled()
+      await expect(readOnly.getByRole('button', { name: 'Save activity', exact: true })).toHaveCount(0)
+    }
+    const vice = editor.getByRole('article', { name: 'Indulge Vice · Moth', exact: true })
+    await vice.getByLabel('Activity', { exact: true }).selectOption('Long-Term Project')
+    await expect(vice.getByLabel('Project', { exact: true })).toHaveValue('Indulge Vice detail')
+    await expect(vice.getByLabel('Progress', { exact: true })).toHaveValue('Indulge Vice result')
+    await vice.getByLabel('Activity', { exact: true }).selectOption('Indulge Vice')
+    await vice.getByLabel('Stress cleared / overindulgence', { exact: true }).fill('Our draft result')
+    expect((await gm.rpc('update_personal_business', { p_record: ids.get('Indulge Vice'), p_patch: { outcome: 'Peer result' }, p_expected: { outcome: 'Indulge Vice result' } })).error).toBeNull()
+    await vice.getByRole('button', { name: 'Save activity', exact: true }).click()
+    await expect(vice.getByRole('alert')).toContainText('Record changed elsewhere')
+    await expect(vice.getByLabel('Stress cleared / overindulgence', { exact: true })).toHaveValue('Our draft result')
+    await vice.getByRole('button', { name: 'Reload record (discard unsaved)', exact: true }).click()
+    await expect(vice.getByLabel('Stress cleared / overindulgence', { exact: true })).toHaveValue('Peer result')
+    await vice.getByLabel('Stress cleared / overindulgence', { exact: true }).fill('3 Stress cleared; no overindulgence')
+    await editorContext.setOffline(true)
+    await vice.getByRole('button', { name: 'Save activity', exact: true }).click()
+    await expect(vice.getByRole('alert')).toContainText('Record was not saved')
+    await expect(vice.getByLabel('Stress cleared / overindulgence', { exact: true })).toHaveValue('3 Stress cleared; no overindulgence')
+    await editorContext.setOffline(false)
+    await vice.getByRole('button', { name: 'Save activity', exact: true }).click()
+    await expect(vice.getByRole('status')).toHaveText('Saved.')
+    await editor.reload()
+    await expect(vice.getByLabel('Stress cleared / overindulgence', { exact: true })).toHaveValue('3 Stress cleared; no overindulgence')
+    await vice.getByText('Earlier details', { exact: true }).click()
+    for (const value of Object.values(earlier)) await expect(vice.getByRole('definition').filter({ hasText: value })).toBeVisible()
+    await expect(vice.locator('input, select, textarea')).toHaveCount(3)
+    expect((await gm.from('personal_business').select('*').eq('id', ids.get('Indulge Vice'))).data![0].data).toMatchObject({ ...earlier, outcome: '3 Stress cleared; no overindulgence' })
+    expect((await gm.from('characters').select('*').eq('id', character.id)).data![0]).toEqual(beforeCharacter)
+    await vice.getByText('Earlier details', { exact: true }).click()
+    await vice.scrollIntoViewIfNeeded()
+    await editor.screenshot({ path: 'test-results/downtime-three-inputs-desktop.png' })
+    await editor.setViewportSize({ width: 390, height: 844 })
+    await vice.scrollIntoViewIfNeeded()
+    await editor.screenshot({ path: 'test-results/downtime-three-inputs-mobile.png' })
+    expect(await editor.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    expect((await gm.from('personal_business').select('*').eq('campaign_id', campaign)).data).toHaveLength(7)
+  } finally { await editorContext.close(); await readerContext.close() }
 })

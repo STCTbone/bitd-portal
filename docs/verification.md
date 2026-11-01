@@ -22,7 +22,7 @@ Tests use authenticated API, Storage and Realtime boundaries and real browsers a
 | Default Gazette roster, retained edits/deletions, separate GM notes, disclosure and conflicts | `factions.spec.ts` |
 | Private/shared backing, obligations, Failure and eligibility | `backing-records.spec.ts`, `character-grants.spec.ts` |
 | Shared/hidden clocks, scope and stale/deleted updates | `clock-records.spec.ts`, `campaign-setup.spec.ts` |
-| Personal Business, Planning Meeting, concurrent plans and selected opportunities | `planning-cycle.spec.ts` |
+| Three-input Personal Business activities, retained earlier details, Planning Meeting, concurrent plans and selected opportunities | `planning-cycle.spec.ts` |
 | Score lifecycle, cohorts, corrections and immutable history | `active-scores.spec.ts` |
 | Atomic Aftermath, duplicate/competing confirmation, corrections and private manual consequences | `aftermath.spec.ts` |
 | Private art/media uploads, unshared/revoked bytes, outsiders and cleanup | `media.spec.ts` |

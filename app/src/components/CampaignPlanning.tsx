@@ -6,14 +6,32 @@ import { useClocks } from '@/lib/clocks'
 import { createScoreActivity, transitionScore, transitionScoreActivity, updateScoreActivity, updateScoreRecord, type ScoreRecordData, type ScoreEvent } from '@/lib/planning'
 import './CampaignPlanning.css'
 
-type Field<T> = { key: keyof T; label: string; type?: 'number' | 'checkbox' | 'select'; options?: readonly string[]; gmOnly?: boolean }
-const activityFields: Field<ActivityData>[] = [{ key: 'activity', label: 'Activity', type: 'select', options: activities }, { key: 'description', label: 'Activity description' }, { key: 'outcome', label: 'Activity outcome' }, { key: 'roll', label: 'Base roll' }, { key: 'helper', label: 'Helper' }, { key: 'spend', label: 'Agreed spending' }, { key: 'finalResult', label: 'Final result' }, { key: 'proposedEffects', label: 'Proposed effects' }]
+type Field<T> = { key: keyof T; label: string; placeholder?: string; type?: 'number' | 'checkbox' | 'select'; options?: readonly string[]; gmOnly?: boolean }
+const activityPrompts: Record<typeof activities[number], { detail: string; result: string; hint: string }> = {
+  'Free play': { detail: 'Scene', result: 'Outcome', hint: 'What changed?' },
+  'Indulge Vice': { detail: 'Vice / contact', result: 'Stress cleared / overindulgence', hint: 'e.g. 4 Stress cleared; no overindulgence' },
+  'Long-Term Project': { detail: 'Project', result: 'Progress', hint: 'e.g. Roll 5; mark 2 segments on the jammer project' },
+  'Recover': { detail: 'Treatment / healer', result: 'Healing / Harm changes', hint: 'Healing progress and any Harm cleared or reduced' },
+  'Reduce Heat': { detail: 'How you reduce Heat', result: 'Heat reduced', hint: 'e.g. Roll 5; reduce crew Heat by 2' },
+  'Acquire Asset': { detail: 'Asset', result: 'Quality / duration', hint: 'What you acquired, its quality and how long it lasts' },
+  'Training Montage': { detail: 'Training focus', result: 'XP gained', hint: 'Record the agreed XP and its track' },
+}
+const promptsFor = (activity: string) => activityPrompts[activity as keyof typeof activityPrompts] ?? activityPrompts['Free play']
+function activityFields(data: ActivityData): Field<ActivityData>[] {
+  const prompts = promptsFor(data.activity)
+  return [{ key: 'activity', label: 'Activity', type: 'select', options: activities }, { key: 'description', label: prompts.detail }, { key: 'outcome', label: prompts.result, placeholder: prompts.hint }]
+}
+const earlierActivityFields = [{ key: 'roll', label: 'Base roll' }, { key: 'helper', label: 'Helper' }, { key: 'spend', label: 'Agreed spending' }, { key: 'finalResult', label: 'Final result' }, { key: 'proposedEffects', label: 'Proposed effects' }] as const
+function EarlierActivityDetails({ data }: { data: ActivityData }) {
+  const saved = earlierActivityFields.filter(field => data[field.key].trim())
+  return saved.length > 0 ? <details className="activity-earlier-details"><summary>Earlier details</summary><dl>{saved.map(field => <div key={field.key}><dt>{field.label}</dt><dd>{data[field.key]}</dd></div>)}</dl></details> : null
+}
 const opportunityFields: Field<OpportunityData>[] = [{ key: 'client', label: 'Client' }, { key: 'target', label: 'Target' }, { key: 'operation', label: 'Operation type' }, { key: 'targetTier', label: 'Target Tier', type: 'number', gmOnly: true }, { key: 'difficulty', label: 'Difficulty', gmOnly: true }, { key: 'payout', label: 'Potential payout', type: 'number', gmOnly: true }, { key: 'payoutRoll', label: 'Payout roll and modifiers', gmOnly: true }, { key: 'planningDetails', label: 'Planning details' }, { key: 'held', label: 'Hold for later', type: 'checkbox' }]
 const scoreFields: Field<ScoreData>[] = [{ key: 'approach', label: 'Approach', type: 'select', options: ['', ...Object.keys(approaches)] }, { key: 'openingGambit', label: 'Opening gambit' }, { key: 'loadout', label: 'Score loadout', type: 'select', options: ['', 'Quiet', 'Loud'] }, { key: 'engagementDetails', label: 'Engagement details' }, { key: 'engagementResult', label: 'Engagement result' }, { key: 'planningNotes', label: 'Shared planning notes' }]
 
 /** One accepted-record form pattern, with independent drafts and field-level conflict checks. */
-function RecordEditor<T extends object>({ title, data, fields, canEdit, gm, saveLabel, save, refresh, children }: {
-  title: string; data: T; fields: Field<T>[]; canEdit: boolean; gm: boolean; saveLabel: string
+function RecordEditor<T extends object>({ title, data, fields, canEdit, gm, saveLabel, save, refresh, children, className }: {
+  title: string; data: T; fields: Field<T>[] | ((values: T) => Field<T>[]); className?: string; canEdit: boolean; gm: boolean; saveLabel: string
   save: (patch: Partial<T>, expected: Partial<T>) => Promise<void>; refresh: () => Promise<boolean>
   children?: (run: (action: () => Promise<void>) => void, disabled: boolean) => ReactNode
 }) {
@@ -34,12 +52,12 @@ function RecordEditor<T extends object>({ title, data, fields, canEdit, gm, save
     event.preventDefault()
     void run(async () => { await save(edits, expected.current); setEdits({}); expected.current = {} })
   }
-  return <article className="planning-card" aria-label={title}><h4>{title}</h4>
-    <form onSubmit={submit}><fieldset disabled={busy}><legend className="planning-sr-only">{title}</legend><div className="planning-fields">{fields.map(field => <label key={String(field.key)}>
+  return <article className={`planning-card ${className ?? ''}`} aria-label={title}><h4>{title}</h4>
+    <form onSubmit={submit}><fieldset disabled={busy}><legend className="planning-sr-only">{title}</legend><div className="planning-fields">{(typeof fields === 'function' ? fields(values) : fields).map(field => <label key={String(field.key)}>
       {field.label}{field.type === 'select' ? <select aria-label={field.label} disabled={!canEdit || (field.gmOnly && !gm)} value={String(values[field.key] ?? '')} onChange={event => change(field.key, event.target.value)}>{field.options!.map(value => <option key={value} value={value}>{value || 'Choose when ready'}</option>)}</select>
         : field.type === 'checkbox' ? <input aria-label={field.label} disabled={!canEdit} type="checkbox" checked={Boolean(values[field.key])} onChange={event => change(field.key, event.target.checked)} />
         : field.type === 'number' ? <input aria-label={field.label} disabled={!canEdit || (field.gmOnly && !gm)} type="number" min={0} max={field.key === 'targetTier' ? 99 : 9999} step={1} value={values[field.key] === null ? '' : String(values[field.key])} onChange={event => change(field.key, event.target.value === '' ? null : event.target.valueAsNumber)} />
-        : <textarea aria-label={field.label} disabled={!canEdit || (field.gmOnly && !gm)} rows={2} maxLength={5000} value={String(values[field.key] ?? '')} onChange={event => change(field.key, event.target.value)} />}
+        : <textarea aria-label={field.label} placeholder={field.placeholder} disabled={!canEdit || (field.gmOnly && !gm)} rows={2} maxLength={5000} value={String(values[field.key] ?? '')} onChange={event => change(field.key, event.target.value)} />}
     </label>)}</div></fieldset>
       {canEdit && <div className="planning-actions"><button disabled={busy || !dirty} type="submit">{saveLabel}</button><button disabled={busy} className="planning-secondary" type="button" onClick={() => { void run(async () => { if (!await refresh()) throw new Error('Could not reload.'); setEdits({}); expected.current = {} }) }}>Reload record{dirty ? ' (discard unsaved)' : ''}</button></div>}
     </form>
@@ -76,9 +94,9 @@ function Planning({ campaign, user, gm }: { campaign: string; user: string; gm: 
     <div className="planning-list">{state.activities.map(row => {
       const owner = state.characters.find(value => value.id === row.character_id)
       const canEdit = gm || owner?.owner_id === user
-      return <RecordEditor key={row.id} title={`${row.data.activity} · ${owner?.data.name ?? 'Character'}`} data={row.data} fields={activityFields} gm={gm} canEdit={canEdit} saveLabel="Save activity" refresh={state.refresh} save={async (patch, expected) => { state.accept('activities', await updateActivity(row.id, patch, expected)) }}>{canEdit ? (run, disabled) => <button type="button" className="planning-secondary" disabled={disabled} onClick={() => run(async () => { await deleteActivity(row.id, row.revision); state.removeActivity(row.id) })}>Remove activity</button> : undefined}</RecordEditor>
+      return <RecordEditor className="personal-business-card" key={row.id} title={`${row.data.activity} · ${owner?.data.name ?? 'Character'}`} data={row.data} fields={activityFields} gm={gm} canEdit={canEdit} saveLabel="Save activity" refresh={state.refresh} save={async (patch, expected) => { state.accept('activities', await updateActivity(row.id, patch, expected)) }}>{(run, disabled) => <><EarlierActivityDetails data={row.data} />{canEdit && <button type="button" className="planning-secondary activity-remove" disabled={disabled} onClick={() => run(async () => { await deleteActivity(row.id, row.revision); state.removeActivity(row.id) })}>Remove activity</button>}</>}</RecordEditor>
     })}</div>
-    {state.ready && owned.length > 0 && <form className="planning-create" onSubmit={addActivity}><fieldset disabled={busy}><legend>Record individual activity</legend><label>Activity character<select aria-label="Activity character" value={character || owned[0].id} onChange={event => setCharacter(event.target.value)}>{owned.map(row => <option key={row.id} value={row.id}>{row.data.name}</option>)}</select></label><label>New activity<select aria-label="New activity" value={activity} onChange={event => setActivity(event.target.value)}>{activities.map(value => <option key={value}>{value}</option>)}</select></label><label>Activity description<textarea aria-label="Activity description" value={description} onChange={event => setDescription(event.target.value)} maxLength={5000} /></label><button>Record activity</button></fieldset></form>}
+    {state.ready && owned.length > 0 && <form className="planning-create" onSubmit={addActivity}><fieldset disabled={busy}><legend>Record individual activity</legend><label>Activity character<select aria-label="Activity character" value={character || owned[0].id} onChange={event => setCharacter(event.target.value)}>{owned.map(row => <option key={row.id} value={row.id}>{row.data.name}</option>)}</select></label><label>New activity<select aria-label="New activity" value={activity} onChange={event => setActivity(event.target.value)}>{activities.map(value => <option key={value}>{value}</option>)}</select></label><label>{promptsFor(activity).detail}<textarea aria-label={promptsFor(activity).detail} value={description} onChange={event => setDescription(event.target.value)} maxLength={5000} /></label><button>Record activity</button></fieldset></form>}
     {state.ready && owned.length === 0 && <p>Create or claim a character to record their Personal Business.</p>}
     <h3>Planning Meeting</h3>
     <details className="rules-reference"><summary>Rules reference</summary><p className="planning-guidance">Payout reference: roll crew Tier dice, add target Tier. Difficulty examples: 2 minor · 4 small · 6 standard · 8 big · 10+ major. Payout modifiers do not change difficulty.</p></details>
