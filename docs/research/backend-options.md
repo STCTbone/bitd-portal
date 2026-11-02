@@ -1,3 +1,5 @@
+> Historical pre-adaptation research. File/line references below describe the upstream implementation; see [the current runtime guide](../../app/README.md) for the shipped architecture.
+
 # Backend options for the Blades ’68 portal
 
 Research checked 2026-10-15. Scope: adapt this existing application for one group's fresh campaigns, preserve the full portal, allow players to join without email accounts, protect GM information on the backend, and provide a local preview and repeatable setup before live hosting.
@@ -14,13 +16,13 @@ These observations describe committed code, not a verified production deployment
 
 | Concern | Existing implementation and implication |
 | --- | --- |
-| Persistence | [`app/src/lib/db.ts:37`](../../app/src/lib/db.ts#L37) loads campaign entities as complete JSONB `data` objects. [`db.ts:91`](../../app/src/lib/db.ts#L91) calls a server-side `merge_entity` RPC for shallow partial updates. We can retain this approach while tightening its allowed fields and role checks. |
-| Shared sessions | [`app/src/lib/store.tsx:649`](../../app/src/lib/store.tsx#L649) combines peer broadcasts, Postgres Changes, and presence, then refetches on reconnect. Replacing the backend means changing this synchronization path, not just swapping a database client. |
-| Map interaction | [`app/src/components/GameMap.tsx:204`](../../app/src/components/GameMap.tsx#L204) subscribes to broadcasts for token motion, cursors, strokes, and pings. This is an existing use for ephemeral messaging. |
-| Uploaded assets | [`app/src/lib/db.ts:114`](../../app/src/lib/db.ts#L114) uploads maps, character art, avatars, and media to a shared public bucket. Confidential assets need a private access path. |
-| Identity | [`app/src/lib/session.tsx:77`](../../app/src/lib/session.tsx#L77) looks up a four-digit campaign code and [`session.tsx:98`](../../app/src/lib/session.tsx#L98) claims a seat in local state. This is not backend authorization; a GM seat cannot remain a browser-selected privilege. |
-| GM confidentiality | [`app/src/lib/types.ts:149`](../../app/src/lib/types.ts#L149) stores GM faction notes and player notes together; [`app/src/components/FactionTracker.tsx:334`](../../app/src/components/FactionTracker.tsx#L334) hides the GM editor through UI conditions. The loader reads the complete entity. Filtering the interface cannot protect these fields. |
-| Repeatable setup | [`app/supabase/migration.sql:19`](../../app/supabase/migration.sql#L19) creates relational crew fields, whereas runtime expects `data` JSONB rows. The checked-in SQL does not define the runtime `join_code` field or `merge_entity` function. A correct fresh bootstrap is required even if Supabase is retained. |
+| Persistence | [`app/src/lib/db.ts:37`](https://github.com/bsxp/bitd-portal/blob/main/app/src/lib/db.ts) loads campaign entities as complete JSONB `data` objects. [`db.ts:91`](https://github.com/bsxp/bitd-portal/blob/main/app/src/lib/db.ts) calls a server-side `merge_entity` RPC for shallow partial updates. We can retain this approach while tightening its allowed fields and role checks. |
+| Shared sessions | [`app/src/lib/store.tsx:649`](https://github.com/bsxp/bitd-portal/blob/main/app/src/lib/store.tsx) combines peer broadcasts, Postgres Changes, and presence, then refetches on reconnect. Replacing the backend means changing this synchronization path, not just swapping a database client. |
+| Map interaction | [`app/src/components/GameMap.tsx:204`](https://github.com/bsxp/bitd-portal/blob/main/app/src/components/GameMap.tsx) subscribes to broadcasts for token motion, cursors, strokes, and pings. This is an existing use for ephemeral messaging. |
+| Uploaded assets | [`app/src/lib/db.ts:114`](https://github.com/bsxp/bitd-portal/blob/main/app/src/lib/db.ts) uploads maps, character art, avatars, and media to a shared public bucket. Confidential assets need a private access path. |
+| Identity | [`app/src/lib/session.tsx:77`](https://github.com/bsxp/bitd-portal/blob/main/app/src/lib/session.tsx) looks up a four-digit campaign code and [`session.tsx:98`](https://github.com/bsxp/bitd-portal/blob/main/app/src/lib/session.tsx) claims a seat in local state. This is not backend authorization; a GM seat cannot remain a browser-selected privilege. |
+| GM confidentiality | [`app/src/lib/types.ts:149`](https://github.com/bsxp/bitd-portal/blob/main/app/src/lib/types.ts) stores GM faction notes and player notes together; [`app/src/components/FactionTracker.tsx:334`](https://github.com/bsxp/bitd-portal/blob/main/app/src/components/FactionTracker.tsx) hides the GM editor through UI conditions. The loader reads the complete entity. Filtering the interface cannot protect these fields. |
+| Repeatable setup | [`app/supabase/migration.sql:19`](https://github.com/bsxp/bitd-portal/blob/main/app/supabase/migration.sql) creates relational crew fields, whereas runtime expects `data` JSONB rows. The checked-in SQL does not define the runtime `join_code` field or `merge_entity` function. A correct fresh bootstrap is required even if Supabase is retained. |
 
 ## Comparison
 

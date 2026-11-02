@@ -1,0 +1,257 @@
+/* Four original visual interpretations of the book; no rulebook art or fonts are embedded. */
+@import '@fontsource/barlow/400.css';
+@import '@fontsource/barlow/600.css';
+@import '@fontsource/barlow/700.css';
+@import '@fontsource/barlow-condensed/700.css';
+@import '@fontsource/barlow-condensed/800.css';
+
+html[data-design] {
+  --design-accent-text:var(--design-accent);
+  --design-body:'Barlow',Arial,Helvetica,sans-serif;
+  --design-heading:'Barlow Condensed','Arial Narrow',sans-serif;
+  --design-radius:2px;
+  --design-shadow:none;
+  --design-space:clamp(1.25rem,3vw,2.5rem);
+  --font-heading:var(--design-heading);
+  --font-sans:var(--design-body);
+  --background:var(--design-page);
+  --foreground:var(--design-ink);
+  --card:var(--design-surface);
+  --card-foreground:var(--design-ink);
+  --border:var(--design-rule);
+  --input:var(--design-rule);
+  --primary:var(--design-action);
+  --primary-foreground:var(--design-on-action);
+  --muted-foreground:var(--design-muted);
+  --ring:var(--design-accent);
+  color-scheme:light;
+  background:var(--design-page);
+}
+html[data-design='paperback'] {
+  --design-accent-text:#ad370f;
+  --design-page:#eeede7; --design-surface:#fffefa; --design-inset:#f1f0e9;
+  --design-input:#fffefa; --design-ink:#20201b; --design-muted:#656357;
+  --design-rule:#b7b5aa; --design-accent:#c94714; --design-accent-ink:#fffefa;
+  --design-action:#24241f; --design-on-action:#fffefa;
+  --design-selection:#fbe5cf; --design-selection-ink:#6c260f;
+  --design-nav:#fffefa; --design-nav-ink:#24241f;
+  --design-cover:#24241f; --design-cover-ink:#fffefa;
+  --design-danger:#a52824; --design-danger-bg:#fce8e3;
+  --design-success:#285a3b; --design-success-bg:#e7f0e3;
+}
+html[data-design='signal'] {
+  --design-accent-text:#602408;
+  --design-page:#ed9e25; --design-surface:#fff2ce; --design-inset:#f9df9d;
+  --design-input:#fffae9; --design-ink:#2c210f; --design-muted:#573711;
+  --design-rule:#8e642e; --design-accent:#ae3614; --design-accent-ink:#fff7dc;
+  --design-action:#2c210f; --design-on-action:#fff2ce;
+  --design-selection:#ae3614; --design-selection-ink:#fff7dc;
+  --design-nav:#2c210f; --design-nav-ink:#fff2ce;
+  --design-cover:#ae3614; --design-cover-ink:#fff7dc;
+  --design-danger:#962a19; --design-danger-bg:#ffe0c4;
+  --design-success:#365223; --design-success-bg:#e3eab8;
+  --design-radius:0px; --design-shadow:5px 5px 0 #2c210f;
+}
+html[data-design='blue-hour'] {
+  --design-page:#dce9e6; --design-surface:#f8fbf7; --design-inset:#e5efeb;
+  --design-input:#ffffff; --design-ink:#173f49; --design-muted:#46666b;
+  --design-rule:#8caaa9; --design-accent:#175e70; --design-accent-ink:#ffffff;
+  --design-action:#175768; --design-on-action:#ffffff;
+  --design-selection:#cae3dc; --design-selection-ink:#153e48;
+  --design-nav:#f8fbf7; --design-nav-ink:#244b53;
+  --design-cover:#173f49; --design-cover-ink:#edf8ee;
+  --design-danger:#a22d37; --design-danger-bg:#fae8e9;
+  --design-success:#245c46; --design-success-bg:#dbeee2;
+  --design-heading:'Barlow',Arial,sans-serif; --design-radius:12px;
+  --design-shadow:0 10px 32px #153e480b; --design-space:clamp(1.25rem,3.5vw,3rem);
+}
+html[data-design='midnight'] {
+  color-scheme:dark;
+  --design-page:#0b171e; --design-surface:#132b35; --design-inset:#1d3943;
+  --design-input:#0c2029; --design-ink:#f0eee1; --design-muted:#b1c9cb;
+  --design-rule:#587780; --design-accent:#f3b64b; --design-accent-ink:#18252b;
+  --design-action:#a6e4e8; --design-on-action:#10272f;
+  --design-selection:#a6e4e8; --design-selection-ink:#10272f;
+  --design-nav:#132b35; --design-nav-ink:#d2e2df;
+  --design-cover:#a6e4e8; --design-cover-ink:#10272f;
+  --design-danger:#ffb8a8; --design-danger-bg:#432c2e;
+  --design-success:#b4e1ba; --design-success-bg:#244135;
+  --design-radius:16px; --design-shadow:0 14px 40px #0004;
+}
+
+html[data-design] body { background:var(--design-page); color:var(--design-ink); font-family:var(--design-body); }
+html[data-design] .access-page { background:transparent; color:var(--design-ink); font-family:var(--design-body); padding-top:1rem; }
+html[data-design] .access-page :is(h1,h2,h3,h4,h5,h6) { font-family:var(--design-heading); font-weight:800; line-height:1.08; letter-spacing:-.015em; }
+html[data-design] .access-page :is(input,select,textarea,button) { font-family:var(--design-body); }
+html[data-design] .access-brand { border:0; padding:1.75rem 0 2rem; }
+html[data-design] .access-brand>span { display:block; font-size:.72rem; letter-spacing:.16em; color:var(--design-muted); }
+html[data-design] .campaign-page>.access-brand h1 { font-size:clamp(2.8rem,6vw,5.75rem); font-weight:800; max-width:100%; margin:.5rem 0 .7rem; }
+html[data-design] .access-brand p { color:var(--design-muted); font-size:1rem; margin:0; }
+html[data-design] .campaign-sections { padding:.4rem; background:var(--design-nav); color:var(--design-nav-ink); border:1px solid var(--design-rule); border-radius:var(--design-radius); box-shadow:none; margin-bottom:1.75rem; }
+html[data-design] .campaign-sections [role='tablist'] { gap:.15rem; }
+html[data-design] .campaign-sections [role='tab'] { background:transparent; color:var(--design-nav-ink); border:0; border-radius:var(--design-radius); min-height:46px; padding:.7rem .9rem; font-size:.95rem; font-weight:600; }
+html[data-design] .campaign-sections [role='tab']:hover { background:var(--design-inset); color:var(--design-ink); }
+html[data-design] .campaign-sections [role='tab'][aria-selected='true'] { background:var(--design-selection); color:var(--design-selection-ink); box-shadow:inset 0 -3px var(--design-accent); }
+html[data-design] .campaign-tab-panel { outline-color:var(--design-accent); }
+html[data-design] .access-page section[tabindex='-1']:focus { outline:0; }
+html[data-design] .access-page :is(button,input,textarea,select,a,summary,[tabindex='0']):focus-visible { outline:3px solid var(--design-accent); outline-offset:3px; }
+
+/* Shared surfaces, type and forms. Uploaded images, map SVGs and gesture colors are untouched. */
+html[data-design] :is(.access-panel,.campaign-summary,.crew-dossier,.campaign-planning,.campaign-clocks,.shared-notes,.character-dossier) {
+  background:var(--design-surface); color:var(--design-ink); font-family:var(--design-body);
+  border:1px solid var(--design-rule); border-top:4px solid var(--design-accent);
+  border-radius:var(--design-radius); box-shadow:var(--design-shadow);
+}
+html[data-design] :is(.campaign-summary,.crew-dossier,.campaign-planning,.campaign-clocks,.shared-notes) { max-width:76rem; margin:0 auto 2rem; padding:var(--design-space); }
+html[data-design] .dossier-workspace { max-width:76rem; margin:0 auto 2rem; color:var(--design-ink); font-family:var(--design-body); }
+html[data-design] .access-panel { padding:var(--design-space); }
+html[data-design] :is(.dossier-heading,.campaign-planning>header,.crew-dossier>header,.shared-notes>header,.campaign-clocks>header) { color:var(--design-ink); border:0; border-bottom:1px solid var(--design-rule); padding:0 0 1.25rem; margin-bottom:1.5rem; }
+html[data-design] :is(.summary-kicker,.access-kicker,.planning-kicker,.crew-kicker,.clock-kicker,.note-kicker,.dossier-heading>p) { color:var(--design-accent-text); font-size:.72rem; font-weight:700; letter-spacing:.14em; line-height:1.5; }
+html[data-design] :is(.campaign-summary,.campaign-planning,.crew-dossier,.shared-notes,.campaign-clocks,.dossier-heading)>h2,
+html[data-design] :is(.campaign-summary,.campaign-planning,.crew-dossier,.shared-notes,.campaign-clocks)>header h2,
+html[data-design] .dossier-heading h2 { font-size:clamp(2rem,4vw,3.35rem); margin:.5rem 0; }
+html[data-design] .access-page :is(.dossier-field>span,.access-panel small,.crew-dossier small,.crew-guidance,.crew-dossier footer,.campaign-clocks footer,.map-access-note,.campaign-map small,.faction-source) { color:var(--design-muted); }
+html[data-design] .access-page :where(input:not([type='checkbox']):not([type='range']),textarea,select) {
+  background:var(--design-input); color:var(--design-ink); border:1px solid var(--design-rule);
+  border-radius:calc(var(--design-radius) * .45); font-size:1rem; font-weight:400; min-height:46px; padding:.7rem .8rem;
+}
+html[data-design] .access-page :is(input,textarea,select)::placeholder { color:var(--design-muted); opacity:1; }
+html[data-design] .access-page :is(input,textarea,select):disabled { color:var(--design-muted); background:var(--design-inset); opacity:1; }
+html[data-design] .access-page input[type='checkbox'] { accent-color:var(--design-action); }
+html[data-design] .access-page :where(button,.summary-cards a) { background:var(--design-action); color:var(--design-on-action); border:1px solid var(--design-action); border-radius:calc(var(--design-radius) * .45); font-weight:600; }
+html[data-design] .access-page :where(button,.summary-cards a):not(:disabled):hover { filter:brightness(.93); }
+html[data-design] .access-page button:disabled { opacity:.55; }
+html[data-design] .access-page :is(.access-secondary,.planning-secondary,.crew-secondary,.clock-secondary,.note-secondary) { background:transparent; color:var(--design-ink); border-color:var(--design-rule); }
+html[data-design] .access-page :is([role='status'],.crew-save-status) { color:var(--design-success); }
+html[data-design] .access-page :is([role='alert'],.access-error,.crew-error) { color:var(--design-danger); }
+html[data-design] :is(.dossier-error,.campaign-summary [role='alert'],.campaign-map [role='alert']) { background:var(--design-danger-bg); color:var(--design-danger); border-color:var(--design-danger); }
+html[data-design] .access-page footer { color:var(--design-muted); }
+html[data-design] .rules-reference { background:var(--design-inset); color:var(--design-ink); border:1px solid var(--design-rule); border-radius:calc(var(--design-radius) * .5); font-family:var(--design-body); }
+html[data-design] :is(.planning-card,.clock-card,.note-card,.crew-cohort,.crew-retained,.map-token-card,.setup-review) { background:var(--design-surface); color:var(--design-ink); border:1px solid var(--design-rule); border-radius:calc(var(--design-radius) * .65); }
+html[data-design] :is(.planning-card strong,.clock-card strong,.note-card strong,.note-category) { color:var(--design-accent); }
+html[data-design] .access-page :is(.planning-phase,.score-lifecycle,.score-clock,.condition-review,.condition-saved,.dossier-row,.crew-tool-row,.character-ownership,.paranormal-availability,.character-dossier .backing-card) { background:var(--design-inset); color:var(--design-ink); border-color:var(--design-rule); border-radius:calc(var(--design-radius) * .55); }
+html[data-design] :is(.paranormal-availability h4,.character-dossier h4,.character-media h5,.map-token-card h4) { color:var(--design-ink); }
+html[data-design] :is(.paranormal-availability,.character-ownership) { border:1px solid var(--design-rule); }
+html[data-design] .access-page :is(.paranormal-availability fieldset,.character-dossier fieldset,.character-dossier section,.crew-tools,.crew-business section,.crew-guidance,.crew-tool-row,.planning-create,.clock-create,.note-create,.score-operations,.aftermath-panel,.table-presence,.faction-editor,.faction-create,.faction-delete,.map-gm-tools,.activity-earlier-details,.campaign-planning h3,.shared-notes header,.campaign-clocks header) { border-color:var(--design-rule); }
+html[data-design] .access-page :is(.approach-reference th,.approach-reference td) { border-color:var(--design-rule); }
+html[data-design] .access-page .approach-reference thead { background:var(--design-inset); }
+
+/* Overview: editorial hierarchy and quieter resource strips. */
+html[data-design] .summary-cards { gap:1.25rem; margin:1.75rem 0; }
+html[data-design] .summary-cards article { background:var(--design-surface); color:var(--design-ink); border:1px solid var(--design-rule); border-radius:calc(var(--design-radius) * .6); padding:1.5rem; }
+html[data-design] .summary-cards .summary-crew { background:var(--design-cover); color:var(--design-cover-ink); border-color:var(--design-cover); }
+html[data-design] .summary-cards h3 { font-size:2rem; margin:.3rem 0 .75rem; }
+html[data-design] .summary-tracks { gap:.35rem; margin:.8rem 0 1.2rem; }
+html[data-design] .summary-tracks li { background:var(--design-inset); color:var(--design-ink); border:0; border-radius:calc(var(--design-radius) * .3); font-size:.82rem; font-weight:600; padding:.4rem .55rem; }
+html[data-design] .summary-crew .summary-kicker { color:inherit; opacity:.8; }
+html[data-design] .summary-crew a { background:var(--design-surface); color:var(--design-ink); border-color:var(--design-surface); }
+html[data-design] .summary-cards a { font-size:.92rem; text-decoration:none; padding:.7rem .85rem; }
+html[data-design] .presence-list li { background:var(--design-inset); color:var(--design-ink); border:0; border-left:3px solid var(--design-accent); border-radius:calc(var(--design-radius) * .4); }
+
+/* Dossiers, roster selection and meaningful claim states. */
+html[data-design] .dossier-title { background:var(--design-cover); color:var(--design-cover-ink); border:0; padding:1.75rem; border-radius:var(--design-radius) var(--design-radius) 0 0; }
+html[data-design] .dossier-create { background:var(--design-inset); color:var(--design-ink); border:1px solid var(--design-rule); border-radius:calc(var(--design-radius) * .6); }
+html[data-design] .dossier-roster { color:var(--design-ink); }
+html[data-design] .dossier-roster-card { background:var(--design-surface); color:var(--design-ink); border-color:var(--design-rule); border-radius:calc(var(--design-radius) * .6); }
+html[data-design] .dossier-roster .dossier-roster-open { background:transparent; color:var(--design-ink); border-color:transparent; }
+html[data-design] .dossier-roster .dossier-roster-open>span { font-family:var(--design-heading); font-size:1.6rem; font-weight:700; }
+html[data-design] .dossier-roster .dossier-roster-open:hover { background:var(--design-inset); }
+html[data-design] .dossier-roster .dossier-roster-open[aria-pressed='true'] { background:var(--design-selection); color:var(--design-selection-ink); border-color:var(--design-action); }
+html[data-design] .dossier-roster .dossier-roster-claim { background:transparent; color:var(--design-ink); border-color:var(--design-rule); }
+html[data-design] .dossier-roster .dossier-roster-claim:hover:not(:disabled) { background:var(--design-action); color:var(--design-on-action); }
+html[data-design] .dossier-danger { border-color:var(--design-danger); color:var(--design-danger); }
+html[data-design] .dossier-danger button { background:var(--design-danger-bg); color:var(--design-danger); border-color:var(--design-danger); }
+html[data-design] .faction-layout nav button { background:var(--design-inset); color:var(--design-ink); border-color:transparent; }
+html[data-design] .faction-layout nav button[aria-pressed='true'] { background:var(--design-selection); color:var(--design-selection-ink); border-color:var(--design-action); }
+html[data-design] .claim-map-scroll { background:var(--design-inset); border-color:var(--design-rule); }
+html[data-design] .claim-map-paths polyline { stroke:var(--design-rule); }
+html[data-design] .claim-map-paths polyline.is-held { stroke:var(--design-action); }
+html[data-design] .claim-map-row-label { color:var(--design-accent); }
+html[data-design] .crew-dossier .claim-node { background:var(--design-surface); color:var(--design-ink); border-color:var(--design-rule); box-shadow:none; }
+html[data-design] .claim-node-name { background:var(--design-inset); color:var(--design-ink); border-color:var(--design-rule); }
+html[data-design] .crew-dossier .claim-node:disabled { opacity:1; }
+html[data-design] .crew-dossier .claim-node.is-held { background:var(--design-selection); color:var(--design-selection-ink); border-color:var(--design-action); box-shadow:inset 0 0 0 1px var(--design-action); }
+html[data-design] .claim-node.is-held .claim-node-state { background:var(--design-action); color:var(--design-on-action); }
+html[data-design] .claim-node.is-special .claim-node-name { background:var(--design-accent); color:var(--design-accent-ink); }
+html[data-design] .crew-dossier .claim-node.is-locked { background:var(--design-inset); color:var(--design-muted); border-color:var(--design-rule); border-style:dashed; }
+html[data-design] .claim-node.is-locked .claim-node-name { background:var(--design-inset); color:var(--design-muted); }
+html[data-design] .crew-dossier .claim-base { background:var(--design-cover); color:var(--design-cover-ink); box-shadow:none; }
+html[data-design] .claim-base .claim-node-name { background:transparent; color:inherit; font-family:var(--design-heading); }
+html[data-design] .clock-card svg path { fill:var(--design-inset); stroke:var(--design-rule); }
+html[data-design] .clock-card svg path.fill-primary { fill:var(--design-accent); }
+
+/* Theme the media chrome, never the media or colored map gestures themselves. */
+html[data-design] :is(.campaign-media.dossier-workspace,.asset-upload,.media-card) { background:var(--design-surface); color:var(--design-ink); border-color:var(--design-rule); border-radius:calc(var(--design-radius) * .6); }
+html[data-design] .asset-upload { background:var(--design-inset); }
+html[data-design] .campaign-map .live-map-tools button { background:var(--design-surface); color:var(--design-ink); border-color:var(--design-rule); }
+html[data-design] .campaign-map .live-map-tools button[aria-pressed='true'] { background:var(--design-selection); color:var(--design-selection-ink); border-color:var(--design-action); }
+
+/* The chooser is intentionally independent of campaign/session state. */
+.design-studio { max-width:76rem; margin:0 auto; padding:.8rem 1rem 0; font-family:var(--design-body); color:var(--design-ink); }
+.design-studio-picker { border-bottom:1px solid var(--design-rule); }
+.design-studio-picker>summary { display:flex; flex-wrap:wrap; gap:.5rem 1rem; justify-content:space-between; align-items:center; min-height:48px; padding:.55rem 0 .8rem; cursor:pointer; list-style:none; }
+.design-studio-picker>summary::-webkit-details-marker { display:none; }
+.design-studio-label { text-transform:uppercase; font-size:.7rem; letter-spacing:.16em; font-weight:700; }
+.design-studio-current { display:flex; gap:.6rem; align-items:center; font-size:.9rem; font-weight:600; }
+.design-studio-current::after { content:'＋'; margin-left:.4rem; }
+.design-studio-picker[open] .design-studio-current::after { content:'−'; }
+.design-studio-dot { width:.6rem; height:.6rem; border-radius:50%; background:var(--design-accent); }
+.design-studio-options { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.75rem; padding:.4rem 0 1.2rem; }
+.design-option { display:flex; flex-direction:column; min-width:0; text-align:left; padding:.65rem; gap:.6rem; border:1px solid var(--design-rule); border-radius:6px; color:var(--design-ink); background:var(--design-surface); cursor:pointer; }
+.design-option[aria-pressed='true'] { outline:2px solid var(--design-accent); outline-offset:2px; }
+.design-option-preview { min-height:5rem; padding:.7rem; display:flex; justify-content:space-between; align-items:end; border-radius:2px; color:#22211b; background:#f4f3ed; border-top:4px solid #c94714; }
+.design-option-number { font-family:'Barlow Condensed',sans-serif; font-size:2.5rem; line-height:1; font-weight:800; }
+.design-option-swatches { display:flex; gap:.25rem; }
+.design-option-swatches i { width:.65rem; height:.65rem; border-radius:50%; background:currentColor; }
+.design-option-swatches i:nth-child(2) { opacity:.5; }.design-option-swatches i:nth-child(3) { opacity:.25; }
+.design-option[data-scheme='signal'] .design-option-preview { background:#ed9e25; color:#ae3614; border-color:#2c210f; }
+.design-option[data-scheme='blue-hour'] .design-option-preview { background:#dce9e6; color:#175768; border-color:#8caaa9; border-radius:8px; }
+.design-option[data-scheme='midnight'] .design-option-preview { background:#132b35; color:#a6e4e8; border-color:#f3b64b; border-radius:10px; }
+.design-option-name { font-weight:700; font-size:1rem; }.design-option-description { font-size:.82rem; line-height:1.4; color:var(--design-muted); }
+.design-studio :is(summary,button):focus-visible { outline:3px solid var(--design-accent); outline-offset:3px; }
+
+/* Each scheme has its own composition as well as its own palette. */
+html[data-design='paperback'] .campaign-page>.access-brand { border-top:5px solid var(--design-ink); border-bottom:1px solid var(--design-rule); }
+html[data-design='paperback'] .campaign-sections { border:0; border-bottom:2px solid var(--design-ink); padding:.35rem 0; }
+html[data-design='paperback'] .campaign-sections [role='tab'][aria-selected='true'] { color:var(--design-accent); background:transparent; }
+html[data-design='paperback'] .summary-cards article { border:0; border-top:2px solid var(--design-ink); background:var(--design-inset); }
+html[data-design='paperback'] .summary-cards .summary-crew { background:var(--design-cover); border-color:var(--design-cover); }
+html[data-design='signal'] .campaign-page>.access-brand { position:relative; isolation:isolate; padding:2rem 1.5rem; background:var(--design-cover); color:var(--design-cover-ink); border:2px solid var(--design-ink); margin-bottom:1rem; }
+html[data-design='signal'] .campaign-page>.access-brand::after { content:'’68'; position:absolute; right:1rem; top:.25rem; font:800 clamp(5rem,13vw,10rem)/1 'Barlow Condensed',sans-serif; opacity:.12; z-index:-1; pointer-events:none; }
+html[data-design='signal'] .campaign-page>.access-brand :is(span,p) { color:inherit; }
+html[data-design='signal'] .campaign-page>.access-brand h1 { text-transform:uppercase; max-width:85%; line-height:.95; }
+html[data-design='signal'] .campaign-sections { border:2px solid var(--design-ink); box-shadow:4px 4px 0 #ae3614; }
+html[data-design='signal'] .campaign-sections [role='tab'][aria-selected='true'] { background:var(--design-page); color:var(--design-ink); box-shadow:none; }
+html[data-design='signal'] .summary-cards article { border:2px solid var(--design-ink); }
+html[data-design='signal'] .summary-cards h3 { font-size:2.5rem; text-transform:uppercase; }
+html[data-design='blue-hour'] .campaign-page>.access-brand h1 { font-size:clamp(2.5rem,5vw,4.5rem); font-weight:600; letter-spacing:-.055em; }
+html[data-design='blue-hour'] .campaign-sections { padding:.5rem; background:#f8fbf7cc; backdrop-filter:blur(12px); }
+html[data-design='blue-hour'] .campaign-sections [role='tab'][aria-selected='true'] { box-shadow:none; }
+html[data-design='blue-hour'] .campaign-summary { border-top:1px solid var(--design-rule); }
+html[data-design='blue-hour'] .summary-cards article { padding:1.75rem; }
+html[data-design='blue-hour'] .summary-cards h3 { font-size:1.8rem; font-weight:600; letter-spacing:-.04em; }
+html[data-design='midnight'] body { background-image:radial-gradient(ellipse at 80% 0,#1f4650 0,transparent 65%); background-attachment:fixed; }
+html[data-design='midnight'] .campaign-page>.access-brand { border-bottom:1px solid var(--design-rule); }
+html[data-design='midnight'] .campaign-page>.access-brand>span { color:var(--design-accent); }
+html[data-design='midnight'] .campaign-sections { box-shadow:0 8px 24px #0004; }
+html[data-design='midnight'] .campaign-sections [role='tab'][aria-selected='true'] { background:var(--design-accent); color:var(--design-accent-ink); box-shadow:none; }
+html[data-design='midnight'] .campaign-summary { border-top-color:var(--design-action); }
+html[data-design='midnight'] .summary-cards .summary-crew { background:var(--design-inset); color:var(--design-ink); border:1px solid var(--design-action); }
+html[data-design='midnight'] .summary-cards .summary-crew .summary-kicker { color:var(--design-action); }
+html[data-design='midnight'] .summary-cards h3 { font-size:2.3rem; }
+html[data-design='midnight'] .summary-tracks li { background:var(--design-input); }
+
+@media (max-width:700px) {
+  .design-studio-options { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  html[data-design] .campaign-sections [role='tab'] { font-size:.88rem; padding:.6rem .55rem; }
+  html[data-design] .campaign-page>.access-brand h1 { font-size:clamp(2.5rem,9vw,4rem); }
+  html[data-design='signal'] .campaign-page>.access-brand { padding:1.5rem 1rem; }
+  html[data-design='signal'] .campaign-page>.access-brand h1 { max-width:100%; }
+  html[data-design] .summary-cards article { padding:1.2rem; }
+}
+@media (prefers-reduced-motion:reduce) { html[data-design] * { scroll-behavior:auto; } }
+
+html[data-design] .aftermath-checklist li { background:var(--design-surface); color:var(--design-ink); border-color:var(--design-rule); border-radius:calc(var(--design-radius) * .5); }
+html[data-design] .aftermath-checklist li[aria-current='step'] { background:var(--design-inset); border-left-color:var(--design-accent); }
+html[data-design] .aftermath-checklist li.is-reviewed { background:var(--design-success-bg); border-left-color:var(--design-success); }
+html[data-design] .aftermath-step-number { background:var(--design-action); color:var(--design-on-action); border-radius:calc(var(--design-radius) * .25); }

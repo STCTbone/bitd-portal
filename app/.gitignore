@@ -23,3 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 .claude/
+
+# Local Supabase state and browser test output
+supabase/.temp/
+supabase/.branches/
+playwright-report/
+test-results/
+
+# Sensitive database exports and uploaded-file recovery bundles
+backups/

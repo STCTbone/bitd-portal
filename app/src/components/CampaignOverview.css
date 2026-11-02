@@ -1,0 +1,20 @@
+.campaign-summary { max-width:72rem; margin:2rem auto; padding:clamp(1rem,3vw,2rem); background:#fff4de; color:#17333a; border-top:8px solid #ed8b56; box-shadow:8px 8px 0 #0c2027; overflow-wrap:anywhere; }
+.campaign-summary h2 { font-size:clamp(1.8rem,4vw,2.7rem); font-weight:800; margin:.4rem 0; }
+.campaign-summary h3 { font-size:1.4rem; font-weight:800; margin:.4rem 0; }
+.campaign-summary p { margin:.6rem 0; line-height:1.5; }
+.campaign-summary .summary-kicker { font-size:.75rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+.summary-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); gap:1rem; margin:1.3rem 0; }
+.summary-cards article { min-width:0; background:#e5edda; padding:1.1rem; border:2px solid #628985; display:flex; flex-direction:column; align-items:start; }
+.summary-cards .summary-crew { background:#a5ded3; }
+.summary-tracks { display:flex; flex-wrap:wrap; gap:.5rem; padding:0; list-style:none; margin:.6rem 0; }
+.summary-tracks li { background:#fff9eb; border:1px solid #628985; padding:.35rem .55rem; font-weight:700; font-size:.9rem; }
+.campaign-summary a,.campaign-summary button { display:inline-block; margin-top:.7rem; padding:.7rem 1rem; min-height:44px; border:2px solid #173e46; background:#173e46; color:#fff9eb; font-weight:700; cursor:pointer; text-decoration:underline; }
+.summary-cards a { margin-top:auto; }
+.campaign-summary :is(a,button):focus-visible { outline:3px solid #bf4529; outline-offset:3px; }
+.table-presence { margin-top:1.4rem; border-top:3px solid #628985; padding-top:1rem; }
+.presence-list { display:flex; flex-wrap:wrap; padding:0; gap:.7rem; list-style:none; }
+.presence-list li { display:flex; flex-direction:column; gap:.25rem; background:#173e46; color:#fff4de; border-left:5px solid #ed8b56; padding:.8rem 1rem; flex:1 1 12rem; min-width:0; }
+.presence-list span { font-size:.9rem; }
+.table-presence small { display:block; margin:.8rem 0 0; line-height:1.5; }
+.campaign-summary [role=alert] { border:2px solid #b5402f; background:#fff0df; color:#892b22; padding:.8rem; }
+#character-dossiers,#crew-dossier { scroll-margin-top:1rem; }

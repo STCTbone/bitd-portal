@@ -1,0 +1,17 @@
+.campaign-map { overflow: hidden; }
+.campaign-map label { display: grid; gap: .35rem; margin: .7rem 0; font-size: .9rem; }
+.campaign-map input,.campaign-map select { width: 100%; min-width: 0; padding: .65rem; color: #18383f; background: #fffaf0; border: 1px solid #6b8681; border-radius: 3px; }
+.campaign-map button { margin: .4rem .4rem .4rem 0; padding: .65rem .8rem; min-height: 44px; border: 1px solid #245b60; border-radius: 3px; background: #e4f0d6; color: #153b3d; cursor: pointer; }
+.campaign-map button:disabled { opacity: .55; cursor: default; }
+.campaign-map-surface { position: relative; width: 100%; background: #163c47; border: 2px solid #245b60; }
+.campaign-map-surface > img { display: block; width: 100%; height: auto; }
+.map-marker { position: absolute; display: grid; place-items: center; width: 30px; height: 30px; transform: translate(-50%,-50%); border: 2px solid #fff7e6; border-radius: 50%; color: white; background: #7d375e; font-weight: 800; box-shadow: 0 1px 4px #102f36; pointer-events: none; }
+.map-marker-owned { background: #135d5e; }
+.map-access-note,.campaign-map small { display: block; color: #365c5b; overflow-wrap: anywhere; }
+.map-token-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); gap: 1rem; margin-top: 1rem; }
+.map-token-card { padding: 1rem; background: #fff8e9; border: 1px solid #80a09a; min-width: 0; }
+.map-token-card h4 { color: #183f49; font-size: 1.15rem; overflow-wrap: anywhere; }
+.map-token-number { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #135d5e; color: white; }
+.map-coordinate-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.campaign-map [role=alert] { border-left: 4px solid #973941; padding: .6rem; background: #ffebe2; color: #6a2730; }
+.map-gm-tools { border-top: 1px solid #91aba0; margin-top: 1rem; padding-top: .75rem; }
