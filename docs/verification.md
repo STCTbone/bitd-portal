@@ -101,3 +101,12 @@ The source was archived from the committed revision, with only disposable `supab
 This aggregate success supersedes the earlier mixed broad/focused results. Together with the 49-assertion CLI restore/Auth-restart drill, native-client restore/Auth-restart verification, clean lint/build and 10 recovery fixture tests, there are no remaining local validation failures. Production backup activation, provider retention and remote restore remain outside this local verification.
 
 Final cleanup removed the disposable stack and volumes with `supabase stop --workdir /tmp/bitd-final-corrected/app --no-backup`; only the original `bitd-portal` containers remained running. Both isolated source copies, synthetic backup bundles and the native-client harness were removed. Raw validation logs/screenshots remain private in `/tmp`; no credentials, fixture data, production operations, pushes, merges or deployments are part of this follow-up.
+
+
+## Publication verification — 2026-11-02
+
+The previously local follow-up through `880044a` was fast-forwarded to the existing `integration/blades68` PR branch, then merged normally through [PR #28](https://github.com/STCTbone/bitd-portal/pull/28) at `65ea65e5ce917ef1292f7a27f3cdb70d64396bb6`. The remote main tree matched tested release `880044ad19654e0c8b1683dc134a4e5aee69804e` exactly before this documentation-only publication record. The application subtree matched the fully tested `c1c1578` subtree exactly. Fresh lint, build/typecheck and 10 recovery fixture tests passed. GitHub had no required branch rules/checks and reported zero check runs; no approval review or bypass was submitted.
+
+Sites version **2** deployed successfully at the existing public URL from native source `8e4a676a30ecc5d4080fe08856ac8b6e236a3610`; its 44-file static archive hash is identical to version 1. Access policy revision 2 and the complete policy were unchanged. Read-only live checks verified HTTP 200, entry/Google controls, Signal Orange, zero page errors/failed assets, Auth health 200 and Google enabled, with zero Supabase writes and no campaign reads or sign-in. See [the publication record](hosting.md#publication-update--2026-11-02) for exact identifiers and limitations.
+
+Earlier local-only/no-push statements in this document describe the November 1 handoff. This publication supersedes them; backup destination/operator selection and actual live backup activation remain pending. No production database dump, new application credentials, backup schedule, paid service or sharing change was made.
